@@ -1,0 +1,100 @@
+Hey everyone.
+Ryan Welcher here again with another edition of What's New
+for Developers this time for November, 2025.
+There's lots of really cool stuff
+that's happened in the past month, and so let's get into it.
+This is the table of contents for the article,
+and you can see that there's a lot of items in here.
+So I'm gonna do things a little bit differently this time
+where I'm only gonna call out a few top level items
+and leave the rest of you to read on your own time.
+And you can do that over on the developer blog at
+developer.wordpress.org/news.
+So let's take a look at the first item.
+The WordPress Plugin Review team just announced a pretty
+major update to the plugin check plugin or PCP.
+The tool now scans brand new plugins as well
+as updates to plugins.
+So this is a huge win for security
+and compliance across the WordPress ecosystem.
+Currently, these changes are being tested,
+so the scans are only being used internally
+and sent to plugin authors as needed.
+However, once the testing phase is passed, the intention is
+to have these, these scans automatically be sent
+to the plugin authors after a plugin update.
+Next is some updates on planned WordPress 6.9 features
+during the WordPress 6.9 release cycle.
+Uh, the the core development team had
+to make some hard choices as to
+what was gonna make it and what didn't.
+So we do have a final list
+of new blocks in 6.9 that'll include the accordion block,
+the time to read block, the term query block,
+and all of its related term blocks, the math block,
+the comments link and count blocks.
+Unfortunately, the template management feature content only
+editing and the block bindings UI for external sources,
+uh, had to be punted.
+They just weren't quite ready. A couple of issues came up
+and, and released candidate one,
+and so the core development team thought that it was best
+to punt it the 7.0 to allow 'em a bit bit more time
+to polish up the features and squash these bugs.
+This one's pretty exciting for block developers.
+We do have experimental PHP only blocks,
+which means you don't need any
+JavaScript to register blocks.
+You can do it on in A PHP only way.
+It's been in Gutenberg since version 21.8,
+and now it's also in 21.9.
+Uh, but you can, you can go and you can take a look at that.
+There is some documentation on how to do it.
+So if this is something that appeals to you,
+I would highly recommend going and have a look.
+WordPress playground is one
+of my favorite things in the whole world,
+and if you couple that with, with blueprints,
+it becomes even easier to use.
+What I really love is that it lowers the barrier to entry
+for anyone wanting to get started with, with WordPress.
+And to that end, we now have eight new blueprints available
+in, in the Blueprint Gallery that have been targeted towards
+supporting efforts of teachers who want
+to teach students to work with WordPress.
+So now we, now they can spin up a personal blog,
+a portfolio, a newspaper, an NGO, and an e-commerce site,
+and any one of these links, we'll be able to get students up
+and running really, really quickly
+so they can start learning just how awesome WordPress is.
+We now have aspect ratio control for the gallery block.
+This is really cool 'cause content creators can now select
+the aspect ratio of all images in a gallery block,
+but just with a single dropdown
+or if you're a theme author, you can set this in Theme JSO.
+The code snippet below shows how
+to turn off the default aspect ratios and add your own.
+What's really cool is that while this is available in
+Gutenberg 21.9, it'll also be released with WordPress 6.9.
+It's that time of year again
+and state of the word will happen on December 2nd.
+If you're not familiar with this, this is the annual event
+where Matt Mullen delivers his keynote,
+and it's gonna be live streamed from from San Francisco
+for the first time ever.
+This will coincide with a major WordPress release.
+So WordPress 6.9 will be released on the same day
+that state of the word is happening, uh,
+in-person seating is very limited.
+So, but you can re request a ticket if you want to go
+and you happen to be in the area.
+Well, that's it for November, 2025
+to what's new for developers.
+Thanks again for hanging out with me.
+My name's Ryan Welch, chairman,
+developer advocate at Automatic,
+and if you haven't already, please give this video a thumbs
+up and subscribe to the channel
+'cause we'll be doing more content like
+this on a regular basis.
+Thanks again for watching.

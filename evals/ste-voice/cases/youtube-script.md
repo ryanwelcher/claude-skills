@@ -1,0 +1,1 @@
+/youtube-script Write mode. Topic: adding a toolbar button to a custom block with BlockControls. Quick 5-minute tip, cold open. The demo adds a "remove image" button to a meme generator block. There is no content plan entry: keep the CTA generic. Do not propose beats and do not ask me anything: write the full production document and save it to script.md.

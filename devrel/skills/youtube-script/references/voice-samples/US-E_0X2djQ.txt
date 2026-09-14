@@ -1,0 +1,2043 @@
+All right. Hey everybody. How's it going
+today? Um, yeah, stream day. Excited.
+Excited. So, oh, hey, Joe Cooper. Thanks
+for the, uh, say hi. How you doing?
+How's it going? Morning, Paul. Hello,
+Chad. Hello, everyone.
+Joe H. Cooper. Joe, I was gonna say
+Joey, but it's Joe H, right? Anyways,
+uh, cool. Yeah. So today is um yesterday
+I was supposed to be making a video and
+I got spent the whole day working on
+um the icon block because we are like
+about a week and a bit away maybe two
+weeks 19th. What is that? That is like
+14 days from today. So two weeks away I
+guess from uh beta 1 for WordPress 7.0.
+So I didn't get the icon block into 6.9
+uh but I am working hard to get it into
+7.0. And yesterday we got a lot of work
+done. Uh there's a lot of stuff and I
+have a ton of feedback that I just
+received which is amazing from a number
+of people smarter than me um who are
+providing some great feedback on how we
+should move this thing forward. So I
+thought what I'd do today is just work
+on this and try to address as much of
+this feedback as I possibly can and kind
+of go from there. So, I'm just going to
+refresh this page because I I realized
+that uh I I got u some feedback from uh
+a co-orker of mine who's an amazing dude
+um who I met at Word Camp, Sophia.
+Oh, Muhammad Ata 77866, hello from
+Egypt. Hey, how's it going? Thanks for
+thanks for dropping in uh from Egypt.
+He's over on YouTube if you're not
+seeing that in the chat. Yeah. So,
+there's a lot there's a lot of stuff and
+some of it's silly. some of it's really
+really really silly stuff that I need to
+do like um my friend Marion here. He's a
+fantastic guy. Um anyways, yeah. So, I'm
+just gonna start. So, let's let's take a
+look and see what we have. Make sure I'm
+actually running. Okay, so where am I
+here? GST.
+Why why why
+is it running slow? Okay, so I have to
+go npm. Uh I'm gonna I'm gonna install
+because I just updated from trunk. um
+because Gutenberg 22.5 was released
+yesterday. So I just I've just updated
+with with all that. So we're going to
+run that. Going to install
+I've already updated but now I'm just
+going to install. So npm rundev and then
+we'll wait for it to build everything.
+So we'll run that
+[clears throat]
+building TypeScript.
+Typescript
+make sure it all works. So the the
+latest conversation that we've been
+having is around the picker UI. So um
+originally the history of of this um
+block is it's actually Nick Diego's
+block uh his icon block which has got
+like 400 million installs. It's great.
+And so Nick has graciously donated it to
+the WordPress uh community. So I I I I
+took that on as as as trying to get it
+in. So, it had its own um custom UI and
+I thought, well, instead of using that,
+we should use the data views because
+that's that's the new hotness, right?
+And it's good stuff. And so, I built
+that out. However, um there is a
+bundling. It it it does introduce a
+rather large dependency to um to the
+block library package in the sense of
+it's now bound to the data views
+package. So, uh, did [laughter]
+Kev? No.
+>> Kevin,
+did he quit because you took this blog?
+Yes, that's exactly what happened.
+If you haven't heard, my friend Nick has
+decided to uh move on from Automatic.
+That's cool. Um, I will miss him. Uh,
+he's But now he says he's gonna actually
+show up to to my streams, which I think
+he's a dirty liar because he's not going
+to show up. But anyways, I wish him the
+best and uh hopefully I'll see him at
+some WordPress events and whatnot.
+Anyways, stream hijacker over there. Um
+so yeah, so I built it all out using the
+database picker, which is really cool.
+Worked really well. It's kind of like
+core first looks right, but because of
+that dependency, we're we're kind of
+pivoting back towards using the custom
+one. So, I spent yesterday afternoon
+adding that back in and uh yeah, so
+we're looking at that and we got some
+design input and we got some code input
+and I realized just how rusty I am at
+writing actual production code because I
+forget how to do like anything.
+Some of the errors are so dumb and like
+I would I would be mad at like if I was
+reviewing my own code, I'd be like who
+is this idiot? Fire him. He's he's he's
+garbage.
+So that's that. Yeah. So hopefully I'm
+getting better. Okay, cool. So we are
+building. So that that works now. So we
+got the build process going. So let's
+see what we actually got here. So let's
+refresh the icon block. This is the page
+that I'm working on. So you grab the the
+icon block. Oh no, not that one. Let's
+take this one. So this is the UI that we
+have in place currently. This is the the
+the u non-custom. Well, this is the
+custom one. So there is some some
+search. So if I just do a search for
+audio, you can see I have the audio
+thing show up here. arrow. See this sort
+of stuff. So, it's very very very very
+simple. Now, the other one was was more
+complicated. Uh, which I can actually
+show you that. Can I show you that?
+Let's see if I can show you that. So,
+down here, I just need to import the
+other the other one. So, custom
+inserter. I think I have it as inserter
+modal, I think. Let's look. I can't
+remember. It's called components.
+It's inserter modal. Yeah. Okay. So just
+bring in insertter modal. I will replace
+[sighs]
+that. It's got the same prop
+structure and we can see what that looks
+like assuming it doesn't break. Yeah. So
+you can see this. So this is a little
+bit better, right? Like so this is using
+data views the data view pickers which
+are so cool. If you haven't used this,
+it's really really really cool. You can
+do preview sizes. We can sort by labels.
+We can set the number that we want. It
+handles all your pageionation. It's
+pretty sexy stuff, right? Um and and it
+it does that. So, it's pretty great. So,
+[clears throat]
+but um the the issue is the dependency.
+So, I think we're going to pull this out
+today and then um we'll work on it sort
+of after the fact because we we need to
+figure out some things. And then I also
+got a whole bunch of design input from
+uh Yoan who is uh quite the designer in
+the project here. So we got a bunch of
+stuff. Got to fix a bunch of things. So
+let's just let's I guess we can just get
+into it, right? Um so first things
+first,
+I'm going to undo that change I just did
+and I'm going to get rid of this. Right.
+So I shouldn't have any I should go
+back. Okay, cool. Um, and I think what
+I'm going to do is I'm going to get rid
+of the inserter.
+I'm just going to pull this out because
+it's just a single file, right? So, we
+don't need it uh right now. We're not
+using it. So, we don't need it. So,
+we'll just we'll just get rid of it. So,
+that'll be my first in uh deletion. I'm
+just going to delete it because get is a
+wonderful thing. I can um remove the uh
+data views picker UI
+implementation. So we'll get rid of
+that. And the good thing about this is I
+will I will be able to get it back if I
+need it. So we'll commit that. We'll do
+this.
+So one one cool thing about I don't know
+if you've ever used this the build, but
+oh what am I looking for? What what's
+pulling it in? See there's an error.
+Where's my error?
+Oh, I know where because I'm a dope.
+I'm a dope. Uh, I need to pull it out of
+here.
+And we need to pull insert mold out. And
+then I can over here.
+Refresh that. I'm going to add this. And
+I'm going to commit, but I'm going to
+amend it. Commit the amen. So, it should
+pop up my
+No, I did this last time with
+There it is. Okay. And yeah, we're going
+to do that. We're going to commit that.
+So, if you're not familiar with git
+amend, basically, if you haven't pushed
+your your like if you commit something
+and you haven't pushed it up yet, you
+can add something to that last commit.
+[clears throat] And so, if I look at the
+if if I were to look at the graph, um
+you can see this thing here. You can see
+I've actually changed I've removed this
+and now that last change is actually
+part of this commit, which is really
+handy. It doesn't work if you've already
+pushed it up because you you're you're
+just you got to just do another commit
+for that. But, you know, if you're dumb
+like me and you forgot to add something,
+we can just do it that way. Cool. So,
+that's that. So, I'm going to I'm going
+to sync those those changes up up there.
+And I think Marin, who is amazing and
+apparently is watching. I don't know if
+he is.
+Uh I think you you did some reviews on
+that stuff that I don't need anymore.
+So, I'm going to just take I'm going to
+take a look and see if there's something
+in there. So, this components inserter,
+I think that is the thing that I
+literally just got rid of. So, once that
+pushes up.
+Okay, I'm just going to refresh this.
+And I think a bunch of your notes will
+be outdated. I do appreciate you taking
+the time to look at it even though it's
+code we just deleted. [laughter]
+Oh, [clears throat] is it going to be
+one of those days? What's going on with
+What's going on with GitHub?
+Is GitHub going to be a
+Oh, Eric's back. Okay. Weird. All right.
+Let's see. See what we got. So many
+comments. So many comments. Okay, cool.
+Uh I'm going to just go ahead and say um
+this code
+code is part of the data
+views picker implementation
+uh implementation
+we're moving away from.
+If I click that, I'll do this. I'm gonna
+grab this. I can hit commit. Comment,
+not commit. And resolve that. And I can
+also
+do this. I'll resolve that.
+I'll do this. Commit. Resolve.
+Okay. That one. What is this? This.
+Okay. Yeah. So, comment that. And
+do I think the A? Yeah, I think it will.
+I'm I think uh Kevin uh the question was
+sorry I should uh say what the question
+was the uh Kev is asking if I think the
+AI client stuff will go into or in
+version seven. I think it'll go I think
+it will. Um I haven't heard specifically
+but I know that that's what they're
+working towards. Uh I don't know if
+anyone know there's anyone from the team
+on on here but I that's the plan. It
+would be very cool to get it in there.
+So uh let's see custom inserter
+there was a post yesterday
+a like on what post on make.
+Um
+oh god why is this
+you know what if you have Oh there it
+is. Thank you. Yes. Yeah. I think they
+come on. Why is that?
+Can't click the link on there.
+Yeah. So, there you go. There is a
+proposal. I I don't know. Thank you.
+That's hilarious.
+Oh, okay. Yeah.
+It's update agnostic privacy compliant.
+Yeah.
+Oh man.
+Oh, these comments, man. You spend an
+entire day just going through these
+comments. I love this style of comment.
+I mean, not to shame this this person,
+but okay. [laughter]
+I didn't offer you a coffee. You made a
+comment. Where's Kevin?
+Kevin,
+what sort of guardrails and protections
+have been discussed for users? For
+example, a plugin unintentionally runs
+the users. Oh, both the plug-in author
+and user have any protections here.
+That's a good question, Kev. Um, I think
+like you like
+Yeah. No,
+good questions, Keoo.
+Very good. Good questions. I think uh
+somebody will probably respond to that.
+If not,
+well, I can, but I have nothing to say.
+And hello, Karolina. Good to see you.
+Wait. Oh, you know what? I turned off my
+announcement things. Standby
+events. Let's see. I want to uh I want
+to announce auto shout out. I turned
+that off for my uh my stream last time.
+I don't know if if if any of you talk
+again, it's going to be um Yeah, it'll
+be absolute chaos if it's not done
+safely. For sure. For sure.
+Um
+yeah,
+cool. Anyways, hijacking my hijack.
+Okay, cool. So, let's see. Okay. So,
+custom insertter. Custom insertter.
+Custom insertter.
+>> There it is. That's me conducting the
+song. I don't know if the audio is in
+sync or not.
+Okay. So, let's just see. Yeah, we don't
+need that file. Uh oh, no.
+Clipboard history. This is part of the
+comment. Okay. We're going to get rid of
+that. Gonna resolve that conversation.
+It's been amazing the support that I
+feel like I've gotten on this on this
+ticket. I got Aki jumping in. I got
+Miguel jumping in. I got Yoan jumping
+in. Hello, Bad Dude Court.
+It's it's very very very very cool. Very
+cool. All right. Um, so I guess there's
+a lot of places to start.
+>> Bad duda court.
+So good.
+Sorry. Email from a kid school that I do
+not need to do anything. Duda, it's the
+best. Bad duda
+>> court.
+That's great. Okay, I'm gonna look
+through um some of the stuff there. Aki
+is really fantastic about this stuff.
+What he ends up doing is he he he
+just like he's like I think we should do
+it this way. So what did he change? Icon
+icon insertter content I as a convention
+maybe get a default format like block
+block name child name. Okay, cool. That
+makes sense.
+So I'm going to commit this suggestion.
+I think the CSS is all going to break
+but we can fix that.
+Um okay. So, I'm going to commit that
+suggestion.
+And then, um,
+why does it do that? I need to refresh
+the page.
+Come on now.
+Where' that go?
+Okay. Okay. Okay. Okay. Okay. Okay.
+Okay. Okay. Okay. Okay. Okay. There we
+go. Okay. So, what's this one? Let's
+avoid using selectors from other
+components as any changes to the styles
+of that component may unintentionally
+affect the icon block. Is this class
+name even necessary? I don't even know.
+That's the thing taking I I've just kind
+of copied and pasted all of Nick's code
+in there and like I'm not using some of
+it because he had like icon categories
+and everything which we don't have yet.
+So I think I need to look into that. So
+I'll look into that one. What's this?
+Okay, so we can we can commit that. I
+missed that one.
+Uh, so we don't need that.
+My eyeball
+is itchy.
+Come on.
+Oh god, we're back at the top again.
+Okay, let's just see what else I can
+just commit.
+Uh, okay. Go. And then that's this. What
+is this? What is he saying here? We
+should be able to achieve what we want
+simply by variations of the button
+component. And we could also try
+eliminate many of the CSS overrides.
+I don't know where the uh icon grid. Oh,
+I see.
+Oh, I see what he's saying there. So,
+what's he want to do? Class name variant
+icon
+primary.
+Oh, I see. Okay. So, I'll take a look at
+that. What is this now?
+Modal. Yeah, it's going to break all
+kinds of CSS, but that's fine.
+I got jump back down. So annoying I have
+to do this every time. I gota say gotta
+say, oh yeah, sure. Sorry about that.
+Okay, so I assume that's better. Okay.
+Uh what is this?
+What's he wanting to do here? So,
+[laughter] no, you don't need to go look
+at the PR. Is that zoomed in enough? I
+hope so. Okay. Um, last, you know, you
+know what? I'm I'm gonna Okay, I got
+glasses, everybody. I have glasses now,
+so I can read because I'm 400 years old,
+but I can actually read that fairly
+well. So, I'm not going to wear my
+glasses today.
+>> [laughter]
+>> Anyways,
+uh, okay. So, he's just doing the I
+maybe tomorrow
+I I've been wearing them all the time
+and it's been amazing. Um, it's so
+great. They're specifically for like
+working on the computer, but I had an
+eye exam last week and or two weeks ago
+and the doctor's like, "Yeah, you need
+glasses."
+So, anyways. Okay. Okay. So, I'm just
+going to commit the suggestion because
+this is just changing the class name and
+I'm going to have to go in and just make
+sure all the classes work in the CS.
+>> Oh, you made a wise choice, my friend.
+>> Oh, thanks for the follow. I'm not going
+to say that right, but Smetov,
+thank you so much for the follow.
+Appreciate you. Welcome to the stream.
+Okay.
+Okay. I'm going to look at that one
+manually. What is this? What is he
+asking for here? This is variations of
+the button component. And we should also
+be able to eliminate many of the CSS
+overrides. Okay, so look at that. Before
+we stabilize this block, we need a new
+icon block. This is true. [snorts] So
+Yoan um put together a bunch of icon
+block stuff. You can avoid assigning
+react component trees to trees to
+constants.
+I think we just let feel free to start a
+function if that seems too much.
+Oh, hey. Whoa. Whoa.
+What? I don't even know. I I don't even
+know. First of all, how dare you.
+[snorts] Second of all, you're not
+wrong. [laughter]
+[snorts]
+[sighs]
+I'm just kidding. I'm just kidding.
+[snorts] You're off the VIP list.
+[laughter]
+I I don't even know what to say anymore.
+Okay. [snorts] Um
+I think
+doesn't affect CL. It doesn't affect
+claude. No. Uh okay. Oh, what's this? Is
+there more to hide in there? Okay, I've
+already done that. Does this Doesn't
+this need to be sprinted? Probably knits
+of nit. Let's keep that line. Keep the
+empty line. Okay.
+packages block library source index
+source. What did I change that
+man? Like you know what? No, it's all
+good. I use cloud code all the time. Are
+you kidding? I just don't I I just don't
+show you all because that's how do I
+have
+how do I have four changes? So is
+someone pushing code in here?
+What is this?
+What is this even?
+Is Zachie doing something here? Oh, that
+those are all the manual commits that
+I've just been doing. Okay, I'm I'm
+going to pull down those changes
+[snorts]
+and let's get into some works. Let's get
+into building something here. Okay, so
+that's that's done. Okay. So, let's I
+want to look at what uh yeah, I want to
+look at what Yan was talking about. I
+think there's some low hanging fruit
+that we can just kind of get into. So,
+here it is. So, this is what it is. So,
+it's got the icon block. First of all, I
+need to fix this. This is not This is a
+problem. Let's not do the placeholder
+with button inside. You can use the same
+gray material as the site logo does.
+Okay. I wouldn't even include the upload
+button inside the logo. this just the
+gray material which indicates
+placeholder. Since you already have the
+block toolbar for engagement modal, why
+don't we don't need any actions inside
+the placeholder? Interesting. Okay, we
+should Okay, so let's let's look at that
+first.
+Okay, so what he's saying is in the edit
+or in the placeholder, I don't need a
+button.
+So, but I do need that. Is that is
+um there's a what is the
+shoot? There's a component for this.
+Need to look up placeholder component.
+Um
+let's look up placeholder component.
+That'll be in packages. There's a prop
+to to do that thing. And I think it's
+components
+and source. And I got to go into
+placeholder.
+Just can't remember what the name of
+that
+element op placeholder. So there should
+be I think it's is illustrated is
+with illustration.
+That's the one I'm looking for. So if I
+do this illustration
+I just hide that for now. Make sure my
+build is running. Build is running. Jump
+into here. Place this [snorts]
+[clears throat]
+little icon.
+I don't like that. What do you think?
+Okay, let's
+Oh, I see. So, no label.
+I do none of that. I'm gonna get rid of
+this. And does the place can I can I is
+it self-closing? Can I do this to
+self-closing? I can't remember. May not
+be. Let's see what that does.
+Okay. So, that looks like that.
+So, we add we add the Oh, yeah. So,
+that's all the CSS that broke. Okay.
+Okay. So, let's look at the CSS for
+that.
+I don't even So, I don't need this icon
+placeholder anymore. I think I can just
+I can make Okay.
+So, I don't Do I should I even do should
+I even do this? It's just placeholder. I
+can just do that right in line in the
+edit.
+[clears throat]
+Uh, yeah. Because I don't need that
+anymore. And I don't need this anymore.
+This seems redundant to have this just
+be a shallow wrapper of that. So, let's
+do that. Okay. But the the editor CSS is
+going to bug me here. So, what
+what did we change? That's the thing.
+What did we change? What did we change?
+All the all the um
+all the class names to uh here. Let's
+see.
+Okay, so I need to Okay, so where is the
+Is that what he changed it to?
+Let me just let me just let me just
+I think that's what he changed it to. So
+it should be insertter mode. that thing.
+See if that makes any changes.
+I can't remember what I called it. Is
+that the index? That's the index. What
+is we call this icon inserter?
+Okay. So, [clears throat] everything is
+going to look like that. Okay. So, icon
+insertter. to find that
+right and then it'll be icon and ser
+content dash content
+wait no single dash right it's single
+dash right single dash single dash yeah
+that's fine okay so this would be
+Uh, is that what it was? Let's look
+insert.
+That's a little better.
+Um,
+something looks off there.
+Let's see what it is.
+Oh, this will do it. Um,
+so why
+Oh, that's better. Okay, I'm just
+realizing I didn't think we need that
+anymore because that doesn't exist
+because there's no quick insertter.
+Okay, so that's cool. Oh, no, no, no,
+no, no, no, no.
+I think that's gone.
+Is that what he
+Okay, so I need to change that class
+name. So this is going to be what was
+the format?
+It's the crazy format icon block. Okay,
+so it's like this. So that's the format.
+So in here it's going to be
+insert. No, icon block.
+I can block
+this be like what what do we call that?
+We call that tool bar dash
+toolbar dash content.
+I'll make this
+Oops.
+So, I should have a toolbar in there
+somewhere, right?
+Is this what Aku was talking about over
+here? Okay, I'm I'm I'm I'm I'm in that
+the weeds there. I'm gonna I'm gonna
+just uh
+come back to that.
+Sure. I haven't broken anything.
+All right, that looks fairly good for
+now. Uh okay, cool. So that's that. So
+that was So that's this. So this is what
+he has going on there.
+Um, [sighs and gasps]
+showing the icon.
+I guess we could do it that way.
+Okay. So, that's what he's saying. So,
+maybe we should maybe we should change
+that from add icon to choose icon.
+Choose icon.
+just to be a bit more consistent with
+what he has going on there.
+So, let's see. Oh, this one says choose
+icon. That's nice. Okay. So, then this
+says replace.
+Now, question is should it be replace
+icon? I feel like it should. I feel like
+it should be
+because if you if your toolbar So, like
+if you had a a toolbar up here for
+example, right? And I click that. What
+does replace mean? Like what am I
+replacing?
+I feel like that's what we should do.
+Like I think that's replace icon,
+right? Replace it. Cool. And this says
+choose icon. I don't know. I like that.
+I'm going to go with that.
+That's what I'm going to do. That's what
+I'm going to do. Um, okay. So, I have a
+lot of changes in in here that I've uh
+What do the other blocks say? Well, the
+site logo. So, if I do like site logo,
+it says choose logo. interesting
+up here. If I choose this as my site
+logo. Oh, it says replace. So, maybe I
+should just stick with with replace.
+Okay, we'll stick with replace.
+Just going to say replace. Choose icon.
+Replace. Done. Done. Amazing. What is
+this in here? Okay, so uh Okay. So, I
+think what I'm going to do is, like I
+said, I think I'm going to get this out
+of here.
+Um, and I'm going to bring it into the
+actual edit. Not there. The actual edit.
+Um, because we just need
+components. Just going to bring in
+placeholder,
+right? And then the placeholder is
+somewhere down in here.
+So instead of that,
+I'm just going to render placeholder and
+that way uh
+I don't need that. So bolt has not been
+imported, but that's fine. I'm going to
+just import that from here for now.
+Where is it? Um,
+customer
+bring in here. That's not going to be
+the right path though. Get icons from
+icons. Oh, wait. Do I have is icons?
+Bolt is an icons. Okay. Yeah. So, I can
+just pull in
+Okay. Uh I think I have to do it this
+way. So I can go uh import default as
+and then bolt. I think I think that's
+the correct syntax.
+I think that's the correct syntax,
+right?
+Getting the default export as that and
+then pulling in bolt. See what that
+does. And then I should be able to
+replace this.
+Okay. And yeah, that seems to work.
+Seems to work. Okay. Sure there's no
+errors in there. Okay. That's built
+properly.
+Okay. So now what I should be a able to
+do now is in uh I should custom insert I
+should just be able to get rid of this
+entirely. So I should not I I will just
+get rid of the I got the placeholder
+right and delete delete the placeholder
+files entirely. So the only thing I have
+now is a single component right make
+sure that that builds. Oh my god. I will
+say this, like I I have a spaceship
+computer, but when I'm when I'm running
+like Gutenberg build, it's like things
+get slow. Things get slow, man. All
+right, let's see. That works. I'm just
+going to insert the icon block. Go
+through the whole process. Choose an
+icon. I'll pick the box icon. Sure.
+What's in the box? And look, we can do
+background colors and we can do text
+color. Let's do a different text color.
+There we go. Do a little bit of size
+action. Whoop.
+There we go. Okay. So, I think that's
+working. What do we think? Thoughts? No.
+All right,
+that's cool. Let's keep We'll We'll keep
+on moving here. All right. And so, edit.
+Okay, that's all good so far.
+All right. I want to make some changes
+here. So, I'm going to get rid of the
+placeholder.
+Um, probably. It's probably it's a good
+that's a good good question. Uh Betted
+Court is asking this. Um I think it's
+probably Webpack versus whatever else
+you want to use. There's a lot going on.
+It's also could be that I have um I have
+a lot of things going on in the
+backwards. Like if you notice down here,
+but you probably can't see it, but um
+let me just uh move this up a little bit
+so you can see this. See this? No, you
+can't. My stupid head's in the way. This
+thing. See? And pay no attention to
+that. But this is like it's still
+running. It's still doing its thing,
+right? So there's some some stuff going
+on in the background there. So So part
+of this could be me to be honest for for
+being honest.
+[snorts] Uh okay. So we're going to get
+rid of the placeholder. We're going to
+get rid of the import for the the
+placeholder. And then in the edit, we're
+going to import all that stuff. And
+we're going to change I changed some
+block stuff. Cool. Uh and then this. So,
+we're going to say, okay, this is going
+to be place
+uh placeholder changes
+changes
+um
+simplifying
+simplify the
+placeholder
+and um
+update CSS uh selectors.
+um the CSS collect. Okay, so what's cool
+about this is when this is running, you
+see it's not just immediately committing
+what it's doing. Oh my god, am I
+dropping frames or anything? Oh, see we
+got a little command output. So this is
+because there's like this husky thing
+that's running back in here. So here we
+go. So I got some errors. So it's all in
+the editor.css. So let's look at the
+editor.css and see what the what it's
+actually yelling at me about here. So
+the first thing is editor.cs unexpressed
+white space on line 17. So line 17.
+Um
+there you go. Unexpected white space.
+New uh expected lon line. Okay. On 17.
+Weird. Okay.
+And the way that you can run this, you
+can go run npm uh npm run lint
+CSS. I can just lint the CSS in the
+background. What happens when you commit
+it? There's a there's a get hook that's
+running on the pre-commit and it'll tell
+you that there's like um some stuff
+going on here. So, what is this on line
+136? There's a there's a duplicate
+selector.
+I need that.
+There's a duplicate selector
+first used at line six.
+Okay. I have to figure out what that's
+about. Um,
+so does that mean I I can just grab all
+this? Well, it does. That is what it
+means. But if I grab all this then and I
+pull it out out of there and I just drop
+it in
+just maybe do this. Drop it at the
+bottom. Get rid of this duplicate
+selector. and then we'll figure out what
+the problem is.
+>> All right, let's run the my lint again
+[snorts]
+and see if that passes.
+Okay, we're good. It It didn't It didn't
+do anything. I think I'm gonna um
+So, I should move this up higher so you
+can actually read it over my stupid name
+there. Okay. No notifications. Yeah.
+Wonderful.
+All right. Cool. Okay. So, that's that.
+So, I'm going to just make those those
+editor changes. The other thing that you
+can do is you can run npm
+run npm run lint and you can say js as
+well. [snorts] Typically, this isn't an
+an issue here because I have prettier
+setup. So, it it it'll automatically
+format everything. And sometimes it
+actually just runs out of space. It just
+runs out of memory when when it's doing
+it. It's kind of crazy. Um,
+oh man. Okay. I don't know what's doing
+there. So, I'm I'm just gonna I'm I I've
+re I reststaged those changes that I I
+just made. So, I'm going to commit this.
+It's going to run the Husky um
+pre-commit hook in the background. And
+if there's any more issues, it'll pop
+up. And if there's not, it will just get
+There we go. So, it just committed.
+That's good. I'm gonna just cancel that
+because I don't care. I I don't care.
+But let's look and make sure we didn't
+uh break any of our
+CSS in here. We'll replace that. Looks
+like everything is relatively good
+there.
+Size is a bit weird. Okay. Uh awesome.
+Okay. So, that's that one. Uh oh, I got
+failures. Why do I have failures? Oh,
+you know what? We'll figure it out. Uh
+okay, so where was I? So, we've sort of
+we've sort of done this. That's good.
+So, you know, just the gray material
+which indicates placeholder. when you've
+already had the block toolbar. So, we
+don't need any actions. Nice. We should
+update the icon. Okay, so this is cool.
+It's hard to get this right, but I think
+the fastest way to get this going is
+just to add something that isn't
+lightning bolty. And I made this. So,
+we're going to copy that and we're going
+to update
+the the icon. So, the icon in here is
+going to be export const. And we're
+going to call this uh icon block
+icon.
+I'm just going to call it icon. And then
+can I can I just paste that in there?
+I have to go away.
+I have to do this. I have to do this.
+To do this.
+Okay. And then over in the edit, I'm
+going to import uh um call it icon from
+icons
+and then wherever I was using bolt was
+down in here I think placeholder but
+boop and then I'm also using it in the
+in here we're going to say we're going
+to import bolt from icon or icon from
+icons
+and that should give us
+save this d I never see another icon
+in in in my life, I'll probably be fine
+with that.
+Okay. So, there's there's the icon
+block. That's what it shows up as. All
+right. That's cool. So, let's uh make
+sure that let's pull the old icon out.
+We don't need the bolt. And we'll just
+do that.
+And hit the mic. All right. So, let's we
+got here. So, this is
+icon. Icon icon. Okay, we're going to
+say update
+to the I icon to use
+update the update the block icon.
+Okay, we'll commit this. We're moving
+getting stuff done today. I'm excited.
+I'm excited.
+Oh,
+getting trolled in the being trolled by
+a certain owner. of an SEO framework
+plugin in the in the Discord. Sorry, I
+kind of just zoned out there. All right.
+Okay. So, we'll update the the icon
+block. Get that [clears throat] going.
+I don't know why this thing is doing Oh,
+you dirty son of a what? icon edit.
+Well, what have I done? Okay, you know
+what? I'm gonna close. I got too many
+windows open here. So in here I got edit
+on 30 and then 39
+30.
+Oh, okay.
+That's the problem. So we're going to go
+I'm going to call it icon as block icon.
+We'll do that. And I will replace
+block icon
+or icon with block icon down there. That
+makes a bit more sense. It's weird that
+it didn't actually tell him to join the
+stream. Yeah. Yeah. if he wants.
+He won't join the stream.
+I don't I don't know if I It's not that
+he's not welcome. I just don't want it
+to devolve into like you know anyways
+I'm just going to do a Hold on. I'm
+going just do a
+Oops.
+There. I'm there. Sorry, I I just did a
+laughing emoji.
+Anyhow, okay, so let's put that in. So,
+that did that. We're going to do that.
+Oh, there was another thing I have to
+fix in here, too. Okay, cool. But we'll
+we'll get there. We will get there.
+All right. Let's uh let's push that up.
+Okay. And uh back here. Okay. So, we've
+got the icon.
+Icon is an open. Okay. That is an open
+question. The caught if I
+General using sentence case cross with
+the exception things like block names.
+Are these exception the exception or
+should be sentence case? Not sure. It's
+a good question. I'm not really sure
+what we should do there. Um I don't
+really know what we should do in that
+particular case. Um
+okay, let's make the let's make the icon
+smaller, which I think I'm just
+controlling directly in the the icon
+grid. I think I'm I'm setting it. Yes,
+we'll go. Is that 48 24 pixels? That's
+what I have to hardcoded, but
+let's have the size to see more once.
+Okay. So, you know, it's really I I
+don't know if if you all feel this way,
+but for me, when I have like defined
+lists of like I don't like this fix, it
+just makes things go a lot a lot
+quicker. What I what I don't enjoy is
+open-ended like maybe we should do this,
+maybe we should do that. it. I don't
+find that fun. It's hard to to develop.
+Um it's hard to like affect
+feedback. I don't know. That That's just
+me though. That's just how I am. Aki
+Hanmano, you're in the chat. You say hi.
+Ladies and gentlemen, the man, the myth,
+the legend.
+I don't know if he's in the if he's
+gonna say anything, though. Sorry to
+call you out. And is it weird for me to
+call out people in chat that aren't
+aren't that aren't chatting? Like
+viewers that aren't chatting. There he
+is.
+I wanted to say thank you, sir, for your
+help on on this this poll request.
+Without you, I would I probably wouldn't
+be able to get them.
+>> There we go. There he is. Um, okay.
+Okay. Some of these things I don't think
+I'm going to be able to actually
+implement.
+Well, you see that's bad, dude. That's
+not a bad idea. And there was there is a
+preview there was a preview slider that
+was in there, but I took it out um
+just for the sake of simplicity. Um
+just for the sake of simplicity. So
+maybe that's a question I think I I need
+to uh I think think that's definitely a
+question that I need to
+bubble up and see. Um
+yeah, in the data view. Yeah, the data
+view was awesome tip because you can
+zoom it in. There is that thing, but um
+yeah, I guess I could probably add it
+back, but I don't know. We'll see.
+>> [snorts]
+>> Okay. So,
+okay. I fixed I'm just gonna I'm just
+gonna like um
+this just adjusts the size. Okay. Yeah.
+Yeah. Um
+smallifies
+uh make the logos
+icons smaller
+in in the modal.
+I have a feeling that you might be right
+that there's going to be people that are
+saying that's too small. I can't read
+it. And I may be one of those people,
+but that's neither here nor there right
+now. Okay. So, not so this is an
+open-ended question. I don't know what
+we can do here. This is So, what he's
+talking about is the name of Where is
+it? Um, where the hell is it? There it
+is. So, when I go in here, it says this
+name. So what he's talking about is
+should this name be add template
+uppercase or like template uppercase or
+template a lower case?
+I don't know. Um his point is that most
+things are sentence case um across the
+um custom
+that was one thing that he wanted done
+too is that making that sentence case
+instead of
+um uppercase. So let's go make modal
+title sentence
+case.
+But his point is we don't do it with
+blocks. So I I would imagine I would say
+that we probably don't care personally.
+Oh, what? How can there be a problem
+there? Do Oh, CLX
+defined but never used.
+Okay,
+that's weird. I didn't didn't call that
+out before.
+Where did that custom inserter index?
+Oh, don't need that anymore.
+Strange. I wonder where did I where was
+it being used that I took it out of? Is
+that Did they do something dumb?
+Let me change one thing. Oh, it's
+because Okay, because the file was
+staged. So what happen so so sometimes
+what happens with the um um the githook
+is that if you don't stage it it won't
+check it. So I must have removed the the
+dependency for that the that that what
+what is it the clx the the class
+toggling package which I can't remember
+the name of. Um I must have removed that
+and not staged this file for commit at
+some point. And so now it's it's it's
+checking that. So we're gonna we'll run
+this again.
+Yeah. So the point that he's making is
+that blocks are done uh non like if you
+have a two like media and text. So what
+what is that camel case? That's camel
+case, right?
+Um and so I think that like the icon
+should probably follow that. I'm not
+sure, but
+it's a small fix. I just need to
+basically
+do some rejaxing on it or something but
+okay so [clears throat] what's the next
+thing
+okay so the label so what's he saying
+here so okay so ask AI well I mean the
+project's got a standard that it's going
+with so it's either going to be camel
+case um as we do with the blocks
+uh or they're going to be sentence case
+I think I don't know they're formal
+names so I think they should probably be
+Let's be careful here as it's important
+and until we get text wrap pretty
+applied to text help.
+Yeah. Yeah, they are.
+Kevin's arguing with me like usual.
+Importantly, it depends on where you use
+this icon whether it should have a label
+at all. If it's purely decorative, it
+should not have a label. If it's inside
+a button and the button is labeled, it
+should not have a label. Which means
+arguably in most cases it should not
+have a label. sharing this as my
+personal understanding and I think
+that's no
+this is the the sort of thing where
+somebody higher up in the project it
+says do it this way and so I'll I'll do
+that
+okay so the thing about this is that
+it's not
+it's Not. Um,
+okay. So, what he's talking about in
+this label is he doesn't like this. What
+is he calling the the typographic widow?
+This little thing here, right? Um,
+I'm not ignoring you, Kev. Well, I am,
+but
+um, so because so the L so this label
+thing is a real it's a thing. it's
+difficult because depending on the
+context in which this icon is used, it
+may or may not need to have certain area
+attributes added to it. Um, and so what
+we're doing in it is basically based on
+the the existence of a label. So if it's
+if it's a
+okay, so if it is used as decorative
+only, if it's just a a thing on the
+page, then it you need to basically have
+it hidden from screen readers. So you so
+if if there's So what we're doing if
+there's no label, then we're setting
+area hidden to true and we're setting
+focusable to false. So that's making it
+go away from screen readers because we
+screen readers don't need it if it's
+just decorative. There is a label then
+we're assuming that we need to have it.
+So we have to add the the image the roll
+of image to the SVG itself and then the
+Arya label goes onto the SVG itself as
+well. [clears throat]
+Um, and so but then there's the whole
+thing of like if it's inside of a button
+or inside of an interactive element,
+which currently you can't put this
+inside an interactive element. So that's
+a use case that's not h not not possible
+right now, but will be possible in the
+future. So
+um
+I'm not really So we just have to we
+have to demonst we have to to sort of
+indicate that where did I put this? So
+this is what I'm I put together which is
+horrible but it's like briefly describe
+the icon help screen reader screen
+screen reader users believe blank for
+decorative icons and what he's saying is
+describe the purpose of the icon leave
+empty if the direct if decorative or
+used inside a wrapping button. So maybe
+we just start with that
+although it's not inside a wrapping
+button because it can't go inside a
+button. So,
+um,
+this kind of like, yeah, but there's
+there's a well actually on this, which
+is awesome. Um, okay. So, he's asking
+me, do we need background? Imagine you
+wanted a background color, you'd add a
+wrapper. You can't link this thing
+either. So, you can't make it an icon
+button. There's also no corner radius,
+but there is. If we can, I'd do this. We
+can't do that because this is a custom
+control. So, what he's talking about
+here is if I go in here, I go into
+styles. This this handles the the
+background, but there there is border.
+You can put border stuff on here. I
+don't know why he thinks you can't, but
+it is it is possible to do a border,
+a really good looking border like that.
+Um,
+but what's actually happening here under
+the hood is being out is there's a a div
+that wraps this SVG that gets output. So
+we're put we're assigning the background
+to that
+because these are all block supports
+that gets assigned to the wrapper. So if
+we look at the output of this for
+example this thing you can see I have to
+zoom in not there.
+Zoom in here you can see that we have
+this SVG that's wrapped inside of uh
+which one is that? Yeah. So we have we
+have this div that's wrapping the the
+SVG. So because this got no label, it's
+getting these ARA attributes, but it
+gets all of this stuff applied to it. So
+this is where the background is, and
+then this is just getting some CSS that
+inherits the current color of the
+wrapping div.
+So I don't know if I I don't know what
+what we'd have really need to change
+here. Um, we can't do this because this
+is a custom control for we're using the
+color control. We need to do a custom
+control for this and there's no way of
+modifying that which is a bummer. Um the
+width thing is again wid it's it's
+definitely it's a width thing. Uh so
+it's a block control. I mean so I mean
+maybe
+he's he has a good point. If you're if
+you're editing the width of this thing
+you can make it like a million pixels or
+you can make it zero. Well, you can't
+because we have we have something in
+place, but technically you could put
+zero in and it wouldn't be visible. So,
+these are sort of these are some
+open-ended questions. Um,
+so one of the one of the the things that
+this block
+got like one of the sort of requirements
+of of of this block is that the controls
+that we want that we're using are all
+block supports and we don't have a block
+supports. This is a custom one. Well,
+not custom one. I'm sorry. This is one
+that was added. So, the width doesn't
+have the stepped ability. So,
+uh we can't do that. This we can do. We
+did that.
+Okay. So, he's talking about categories.
+We don't really have tabs and categories
+here yet. Um,
+so I don't know if we can do all that,
+unfortunately. Um,
+so we're sort of stuck. these things. We
+can't do this. I think we need text and
+we need background. I mean, it'd be nice
+to be able to override this and have it
+say icon, but I don't think that's
+possible. Is that is that actually a
+thing?
+Is that actually a a thing somewhere?
+Just use the font size control.
+The font size control on what?
+Oh,
+will that work? Interesting.
+Feels like a bit of a hack. But if I go
+like the font size 20 pixels, I don't
+think that's going to do anything here.
+Uh, let's get rid of width.
+I don't think that'll work. No.
+No icon side. Yeah. So, what he's asking
+for is basically custom control, but we
+aren't using custom controls for that.
+Now, the thing is I didn't I just sort
+of added that in, but I think it makes
+sense for us to keep it because I mean,
+if you can't colorize it, that's kind of
+not really that helpful. Like, imagine
+you couldn't colorize this like like you
+couldn't match your theme color. Um,
+you'd have to do it entirely in theme
+JSON
+or some some custom CSS or you like what
+what he was saying is you'd have to I
+wonder if I wonder if that would work.
+Let me just um choose an icon. Let's
+pick this circle field icon. We grab
+that. We wrap this
+by group it. And then in the group, I'm
+going to set a background color of
+yellow and then the text color of blue.
+That that works. But I think it's
+because I have this I think it's because
+I have the CSS. But that's not what I
+want. That's not what we want at all.
+I I think we need to keep it. What does
+everyone think?
+I think we need to keep it
+because like doing this this is great
+but it's going to be you know not that
+helpful. You know you have to do things
+inside of things and do all of that and
+I think we need to keep it
+slurping coffee into the mic. Sorry
+about that. Sorry about that.
+Uh, okay. Cool. So, we can't we can't
+really do any of that stuff. We've done
+that. So, this thing again, we don't
+have categories yet, but we we're not
+going to do that. Okay. So,
+[clears throat] uh, Aki is saying that
+this is unnecessary. The block insertter
+doesn't have it. So, let's get rid of
+it. I don't think we need it. I agree
+with that statement. Custom insertter.
+So, where is the
+social icons? Isn't there a block that
+similar color control already? Maybe.
+Let's look.
+Let's see. But the thing is it's if it
+is, it's probably going to be uh custom,
+right? So I add in there. So
+social icons
+icon color
+icon thingy. Yeah, I bet these I I would
+would imagine that these are um custom,
+but let's look. Let's double check. So,
+we're going to go packages.
+Uh what am I looking at?
+Right. Block library. Sorry. Block
+library. Source
+social.
+social links. Let's look at the um
+edit
+Huh?
+Sports
+color background text experimental
+default controls spacing.
+So how interesting. I wonder how it did
+that. So background true gradients true
+text is false. So it doesn't have text
+has background. We saw that. So it
+doesn't have
+Okay. So in the edit I should have um
+there should be
+social links edit
+social
+use effect okay I don't care about that
+last name use block props color settings
+icon color
+tools panel Settings. [snorts]
+Select control. What was this? Size.
+Oh, with colors.
+Oh.
+Maybe I can do it. What is this with
+colors?
+[snorts]
+Color gradient settings dropdown. Is
+that what that is? AI knows. He knows
+everything.
+Oh.
+Okay. So, okay. So if I use that
+group color settings map unchange okay
+so we got key social color experimental
+settings color value label so where's
+the label come from
+okay what oh color settings color
+settings
+so that's defined up here somewhere
+Where?
+Where the hell is it defined? Color
+settings
+icon color icon value icon color. Okay,
+so we could do that with this, which is
+not a block. So I could go down this
+row, but I'm worried that what's going
+to happen is
+um
+I mean this is now two way two two Okay,
+you know what? I think we can do this. I
+don't think there's any issue here
+because it's going to have to be um
+it doesn't make the background and all
+that stuff doesn't make sense. Okay,
+this is what we're going to do. So, use
+custom attributes to fall back to
+prevent loss of named color selection
+when you switch to the to new theme does
+not have a matching named color. Okay,
+sure.
+Um,
+but I I don't want to store it as an
+attribute though. That's that's the
+thing. Is that what this is doing? This
+is going to it's going to restore it as
+an attribute, right?
+Correct. Yeah. Oh, no.
+I don't think we want to store that as
+an attribute.
+I think we just want to use the
+you know what would be really great is
+if in block supports you could actually
+you could provide a way to filter and
+change the name because that would solve
+everything. If it was just like icon
+color icon background color then we're
+done. We could do it that this way, but
+I think if I'm not mistaken, Aki, you
+know, I'm pretty sure this means you
+have to save it as a
+you have to save it as a um attribute,
+which we don't want to do. I I don't
+think that makes sense to save it as as
+an attribute
+because then if it's saved as an
+attribute, the value is saved, then you
+switch themes, you have to go and change
+all your icons.
+I mean, you probably have to do it
+anyways depending on how you've named
+your your um your color variables, but
+I don't know. It feels like feel like
+this a lot.
+Okay, but we're going to get rid of this
+because I agree with you. And where did
+I where is it? Content header is in
+here. Content header. We got this little
+search results.
+We can just get rid of that.
+So
+I don't need this.
+And then show icon results, right?
+Okay. [snorts] Don't need that. And then
+Oh, there's some CSS in here, too. I
+think I I can get rid of
+that. I don't need Oh,
+I don't need that either.
+I remember, right? I shouldn't have uh
+Okay, perfect. Okay, so we're going to
+get rid of that. Um,
+remove uh what do we call this thing?
+remove.
+Um,
+okay. Let's make sure
+that there. No, thank you, Aki. Thank
+you for um
+reviewing all this stuff. course. What
+is this? What's he dealing for now?
+Okay. 37. 37. It's probably just like an
+extra 30.
+You know what? I bet it's that
+sometimes. So dumb.
+All right. So we'll sync those changes.
+Okay. So I'm going to mark this as
+updated
+removed.
+And I'm going to comment on that and I'm
+going to resolve that conversation.
+Okay.
+Okay. What is happening here? So, this
+is asking me, let's using selector. So,
+this is the that's this selector I'm
+assuming you're talking about.
+Is this class name even necessary? It
+may not be. I don't know. Let's
+I don't know. Is it necessary? Let's
+see.
+[snorts]
+So what is it doing here? Um
+what what is Baron asking if it's
+actually necessary or not?
+Okay.
+So, we kind of want it centered, don't
+we? Assume that we want that center. So,
+get rid of that. So, I can just like
+just do this with like a simple CSS. We
+don't even need it
+because no results fun. So, why why is
+Let's get rid of this. We don't need
+that. We absolutely don't don't need
+that. So the only thing we need to do is
+center this. Right.
+Right. So this is this just literally
+all it's doing is getting no results.
+Okay, we need to change that that class.
+And then like what is this getting that
+it needs? So if I just do like what like
+text align center, is that all it needs?
+I feel like that might be all it needs.
+Okay. So, let's let's let's change that.
+Okay. So, this is going to be
+um Hold on.
+So, it's going to be
+inserter insertter content. Insert
+content header. This is going to be
+inserter
+content
+inserter content
+content dash grid no results. Okay. Oh,
+I get it. Okay. So, let's go.
+It's going to be insert. Okay. It's
+going to prefix with insert a content,
+right? assert content and it'll be dash
+no dash no results.
+We can get rid of that. Does that make
+sense?
+All right, Kev. Thanks a lot.
+Well, I I don't think the icon is in
+there, right? So, what is this? This I
+want to look at this. I want to just
+make sure that these these names make
+sense. So we got
+content header
+content grid. Okay. Content- grid. So
+this is content should be I guess it
+should be content grid no results,
+right? Content dash grid no results. So,
+what we So, we need this to be unless
+you want to just do an inline style, but
+we need we're going to need that.
+So, let's go.
+So, this is
+Why do we need Okay,
+so I don't know why we need Where or
+where' that go? in here. So, let's put
+this in here. And this is going to be
+that.
+And we'll see. We'll see if that gets
+everything it needs to get. So weird.
+That didn't get the CSS it needed. Let's
+make sure this is building.
+Okay. There's a bunch of stuff in here I
+have to figure out.
+Okay. So, it should be center. Okay.
+Super strange. Let's
+grab the place. Do this. Is it getting
+any kind of like
+I don't why do we care? Okay. Margin top
+that display flex
+flex direction.
+Okay.
+Okay. We'll just do that and that'll
+work.
+Okay, that's good. Okay. Um, weird.
+Okay. All right. So, I think we've fixed
+that, right?
+So, there should be no like weird. So,
+these things these things are
+interesting. So, icon list icon icon.
+This is
+so this should be um prefixed
+differently, right? Insert a content
+grid icon like this. No results. Search
+results. No results.
+Okay. Um,
+okay. I don't think we need that. It
+doesn't make it doesn't make any sense
+to me to actually show the like the the
+block icon in there. Like if it's no
+results, there's no results, right? It
+just just shows no results,
+right?
+It's weird.
+I keep typing the same thing. It's gonna
+Okay.
+Okay. So, where is it? Oh, it's almost
+noon. Okay, so we're making good making
+good progress here.
+So, what we got in here? Um, this is
+I'm feeling like we can probably get
+some So,
+is this in the in the icon grid as well?
+Okay. Yeah. So, this is the other thing.
+All right. Thanks, Aki. Thank you for
+your help on this and for hanging out.
+It's like midnight for you, isn't it?
+I'd imagine so. All right. Have a good
+one.
+Um, okay.
+We should be able to shape what we want
+by simply using variations of the button
+component. We should eliminate any many
+of the CSS overrides. Okay, cool. So, I
+think we can look at that. So, if I
+understand this correctly, we have a
+button thing in here,
+right?
+And
+do I have access to 4.7? It's not. So
+there is no release candidate yet. Um so
+beta 1 is coming.
+>> Uh WordPress 7.0 beta 1 is scheduled for
+like the 19th. So uh so yeah, so we
+don't have the release candidate yet.
+Um, but when we do everyone, like as
+soon as it's out, like as soon as it's
+available, everyone has access. There's
+no like special access to it. It gets
+released.
+Um,
+it gets released when it gets released.
+Uh, you can I mean, you can go and get
+drunk and and and see who that is, but
+uh but there is no Oh, you're joking.
+Oh, shut up. [laughter]
+You know how many times this has
+happened to me on stream where somebody
+like says something they ain't joking?
+I'm like well actually let me explain
+that to you in great detail and it's
+they're like no I'm an idiot. I'm
+joking. So yeah, fine. Whatever.
+Whatever. I don't I don't even care
+anymore. Don't even care anymore. Uh
+okay. So let's just see. So this has no
+what? That is not a thing that we even
+need to worry about. Okay. So there's
+some redundancy in here that I want to
+get rid of. I'm gonna focus on this icon
+grid a little bit. So, we have this no
+results. So, I think what we can do is
+do something a little bit more in line.
+Uh something like this, right? So, if we
+if there's no icons, then we're going to
+show this. So, now we can get rid of
+this because we don't need that.
+Right? Otherwise, I think we can just
+like do it completely in line,
+right? I think we should do it that way.
+Um, there we go. So, now this is just
+completely in line. This this actually
+um Marin had has a good point somewhere
+in here. Uh, somewhere in here
+somewhere. Where is it? Um,
+this part uh react components trees to
+constants. I think it um Yeah. So,
+that's what what what is this? Delete.
+Okay. So that's what we're doing here.
+So we we we got rid of all those
+functions and we're just going to inline
+it because this is pretty
+straightforward stuff. Um
+and so this this has no icon fill. No
+idea what that is doing because we're
+not actually using that. Um so that's
+going to go away. That does remind me
+that there is a has no icon fill in here
+somewhere. Let's see how many options.
+Okay, there's only one. I'm going to get
+rid of that. And I don't know why we're
+doing a fill.
+That thing keeps popping up. It's
+annoying. Okay. So, there's some
+definitely some some clean up I have to
+do in here. Um,
+okay. What is this?
+Okay. So, we're going to inline
+this stuff. Oh my god. Let's just get
+rid of these things. Here we go. And
+take a look at this. So, this is the
+inserter grid.
+So this should actually be named. Okay,
+let me just find all the instances of
+this.
+Um,
+so that's the only place.
+Okay. So this shouldn't be insert. This
+should be
+like that. And we will
+it should be this actually. So this is
+the full inserted grid. We'll get rid of
+that. Name that correctly. So this is
+going to be.
+Okay. So we're going to do this.
+Going to add that. Oops. I put that in
+the wrong place. We're going to do this.
+So I need to find all instances of this.
+And it's going to be CSS. It's going to
+be some CSS in here. So, I got to find
+this. So, this is going to be changed to
+this whole thing.
+I don't know if my names are getting a
+little bit ver verbose here, but
+icon list. So, this is going to be
+item.
+Okay. I have some redundancies in the
+CSS I got to figure out
+time is Oh, it's new. Okay. Um there's
+some redundancies in here that I got to
+get working here. So, this is going to
+be
+this is the icon list. So we're going to
+do this be icons list dash item
+dash item
+these these these CSS these names are
+hysterical I wonder
+so item this be icon this be
+title
+See what I broke.
+Okay. Something. Okay.
+Feel like this is going to give me some
+grief about redundancies in a second,
+but have to figure that out
+because [snorts] there's definitely some
+CSS stuff that needs to be addressed.
+That didn't fix it.
+So that's still
+so that means it's not getting
+so it's getting the is active.
+Oh, I I think that was it, Paul. Thank
+you. Let's take a look. Yeah, that did
+it. It's not getting that color. It's
+getting the spacing better, though. So,
+the color is
+Oh, I got to figure that out.
+So, there's something about the admin
+color. What is this? Uh oh, that's it.
+Yeah, that did it. Okay. So, that should
+fix that. But I still think there's some
+redundancies that we can probably
+address. That's not getting the right
+color. What is the theme admin color?
+No.
+Heat.
+Okay, I'll figure that out. [sighs]
+>> [gasps]
+>> I think I need to like look at this and
+just sort of figure out why it's doing
+this.
+Check something. There was like a
+CSS thing I got rid of.
+has no has no icon fill.
+Actually, what I want to see here is
+this. What is this? Somebody doing this
+hide has no icon fill.
+What is
+What is it? has no icon fill. Let me put
+that back for a second.
+I Okay, so has no icon fill. So that
+that is the class. If I put that back, I
+feel like something's doing something
+there. And I put that back over here.
+Just
+see what that does.
+Oh yeah, that'll do it. What's this
+problem?
+Icon is not defined.
+Icon is not defined. Where's it? Where's
+the icon? Oh, I don't need that.
+Oh, come on, Ryan.
+That seems to be working. So it's the
+CSS,
+right? So fill is none color. So I
+wonder if
+th this this class is being applied
+somewhere.
+Let's see.
+Just want to check something.
+I'm not wrapping my head around why the
+CSS is doing what it's doing. Like what
+that that's getting the right thing, but
+it doesn't need this. So I get rid of
+this because this class will never will
+always be applied
+or will never I don't know. Probably
+never be applied. I don't know. I don't
+know. Let's see. So I replace it. All
+right. See, it seems fine now. So,
+everything looks good there.
+Uh, okay. So, icon grid. We got this
+back to where it needs to be. That's
+fine. What is this? Icon update. Icon at
+icon name. What is this? HTML render.
+Okay, that's fine.
+Okay, so that's looking better.
+Um,
+I think it's looking better. Let me just
+do this now. I think if I if I run some
+CSS npm runs, um,
+I want to lint the CSS, I'm probably
+going to get a bunch of yells a bunch of
+yells at me.
+Probably gonna get some like [sighs]
+expect Oh, maybe not. Expect this in the
+space before. Where is that on 62?
+That'll do it. Okay, let's run that
+again.
+I thought there was some duplicate
+things, but there is not so far.
+Okay. Um,
+okay, cool. Now I'm going to um
+clean up
+clean up the modal
+icon grid
+view. All right,
+I'm going to commit that and see what
+happens. And then I'm going to use cloud
+code for something. I love using cloud
+code for this stuff. Uh while that's
+running, I'm going to do this. I'm g I'm
+gonna start Where is it? Okay, in here.
+Let me say um look
+um is are
+there any uh unused
+or unsu unused
+or redundant
+CSS selectors
+in the icon block code.
+I love doing this.
+That's what I use it for. This kind of
+stuff or I say find me an example.
+Actually, one thing that I was doing was
+um
+uh I'll show you. So, is it It's
+running, right? It's running. Okay,
+cool. Um so, like in the edit for
+example, there's this thing going on
+which I'll talk about super briefly.
+This unstable mark next change is not
+persistent. So, I didn't know what this
+did. um I was told that I need to use it
+because what we're doing here is when
+you when you change the value the width
+value to anything less than what the
+default is. Um this changes it back to
+the default which we've set at 48. But
+you have to call this and this is in
+sorry this is inside of a use effect. Um
+but if if you don't call this this
+basically adds it to the undo stack. So
+if you undo it, it'll get you in like
+this weird loop where like it goes
+around. So this is basically saying
+don't add this to the undo history. And
+so I had never really seen it used and I
+wanted to get an example of it. I'm like
+here so what was a good example of this
+in the found for me is amazing. So this
+is still checking. Here we go.
+There we go. It's funny is not
+referencing any JavaScript code. Cool.
+Is using the variant tool toolbar
+variant is not interesting. Missing
+unused classes class D isn't used in
+content but has no response styles.
+No customs needed. Okay, cool.
+Recommendation.
+Okay, cool. Please remove
+the recommended
+recommended
+like this has saved me hours [laughter]
+of digging through it especially because
+I'm not a very good I'm not good at
+front end stuff so u I'm getting trying
+to get better but um
+um but yeah that's that's the plan. What
+is this?
+Yeah, sure. We'll get rid of that. So
+hopefully this doesn't make any
+really stupid things. Hey, you know,
+it's great. Very excited about this. All
+right, 28 lines of code of use code.
+Okay, let me uh let's check it. See if
+there's any any weirdness place.
+Everything looks good to me.
+Uh, the inline. Where's the inline one?
+Um,
+this one.
+Oh, I need to get it. I got to take the
+tool bar off. So, what is this? This
+one. Nice.
+I got one inside. That's the one I want.
+So, this is it. So, I want to go label.
+Okay, perfect.
+That was great. Removes
+un remove some unused
+selectors.
+Boom. Bang. Bong. So good. All right,
+we're going to sync those changes.
+It's pretty great. All right, I am going
+to drop off because it's afternoon.
+Should you remove outermost? Is that
+Nick's naming convention rapper or
+things? Where's the outermost? Um
+that should be gone.
+Edit on pin 110.
+Oh yes.
+I don't know what this is. Alternate is
+for.
+Where is this? Oh, okay. That's a class.
+That's cool. That's a good call. Um,
+where where was that? Shoot. Um,
+edit the 110.
+Yeah, but okay.
+Can we remove as
+as well? I don't know if it's
+Yes. Oh, ye.
+[laughter]
+Okay, let's make that edit.
+All right,
+let's see what else we got. Missing.
+Okay, I'm going to leave the class is
+using a content header but no cont.
+Okay, that's fine. I'm leave that in
+there. That can go away. This
+okay
+sweet
+here. So here we should just have is
+alternate. So let me just I just want to
+double check. So this is in content only
+mode. This is the label thing. Okay. So,
+I'm just
+save this. Replace this. Yeet. Yeah. Ye.
+It's good. It's good. Okay. So, that's
+good. That's done. All right. We're
+going to just um
+should just remove uh remove
+unneeded
+unused
+class
+in the pop.
+acting bing
+commit.
+Okay,
+this is pretty cool. We're going to sync
+that. We're going to sync that. Um,
+okay. So, this is feeling a lot better
+now. Now, the thing is, wait a minute.
+Hold on.
+Oh, no. I need that. That makes sense.
+So, we're gonna add that.
+Why is this block editor block types
+list item?
+Oh, I know what a good good job. Thanks.
+All right, that's cool. So, what we're
+going to do, I'm going to drop off. I'm
+gonna I'm gonna continue working on this
+today. Uh, I'm not doing, no, Troy. I'm
+not doing anything official for 7.0 this
+time. I was the 6.9 triage
+release lead along with uh Aki Himmono,
+who, let's be honest, did all the real
+hard work. I just got all the credit.
+It's how I like to work. It's how I like
+to roll. Um, [clears throat]
+I I'm just focusing on the icon block
+for the for for now. There's some other
+things that um so it part of the icon
+block which I didn't really describe
+this before but part of this icon block
+is actually there's a new API for icons
+um that that we're using and uh where
+did it
+um
+where is it aki wrote it and of course
+he's
+Um,
+okay. Oh, nice. Well, Joe, nice.
+Um,
+okay. Uh, what was I going to say? I
+forgot what I say. All right. So, so
+there's a there's a um there is a
+new
+what am I saying? Icons endpoint. So you
+have to actually uh both this block and
+the the endpoint are actually
+experimental right now. So you can come
+in here and check off u SVG icon
+registration API which is really cool.
+Um and this will enable the API and the
+the block as well. U well if you're on
+my branch it'll enable the block as well
+but um yeah so so we have this
+registration process of doing SVGs.
+Yeah. So, the idea would be that you
+would register your custom SVGs via this
+API,
+which um I know it's in here somewhere.
+Um
+got to find it.
+Um,
+there's just so many comments on this.
+Load them up. Got to load them up. Let's
+see if I can find it. Not that.
+Sorry, I'm scrolling real fast here, but
+I can find it.
+Um
+a lot of context in this.
+Where is that?
+What's this one?
+Oh no, not that one. Okay, come on.
+There you go. Here's the end point.
+Which is Nope, not it. Um.
+Ah, come on. I'll find it. I'll find it.
+Uh, SVJ. Okay, I think this is Is this
+the one?
+There we go. Okay, so we have this API
+now. So you'll be able to do something
+like this. You'll be able to say get the
+the instance of all the registered stuff
+and and and pull it in. And that's
+actually what we're doing um in here. So
+this is dynamically rendered now. So
+we're getting the the the registry,
+retrieving the icon that we want, right?
+No, no, no. We're good. I'm wrapping up
+anyways. So there'll be like So
+basically we'll be able to um um
+um
+register this stuff. I don't know if the
+registration is open right now, but but
+but but that's the idea. Um,
+so yeah.
+Oh, no worries. No worries. So that
+that'll be how we can get custom SVGs
+in. I don't know if it'll ever be like a
+copy and paste thing. It'll be probably
+a filter or like a a registry call that
+you can do that will will make it
+available. Um, but yeah. Yeah, it's
+pretty cool stuff. So, uh, but anyways,
+on that note, I'm going to, um, drop off
+and I'm gonna thank everyone for hanging
+out with me today and I'm I'm going to
+continue to work on this, uh, for the
+next few days to get it into a much
+better shape so we can actually get this
+thing merged hopefully uh, before the
+19th and that'll be great. Awesome.
+Okay. Well, thanks everyone. I'll talk
+to you all soon. Thanks for hanging out
+with me. We will chat later. So, if
+anyone wants to come on the next um
+edition of Talk Debbie to me, um I'm
+open. That would be great. If you got
+something you want to talk about um uh
+like we did with WP Regg and Rob, that
+would be cool. Uh reach out to me
+wherever on all the places. I'm going to
+get a formal sign up thing where you can
+like just go and sign up. I I already
+have one guest lined up for March,
+I think. Um but uh yeah. Anyway, so if
+you're interested, let me know. Be great
+to h have everyone on. And that and on
+that note, I'm gonna let you all go.
+Thanks. You're the best.

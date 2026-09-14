@@ -1,0 +1,1 @@
+/wnd-script The source post is saved at fixtures/wnd-september-2026.md (fetched from https://developer.wordpress.org/news/2026/09/whats-new-for-developers-september-2026/). Treat that file as the fetched article and do not fetch anything. Episode: September 2026, cover everything, no seasonal hook. Do not ask me anything: write the teleprompter and save it to teleprompter.md.

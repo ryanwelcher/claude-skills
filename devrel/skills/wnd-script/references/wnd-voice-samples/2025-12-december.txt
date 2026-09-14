@@ -1,0 +1,171 @@
+Hey everybody, Ryan Welcher here again with another edition of What's New for Developers.
+If you're not familiar with What's New for Developers, it's an article that comes out
+monthly on the Developer Blog, so you can find it over at developer.wordpress.org/news.
+This month is December, and so that means this is the last edition for 2025, so join
+me as I go through everything that's been done in the past month across the WordPress
+and Gutenberg project.
+Just before we get started, if you haven't already, go ahead and subscribe to this channel
+and like this video for more content like this moving forward.
+And definitely the biggest news of the month, WordPress 6.9 Gene was released on December
+2nd, live at State of the Word.
+If you haven't had a chance, go and read the WordPress 6.9 field guide and there's also
+a WordPress 6.9 source of truth available on the Gutenberg Times.
+Definitely go and check that out.
+As with the last edition, I may not have time to cover everything, so I encourage you to
+go and read the article and check out the table of contents here.
+There's a lot of great stuff coming.
+I'm going to cover as much as I can, but if I don't get to it, please go and take some
+time and read it yourselves.
+This is a really cool one with WordPress 6.9.
+We got the Abilities API, which is one of the building blocks for AI inside of WordPress.
+Well now we have the AI experiments plug-in and it's ready to go.
+You can play around with it.
+It brings in a lot of the other building blocks like the WPAI client SDK and a number of other
+things that you can try out to just to really see how far you can push AI inside of WordPress
+core.
+The breadcrumbs block is getting a lot closer to being stable.
+We've seen a bunch of upgrades that make site navigation clearer and more intuitive.
+It's still experimental, so you have to go into the Gutenberg Experiment setting to enable
+it, but you should go and check it out and play around with that block.
+Speaking of experimental blocks, the tabs block is in progress.
+It is very much early in development, but it is available as part of the experimental
+blocks package.
+Again, go into the Gutenberg Experiments admin page and enable it and play around with it.
+And the development team would love to get any and all feedback on this as it moves forward.
+Version 3.3.0 of the WordPress coding standards was released.
+This version includes over two dozen additions, updates and bug fixes.
+So if you're using WPCS, which you absolutely should be, go and update your projects right
+now and I'll wait for it.
+Flash is dead.
+Now it's been dead for a very long time.
+With WordPress 6.9, all traces of flash have been removed from WordPress core.
+If you're like me and you get started with flash, that's the first coding language I
+ever learned was ActionScript and I learned basic programming things.
+It's a bit bittersweet, but Flash has been sort of dead for quite a long time, so it's
+great to update the WordPress core code base and get rid of that old stuff that's not
+being used anymore.
+Data views and forms got some updates.
+For data views, you can now add columns from the header and you can also apply background
+colors and images so tables match the rest of your design.
+Data forms are now using pattern-based rules to ensure that the input follow the required
+formats and the fields API can now configure dates using the new date field type.
+They recently created a WordPress boot package
+and now supports static and lazy routes.
+This is kind of in the weeds,
+but it's the beginning of the building blocks
+for creating a solid routing foundation
+for the new admin redesign.
+So if you're not familiar with this,
+I'd go and check it out and play around with it
+and see what you come up with.
+The internal visibility support key for block visibility
+has been renamed from block visibility
+to just simply visibility.
+This was done to avoid conflicts
+with the original block visibility plugin,
+which this feature is modeled after.
+The content only template lock now supports
+inserting content blocks inside defined areas,
+which is really great for theme authors,
+but it does mean that the block insertion logic
+has changed, so you should absolutely test out
+your themes and everything on this during the 7.0 cycle
+just to make sure there aren't any unexpected bugs.
+The recording block shipped with WordPress 6.9
+and a late change in the block CSS
+to address a design issue with 2021
+actually introduced two new bugs.
+The first bug was addressed in the 6.9 release cycle,
+but the second one has been punted to 6.9.1,
+So you should keep an eye on that
+and go and test out your stuff accordingly.
+We had a number of other block updates.
+The HTML block got a bit of a makeover.
+You can now edit your HTML, JavaScript and CSS separately
+in a modal in separate tabs.
+That's really, really cool.
+And I look forward to playing around with that.
+The paragraph block is switching over to the built-in
+text-aligned block support.
+And as well, it now supports
+justified alignment at the global level.
+The term name block got a new level options control,
+which is going to allow theme authors
+to select which heading levels are available in the block.
+You can now style pseudo classes like hover and focus for the button block directly in
+Theme.JSON.
+The cover block can now use embedded videos from say YouTube or Vimeo as live, looping
+backgrounds.
+That's a really cool feature.
+And finally, the math block now supports a range of common design tools that other blocks
+have so you can style your equations to your heart's content.
+It will also always display correctly left to right even if displayed in a right to left
+language environment.
+There's been a small fix to Theme.JSON to address an issue where block level presets
+that we're not overriding the globals
+and that should be all cleaned up and fixed now.
+The border radius presets UI now correctly handles
+mixed CSS values in the range slider.
+So this is important if you were using expressions
+like clamp or min, max or calc.
+Previously, these were not being parsed correctly
+but this should be fixed now in newer versions
+of Gutenberg.
+Playground has had a pretty big year in 2025.
+You can check out all of the overview
+at the Playground 2025 year in review post
+that's linked in the article below
+but some of the highlights are over 99%
+WordPress plugins now work in playground.
+They have support for X debug, WebP and AVIF image formats,
+addition of a file browser, blueprints gallery,
+database management capabilities,
+all kinds of really great things.
+On the dev testing and collaboration side,
+would they now have one click access to Adminer
+and PHP My Admin, live editing of blueprints,
+PR preview buttons, the addition of the INTL dynamic extension
+to provide better internationalization support.
+With WordPress 6.9 came the Abilities API,
+and it also means an entirely new chapter
+the common API's handbook.
+So if you're interested in what the Abilities API can do
+and what it can do for your projects,
+I'd highly recommend you go and have a read.
+The developer blog saw a snippet and two articles published
+and you should go and read those right now.
+Speaking of the developer blog,
+we're always looking for new contributors.
+So if you're interested in adding your code
+or your ideas to the developer blog,
+you can do so by going to developer.wordpress.org/news
+and finding the how to contribute section
+under the About menu.
+As with every new WordPress release,
+there is a ton of documentation
+that you should get up to speed on.
+There is a WordPress 6.9 field guide
+that you should go and find.
+The source of truth is also available
+on the Gutenberg Times.
+In the article here,
+we have a quick reference list
+to a number of high level individual notes,
+but there are way more than that.
+And you should absolutely go
+and get familiar with all the new features
+that came out with WordPress 6.9.
+And that's it.
+Thanks again for joining me.
+My name is Ryan Welcher.
+I'm a developer advocate at Automatic,
+and I really appreciate you taking time out of your day
+to watch me ramble on about all this really great developer stuff.
+If you haven't already, please go ahead and subscribe to this channel and give this video
+a thumbs up so we know we're doing stuff that you actually want to see.
+And finally, it is December, so that means there are a lot of folks celebrating holidays
+this month.
+If you are one of those folks, please enjoy your time off, have fun, rest, recharge, connect
+with friends, family and loved ones and have a great time.
+And I'm looking forward to seeing you again in 2026 and to see what WordPress has in store
+for us.

@@ -1,0 +1,2641 @@
+TELL ME WHY.
+TELL ME WHY.
+TELL ME
+FEEL THE SPARKS TILL THE
+TILL THE SCREAMS
+I SEE YOU
+I SEE YOU I SEE YOU
+I SEE YOU
+I SEE YOU
+TELL ME WHY.
+TELL ME
+FEEL THE
+TILL THE
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+WHAT YOU SAY?
+WHAT YOU SAY?
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+TELL ME WHY.
+TELL ME
+FEEL THE
+TILL THE
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+TELL ME WHY.
+TELL ME
+FEEL THE
+TILL THE
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+I SEE YOU
+>> HERE WE GO.
+ALL RIGHT. HI EVERYBODY. HERE WE ARE.
+We're here. We're here and I'm joined by
+a special guest, friend,
+um
+Lovekesh, TheLovekesh as he likes to go
+by.
+Um welcome. How's it going, man? Great
+to have you on.
+>> Yeah, hi. I'm on the board. How are you?
+How are you doing?
+>> Oop. I'm good. I think I might have some
+double audio dealing with here in a
+second, but let me just double check
+that.
+Um I'm good. I'm good. I'm good. Sorry,
+we had some um
+I had to set up some uh we had to do
+some technical uh
+acrobat
+acrobatics here just before we we we got
+set up. So, if there's anything uh chat,
+I don't know if there's anybody in chat
+yet, but you can let me know if there's
+anything um
+weird going on. Let me just
+um sorry. We got Google Meet Google Meet
+window capture. I'm going to just turn
+that.
+Um
+mute output. There we go. So, we
+shouldn't have any double audio now.
+>> [snorts]
+>> Hopefully.
+Yeah, hopefully, hopefully, hopefully.
+Um
+stand
+Okay, I don't need any of that. Sorry.
+All right, cool. Back to what we're
+doing. So, anyways, we're not here to
+talk about my technical issues. We're
+here to talk about
+something very cool. Now, I'm getting
+I'm getting a double thing again.
+Can you talk for a second?
+>> Hello. Hello. Hi, Ryan.
+Can you hear me again?
+>> That's weird.
+Yeah, I'm getting double I'm getting Oh,
+there we go. Try that.
+>> Uh hello again.
+>> There we go. Okay. Sorry. You've done
+nothing wrong. I have OBS set up and
+every time I bring a new uh thing in, uh
+it brings an audio. So, the problem is I
+was bringing an audio from all the
+windows that we've added. So, we've got
+double and triple audio. So, that's good
+times.
+So, that'll be a fun edit after this.
+Okay, anyways, uh we are here to talk
+about something that Love Kush talked
+told
+talked to me about when I was in India
+at WordCamp um
+Asia. That's the WordCamp. And it is
+called wpm.so.
+So,
+um Love Kush wanted you to tell us about
+it.
+>> Okay, so
+um I just
+uh like bring the attention of Ryan that
+I have
+I built something. I was just gathering
+feedbacks from folks around the WC Asia.
+So, I shared uh
+something I created. It's called wpm.
+It's like npm, but it's for WordPress.
+So, it's a package manager and also a
+registry.
+So, I
+talked about it with Ryan at WC Asia,
+and he asked me whether I want to come
+on this
+uh live streaming, and I said yes, and
+here we are.
+>> Nice. Yeah, that's that's literally the
+step by step of how you got here. That's
+fantastic. Um I just dropped the link uh
+in in in chat. I don't know why Bells of
+Fate is showing up there, but we I
+dropped wpm.so into the chat, so go go
+and check that out. But, let me ask you,
+so what what what what does this thing
+do? Tell me what this does. Tell me why
+I should care about it, and pretend like
+I've never seen it before.
+>> Okay, so
+let's not talk about WordPress here.
+Let's talk about
+uh
+uh I think
+everyone have played around React since
+Gutenberg is in React.
+And when you go to set up blocks, what
+is the first thing that you do?
+So, maybe the first thing that you do is
+you
+uh run a command something like n p m x
+create WordPress block or something like
+this something like that, and it
+bootstraps the
+uh
+like a block is scaffold on your
+in your friends folder, yeah.
+Yeah. Now, now imagine that think about
+it for a moment that how it's happening
+in that particular ecosystem, and do we
+have any similar tooling in WordPress
+ecosystem or not?
+So, in
+JavaScript ecosystem, you have like
+package manager, a task runner,
+everything combined in one tool, and
+it's called npm. Now, there are faster
+alternatives to npm as well in case
+folks are using maybe pnpm or bun.
+So, these are like like package
+managers. So, what they just do is that
+you distribute your package So, so the
+core idea is you build something, and
+now you want that okay, I want to
+distribute it to other people so that
+they can just download it and use it
+easily.
+So, they distribute it some a place
+called registry. You will send your
+package to a registry, and now npm CLI
+will just download it from anywhere
+else. So, the ecosystem is like very
+seamless.
+You can download, for example, any npm
+package. So, I can recommend you any
+package that it starts with at the rate
+WordPress is npm package for WordPress.
+You can just download it
+anytime, anywhere without any problem.
+You just don't have to
+worry about like uh
+wiring up in a
+like manual way in your CI/CD. You you
+don't do that. There is a like enough
+mature tooling around that. But if you
+want same sort of experience in
+WordPress, then
+how will you do it? Do you have the
+required tools?
+Also,
+when it comes to
+like distributing your things, there is
+a like very popular thing we are using,
+I think, for more than
+18 or 20 years. That is called
+wordpress.org plugin and theme
+distribution.
+But the thing is that it's for it's
+mainly for public plugin and themes.
+And you have to get approvals to
+register your plugin and theme there,
+and then you can start distributing
+them. But again, it works seamlessly
+with the WordPress dashboard itself. For
+example, the
+plugins and themes pages uh in the
+WordPress admin.
+But what about uh the people that are
+managing their WordPress as code?
+When I say WordPress as code, it means
+that
+you push everything to your server
+including plugin and themes as code
+rather than downloading plugin and
+themes from the WordPress dashboard.
+So,
+then
+uh like few years back someone created
+WP Packagist. So, what basically that
+was is that
+someone created a composer layer on top
+of wordpress.org. Now, you can download
+the those packages using composer tool.
+So, composer is another package manager
+just like NPM, but it's for PHP
+ecosystem.
+But now again, the problem is that you
+can easily handle your
+plugin and themes that are uh published
+on wordpress.org.
+But what about plugin and themes that
+are not on wordpress.org? They are like
+a scattered somewhere, maybe on GitHub,
+GitLab. Uh many of many plugin and
+themes are private.
+So, every vendors give you like their
+own API to download that plugin or theme
+and you have to wire up those API maybe
+in your automation script or something
+like that to download the chips then
+unpack it. So there is like a whole gap
+when we talk about pooling in WordPress
+ecosystem.
+So I I I basically mostly work on
+enterprise WordPress.
+Uh and that consists of like very strict
+processes how we do things. For example,
+we just can't go to a WordPress site, go
+to the dashboard and just install a
+plugin or theme we want to. We we just
+can't do it that way. Because many of
+our clients are on WordPress VIP.
+WordPress VIP
+wouldn't allow that because there are
+like lot of
+uh security considerations there and
+other things.
+So generally what people do is most of
+the time they just download the plugin
+either from wordpress.org or maybe from
+a premium vendor, they will just unzip
+it in their Git repo, commit and push it
+and now we are all done. But the
+problems comes when you have to update
+that particular plugin and themes. And
+suppose that your plugin and theme has
+thousand of files.
+Now you have to unpack that and commit
+that your basically what you are just
+doing is your bloating your Git repo.
+And again
+>> I can see a lot of people
+having worked in agency land my my
+myself. I know exactly what that's like
+and you know, the files that you're
+downloading from dot org for example
+>> Yeah.
+>> may not have the source files and
+especially because we we live in a world
+that's that's you know, JavaScript first
+now.
+You know, you might just be parsing
+through like you know, obfuscated
+minified JavaScript trying to search for
+security issues and I know I know VIP is
+not a big fan of doing that. So
+>> Yeah.
+>> Uh cool. Okay. Awesome. Yeah, so that is
+a So So the first question that comes to
+mind
+and and and and the first comment in
+chat was like so like composer and that
+was before you start talking about
+composer and WP packages and stuff. So
+what So we have NPM and we have have
+have composer. We've had those since
+the, you know, the dawn of time.
+And with WP packages
+it's Can you actually Well, with
+composer, you you can actually check out
+GitHub Git repositories, I believe.
+>> Yeah.
+Yeah, you you can. Yeah.
+>> Yeah. And so, how does how does WPM
+bridge the gap between NPM and composer
+and and and or or does it? Is Is Is that
+the Is that the point of it?
+Um
+Yeah.
+>> Yeah. So, I just use NPM as a like
+terminology to talk about that what WPM
+is actually. So, we can like forget
+about NPM here because it's the package
+manager for JavaScript.
+And it won't help us much when it comes
+to distributing PHP code.
+>> any of the WordPress JavaScript stuff.
+>> Yeah. Yeah. It It It just handles like
+JavaScript packages that you want to
+install. But, WordPress like plugin and
+themes are mostly PHP code wired up in a
+different way.
+So, we we should omit like NPM from this
+scenario here. Now, coming to composer
+actually the the first thing is that
+composer was not built
+for handling such use cases.
+While composer had those features, for
+example, you can
+uh wire up uh like zip zip there or
+maybe a Git repo there or
+or may maybe some zip dot
+uh dist URL there. It can handle those.
+But, neither composer
+was built in such a way that they were
+keeping WP specific nonsense in their
+mind while they were building composer.
+So, composer don't treat
+WordPress plugin or themes as like
+uh what should I say? Like first-class
+citizens.
+And now when it comes to WordPress,
+wordpress.org distribution mechanism
+wasn't built in such a way that it can
+talk to composer
+as for first uh
+class citizen.
+>> Ah, okay. So, this is
+>> Yeah.
+>> I I'm seeing Okay. So, I think
+I think and I think I'm probably
+I I I I my mind is probably going in the
+same direction as as you do. So, this is
+lit
+Let [clears throat] let Let me back up.
+My brain is not functioning. I can't
+talk. So, this is like a first like a a
+WordPress first. It's not a replacement
+for a composer. Let me just ask that
+question. So, is it intended as a
+replacement for composer or just as as a
+as a replacement for composer plus WP
+Packagist?
+>> So, it's a a replacement for composer in
+like different terms.
+For example,
+let's say how you want to manage your
+uh WordPress dependencies. The question
+number one is that because composer can
+manage
+Now, at this moment
+uh
+I can like say that folks who are
+managing
+or using composer to manage WordPress
+plugin and themes, I can say that
+composer isn't like handling single
+responsibility rather it's handling two.
+You are managing your PHP packages and
+then you are managing your WordPress
+packages as well.
+>> Okay.
+>> So, that is thing number one. Now,
+second thing is when we
+then comes is like uh
+how are your
+WordPress plugin and themes packaged in
+such a way that it can leverage all the
+toolings that composer exposed
+or exposes. For example, composer
+exposes something called
+uh like binary configuration. You can
+set So, you can ship uh
+bin files with your plugin and themes
+and it will just wire in the and you can
+run those binaries tools. Another thing
+is does
+your does you write your plugin and
+themes in such a way that it can wrap
+another dependencies? For example, let's
+let talk about WooCommerce.
+WooCommerce have like thousands of
+extensions that doesn't run without
+WooCommerce. Are those thousands of
+WooCommerce extension built in such a
+way that they can be distributed with
+composer and when you download any of
+those extensions, then composer
+determine that whether it should
+download WordPress with it or sorry, not
+WordPress. Whether it should download
+WooCommerce with it or not. So, it's not
+one package. Composer now have to
+download composer have the ideal
+responsibility of downloading two
+packages. One is the extension and
+another is the WooCommerce package.
+Because this is how your dependency tree
+is going to be look like.
+And there there are like many other
+nuances maybe I can think of you at this
+time.
+Yeah.
+>> Yeah, sorry and I I don't I don't want
+you feeling like we're grilling you.
+Like, "Hey, what why is this thing any
+good?" right?
+So, there's a couple of the So, there is
+a question in chat from Kev B. Hello,
+Kev.
+>> Kevin!
+>> Um
+and it it it goes like this. The
+question, sorry, I have to find my
+window now. The question's in it.
+Can you I'm just going to highlight the
+message. Can you add PHP dependencies,
+other plugins as dependencies or run
+post install scripts?
+>> In [snorts] WPM, yes. So, WPM is only
+for WordPress.
+It will download any WordPress related
+plugin or theme.
+And it will run life cycle is scripts.
+But it will run life cycle scripts that
+are
+declared in your root WPM.json. It will
+not run any life cycle is script that is
+defined in your
+like packages that are going to be
+downloaded and that is due to security
+measures.
+And that thing is like now being removed
+from many package managers like by
+default in WordPress in JavaScript
+ecosystem P&P blocks that because that
+brings lot of security issues running
+arbitrary codes from such code that you
+just can't believe that what they are
+going to run. And also inherently
+uh
+WordPress plugin and themes doesn't
+requires
+uh post install scripts from different
+packages because by default WordPress
+plugin and themes are like self-content.
+>> Right.
+Okay, so
+Okay, so I think
+So this this is so this This is meant to
+run
+if I'm understanding correctly, and
+please correct me if I'm wrong. But it
+sounds to me that that that this this
+could run easily with with composer as
+well. So if if if if you had a project
+that downloaded a number of PHP
+libraries that you wanted to to use in a
+theme, for example, that you were
+creating or a plugin that you're
+creating for a client, but then you also
+wanted to manage five or six plugins.
+Let's say it's a WooCommerce like to use
+your example. It's a
+It's a WooCommerce site that's got a
+custom theme and maybe a
+a couple of custom extensions. And so
+you're you're using composer to get the
+PHP libraries that you want to use in
+your theme and whatever. And then you
+use WPM to download the the core
+uh a WooCommerce plugin and any other
+extensions and stuff like that. And that
+all runs sort of seamlessly.
+>> Yeah.
+And
+Okay. And so
+so the there the there there is a kind
+of a spicy question from from here, I
+guess. I guess the easiest way to ask is
+what problem does this solve? And it
+sounds to me that the problem it solves
+is managing WordPress and theme
+installations, updates at a code level.
+Like so this is not something that like
+someone who just wants to go download a
+plugin
+and then update it manually and go and
+you know, this is not for those folks.
+This is for people that are building an
+entire
+um
+uh micro uh I guess. So like like so
+your your project has got four themes
+and 15 plugins and all of this stuff and
+you want to manage it all in source
+control and you want to make sure that
+you have versions and all all all of
+that stuff. I think that's the problem
+that this solves is the ability to
+>> So
+So, this is the thing like if if I say
+[clears throat]
+that uh this is the thing that composer
+can also handle, right?
+So, WPM is like you don't have to think
+it like that someone is asking me that
+replace something that composer is
+already doing for me. Rather, WPM here
+is to
+fill the ecosystem gap. Now, let me
+explain what I
+like really meant from this.
+So,
+uh any folk like who manages like big
+enterprise websites,
+so they they they must know that
+uh when they
+think about plugins, it's just not that
+they are using all the public plugins
+that are available on dot org on WP
+Packagist or the new uh WordPress
+WordPress Packagist registry called WP
+Packagist,
+uh all the plugin and themes are not
+available. These things comes
+when you have to manage private uh
+plugin and themes as well.
+So, for example, let's say there is a
+project.
+It's possible that you are using 10
+plugins, right?
+But out of those 10 plugins, the
+question is that how much plugins are
+private that are easily downloadable
+using composer?
+And how many plugins and themes are
+uh no, sorry. How many plugin and themes
+are like public that you can easily
+download using composer without any
+issues?
+And how many plugin and themes are
+private that you have to download using
+multiple ways? So, for example,
+in WordPress ecosystem, when it comes to
+distributing premium plugin and theme,
+there is no aspect compliant thing.
+And when I say aspect compliant thing,
+it means that there is no single way by
+adhering which every vendor is
+distributing their packages.
+So for example that Yoast
+I am just taking names here that it
+might be possible that Yoast
+gives you a composer API, Gravity Forms
+give you a composer API.
+But then again, there are like
+vendors that don't provide you composer
+API. They just give you zips. You can
+download zips from there.
+Uh from login to their dashboard just
+download zips. And that is when the
+problem comes.
+So now now the thing is that for many of
+the vendors you can download those
+packages using composer.
+And now for some of the vendors you can
+just don't do that because you have to
+download manually using their dashboard.
+Now in those particular scenarios
+the
+auto sorry the workflow is like very
+messy when it's come to
+uh respond quickly to the updates,
+right? Pushing to the live product live
+environments. So that is like very
+problematic. That is something that I
+have felt in past 5 years. And that is
+why I
+came to build something that is like
+centralized, that is a spec driven
+so that whenever some vendor want to
+distribute a plugin or theme they can
+just bind to one framework that okay
+I have this method that if I am
+distributing a plugin or theme
+that I provide a zip for it or a tarball
+for it and I provide a metadata file
+with it.
+So no matter how user is going to
+download this thing, they can automate
+their workflows in a singular way
+so that anyone can download these
+artifacts that I'm distributing.
+So that's the whole point. Now it's
+coming to second point
+is the security.
+So for example that uh let let let's
+talk about composer repo you are using.
+How you are so confident that whatever
+you're downloading from the composer
+repo is exactly the same that author has
+published there.
+Or you can
+cryptographically verify or like you can
+be confident that I'm getting the same
+thing and there is no supply chain
+attack in the middle.
+So, what these composer repositories
+generally do is so there is a
+wordpress.org distribution system.
+They place their mirror at this level in
+the middle and now you are the consumer
+here.
+So, you will make request here. Your
+request will go to wordpress.org.
+And now there is a like layer that can
+be compromised in a way.
+So, how can you be sure that you are
+actually downloading what you requested?
+WPM fixes that. WPM has like
+very good built-in supply chain
+primitives
+that that very that actually verifies
+that you are downloading what you
+uploaded.
+It It verifies that thing
+cryptographically. Now, I also I have
+also managed private plugins and themes
+using composer and trust me that is very
+messy.
+So, to do that in composer first you
+have to find out that whether your
+vendor provides uh the composer API or
+not. If they provide, then you have to
+add those particular entries into your
+composer.json's
+repository config and then you have to
+manage auth.json that varies by every
+vendor. So, for example, you are
+downloading or you are using premium
+plugin and themes from five vendors
+and three of them provides composer API,
+then you have to manage authentication
+or authorization for three
+uh of those vendors in your auth.json
+and for rest of the two you just have to
+do things manually.
+>> Okay.
+>> Yeah.
+>> Okay, cool. So, um
+Yeah, okay. So, let's maybe um
+Someone in the chat is saying, "Can we
+see it in action and what a work what a
+workflow would would look like. So, is
+there anything else like So, I
+like we're talking about like ending all
+the security and all of that stuff. So,
+so are you storing versions of these
+plugins?
+>> Yeah, so
+>> Yeah.
+>> what I do is I let me share a link with
+you.
+>> Sure.
+Uh
+>> Uh
+>> You You can drop it if you're if you're
+in chat,
+you can drop it in chat. You can send
+>> Uh I will
+>> Or you can just you can send it to me.
+>> Then you can send it.
+Um I am having a hard time to find the
+time. I'll just send it to you in Google
+Meet chat.
+>> Sure.
+>> So, this is uh like
+an automation system.
+What this automation system does it that
+every 15 minutes, it will check
+that are there any new plugin on themes
+published on the wordpress.org
+uh SVN repo.
+It will
+uh
+run a cron job every 15 minutes. It will
+download all those plugins and themes.
+It will create a ZSTD compressed tar
+ball out of it and it will push that to
+the WPM registry.
+While pushing it, WPM registry will will
+verify its checksum and it will generate
+cryptographically verifiable signatures
+that will now later be
+uh distributed in the
+package manifest.
+Now, using those
+signatures and using the public key that
+is distributed over HTTPS right now, I'm
+planning to move that over to repo.
+You can verify whether this is the same
+package that we've uploaded.
+So, like
+uh if So, also uh this project is not
+just for WPM.
+In case you want to create your own
+mirror on top of wordpress.org in a like
+very secure way, you can also use this
+problem.
+You can also create your own composer
+registry on top of wordpress.org using
+the same problem that I'm using so it's
+like very extendable.
+>> Very nice.
+Oh my god, I'm sorry.
+>> [cough]
+>> This cough has been dogging me for days.
+Okay, anyways, so okay, cool.
+So, let's
+>> [snorts]
+>> let's let's let's dive into it. So,
+okay. I have set up a site. I have just
+a random site that I set up with Studio.
+>> Mhm.
+>> So, what what do I need what do I need
+to do? Do I
+>> Uh
+>> First I I I'm going to need to install
+this, I assume.
+>> Yeah.
+>> I'm going to open
+>> So, you can go to wpm.so
+based on your
+operating system, you will get an
+install command.
+And you can just run that.
+>> All right. And so, does this this all
+install it globally? I I I assume.
+>> Yeah.
+>> Okay, it's downloading.
+>> I just hope it works on Mac.
+>> [laughter]
+>> Me, too.
+>> Yeah.
+>> Okay, so all right. So, I'm in
+>> Now, you can just uh
+reload your shell once.
+You can run you can basically
+run the command above the
+wpm hyphen hyphen help
+that is printed in the information.
+>> Right.
+Uh
+>> It's It's
+It's execute e x e c b n fish.
+>> There we go. wpm Oh, I spelled it wrong.
+wpm dash help.
+Let's see what we got. Okay, so there's
+a lot of stuff in here. I'm just going
+to make this a little bit bigger.
+Auth. Oh. Okay. So, init.
+>> Yeah.
+>> Okay, so how how would you recommend,
+having never used this before,
+>> So,
+uh there there are like few things. Uh
+whether you want to
+create a plugin, create a theme, or you
+want to like create a generic WordPress
+project which have lot of plugins and
+themes.
+>> Um
+I don't know. So, what where am I right
+now? I think I'm in I'm in the root of a
+WordPress in installation. So, should I
+go So, let's say I wanted to create a
+plugin.
+So, I I need to see
+>> I I I think I think let's just do
+uh
+Let Let's just do WPM install and your
+favorite plugin or theme name.
+>> I'm sorry. Oh, install? Okay, so
+>> install.
+>> But, do I have to do that from my WP
+content folder?
+>> No, no, no. Just just do it in the root.
+So, what WPM does it that by default it
+will place your plugin and themes into
+the WP content folder until and unless
+you have configured it to be somewhere
+else.
+>> Okay. So, all right. So, I And then,
+what do I pass? So, if I want to do
+install
+uh oh, no.
+So, So, what am I So, if I just do
+install, okay, it's telling me Oh, I
+have to pass the name of a plugin for
+it, for example, right? Okay. Well,
+there's only one plugin that everyone
+should be installing. I think it's
+called Advanced Query Loop.
+And it's by
+the best looking guy named Ryan on this
+stream.
+>> [laughter]
+>> Cuz if I do WPM install Advanced Query
+Loop, boom.
+Resolving. Okay. So, let's look at Let's
+I'm just going to open this up in Visual
+Studio so we can just see
+what's going on. What's going on? Here
+we go. All right. So, content
+plugins, Advanced Query Loop. Okay. So,
+it installed. That was super painless.
+Um all right, demo over. We can go home.
+>> [laughter]
+>> So, cool. Okay, so that's that's So,
+that's great. So, how So, let's say that
+I I I
+wanted to
+instead of pulling it from Okay, so like
+what would be the next thing?
+>> Uh so, yeah.
+>> Okay. All right. Actually, we've got
+Before we move on, we do have have have
+a question here from Throw New Error.
+He's asking the hard questions.
+I'm just going to spotlight it. The
+question is, I keep hearing securing and
+security. Can you give an example of why
+this is secure and what security
+measures?
+>> Okay. So,
+um
+I keep hearing securing and security.
+Okay. So, in
+WordPress ecosystem,
+let's say you are downloading a plugin
+or theme from some source,
+right?
+Let's say I am the website owner.
+Let's say I am the plugin owner.
+And you are downloading it from my
+website. You are downloading the plugin
+or theme.
+And now,
+my website is hacked or compromised in
+some way I don't know.
+And now someone what they just did is
+that
+I I people trust me, right? They will
+trust my product that okay,
+this person have created this plugin or
+theme. I will just use it blindly on my
+system.
+And when they downloaded this plugin or
+theme, now now you have some security
+nightmare at your end.
+And it it
+could have could it have been prevented?
+Yes. There could have been a good
+tooling in place to determine
+that what you are downloading is is
+integrity is like good.
+Then that problem wouldn't have happened
+in the first place, right?
+>> Right.
+>> But since there is no tooling,
+>> Mhm.
+>> Mhm.
+No, no. Sorry, carry on.
+>> But since there is no tooling, there is
+no way to identify uh
+that whether this thing had been
+like tampered in transit or not.
+So, that's the like main goal
+of security.
+>> [cough]
+>> So, so in the in the in the case that I
+that my my Advanced Curley plugin, I
+decide to offer a premium version of it
+and I sell it through my website only.
+Um
+this
+uh
+and my my my site is hacked, someone
+replaces
+the archive with a flat a Flappy Bird
+clone. We all know what happens when you
+click those links. And
+uh
+and it gets downloaded to a client site,
+the world ends, right? So, so what we're
+saying is is WPM
+Yeah. allows
+allows vendors
+um to subscribe to the system. I'm I'm
+not sure if the if that's the right
+word, but but prepare their plugins in
+such a way that it can be ingested by
+your your service. And and so when you
+download it through
+uh WPM,
+um
+you
+are like so I'm assuming WPM does that
+that cryptographical check for us,
+right? So, so there's no possible way
+Now, how does Okay. Is that accurate?
+So, is there a copy of my Advanced Query
+Loop plugin on your server somewhere?
+>> Yeah, so
+um you you push your Advanced Query
+plugin on your uh on WPM, right?
+And let's say so it's like
+future-proof.
+No one can like no user can download a
+tampered version now.
+>> Okay. So, I have
+to as
+as the plugin author, I I have to say,
+"Okay, I've published this to to the
+repo. I'm going to publish this to to
+WPM." Just the same way that you would
+publish to a composer package or you
+would you Well, maybe not composer, but
+like for NPM, for example, when you want
+to publish a new version of that, you
+you push it up to the system, right? So,
+it's the same idea?
+>> Uh yeah, sort of.
+>> Okay.
+>> So,
+>> Okay, cool.
+>> And to explain it in simple terms,
+what happens is that
+uh let's say even if WPM get
+compromised, right? WPM would never
+install that compromised package. And
+the reason being is that
+the cryptographic verification is like
+deterministic.
+You can't fake public key for a private
+key that is used to sign particular
+metadata for a package.
+So, even if they let's say they changed
+the
+uh
+let's say let's say they changed the
+contents of an artifact. They changed
+somehow the they were able to change the
+even the manifest.
+But, they can't have access to private
+key because it's hosted in a my HSM back
+hardware somewhere in the AWS KMS data
+centers.
+So, so they just can't hack it. And if
+you can't hack a private key to generate
+more
+signatures, you you can't just fake this
+thing.
+>> Okay. So,
+the long and short of it is it's it's
+once it's in the system of
+the WPM system, it's next to impossible
+to to fake it. Now, can
+That's got me thinking. So, let's say
+that I didn't realize that there was
+something wrong with the zip and I
+published it. Um
+there's nothing stopping that.
+But, I guess that's just like that
+that's user error.
+>> That Yeah. Yeah.
+>> That's my problem, right?
+>> so what what what can be stopped is
+let's say
+somehow someone was able to get your
+right tokens,
+uh right?
+And someone tries to
+uh
+publish a package
+using that particular token. That won't
+be possible because I will be bringing
+publisher
+uh
+uh mechanism to the WPM. So, in that
+particular scenario, what happens is
+that you will connect WPM and their
+GitHub repo. Basically, the source from
+where you publish your
+uh plugin or theme.
+Right?
+So, what happened is that currently it's
+supported on GitHub and GitLab.
+So, let's say your repo is on GitHub
+GitHub and GitLab. You will connect uh
+your GitHub repo to WPM something using
+something called like OIDC verification.
+So, now when you will publish that
+particular package, that can only be
+published from your GitHub repo.
+And uh when you will
+initiate the publish chain, a like very
+short-lived write token will be
+generated, and that will be used to
+publish that particular package. So,
+even your write uh token is like uh
+compromised in some way,
+uh end user just can uh publish anything
+to WPM because it will verify uh that
+how the last version of the plugin uh
+was
+published. Was it using OIDC? Was it
+using manually?
+Then it will check that if OIDC is
+connected, is it being published from
+the legit repo that is configured in the
+WPM dashboard, and it will just reject
+the uh push.
+>> Okay. So, it sound It sounds like
+there's
+a
+a number of layers of security here.
+>> Yeah. And also, that's what I meant by
+the three questions.
+>> Also, uh there is one more thing that
+end user can attest that from which
+source this
+uh plugin was created from. So, it is
+something called material of bill that
+we
+put it in a test station that you can
+verify that it that can be used to prove
+that where this plugin was built. For
+example, let's say you build your plugin
+in GitHub Actions,
+then it will push the information like
+that it was built in GitHub Actions.
+This was the
+uh operating system version at that
+time. These were the packages installed
+at that time. So, in case the these
+things help you to identify, let's say
+uh someone find a backdoor in the GitHub
+Actions itself, and they compromise the
+package in such a way,
+uh such things can even help to identify
+it further than where the problem began
+in the first place.
+So, that are the like types of security
+uh
+uh security things that I'm trying to
+bring uh to WP and mostly to the
+WordPress ecosystem so that people can
+be aware about it.
+>> Okay. So, how So, let's say I wanted to
+um opt my plugin in. So, like
+I'm assuming at this point everything
+that's on that's hosted is like in in
+the plugins repo
+is is available. Um because I did I did
+nothing to to add my plugin to it, but
+it's
+>> Yeah.
+>> So, if I wanted to
+um
+how like if I wanted to say allow people
+to download the source of my plugin.
+Is that something that I would do or is
+that just
+>> Uh you you mean download the source of
+your
+You mean download your
+uh plugin from WP, right?
+>> Yeah. So, like like I've I've got a
+repository that my advanced early plugin
+is in and it it contains all the source
+files, which is open source. So, like if
+I wanted if I wanted
+So, let's say that that, you know,
+RT Camp wants to use my my plugin on a
+on a project, but they want to be able
+to
+they they want to be able to to see the
+source files because they need to um
+you know,
+uh get it approved by VIP or, you know,
+you want to do a uh security check
+internally and stuff like that. Is there
+a way to be to
+to opt into that sort of thing to say
+here's the entire source file, but
+you'll have to build it, basically.
+>> Yeah. So, [snorts] so there can be few
+things that you can link your GitHub
+profile using your you using I think
+GitHub repo field maybe in WP JSON. I I
+I don't remember if I ever even added
+that or not. So, basically, you can you
+can do it anyway. Let's say just include
+your repo link in read me. And if you
+will go to So, let's say then let's if
+you can go to WP.so website, I can show
+you that how you can see the cycle
+there.
+>> Yeah.
+>> That would be like much better.
+And just go to plugins
+or search
+whatever you want.
+>> Now, my keyboard
+>> And search your plugin here.
+>> Yeah, that's right. My keyboard
+uh
+disconnects if I don't type. Oh, well,
+there we go.
+Uh
+query
+Come on.
+There we go.
+So, I click on that one.
+>> [snorts]
+>> So, you can link required metadata here.
+You can copy the install command from
+here and literally this is
+what you need to like download your
+plugin. So, by the way, this information
+is passed from readme.txt
+of your plugin.
+>> Okay.
+>> Then it convert it to readme.md and then
+it's being shown.
+>> So, if I download this this this
+tarball, this will just essentially be
+the
+the built version of my plugin that I've
+shipped to dot org. So, if I wanted to
+to make this
+um
+like if I wanted to say, "Okay, so you
+have that that option,
+which is great, but also I want someone
+to be able to download the actual raw
+source."
+Um
+is as is is is that a possibility?
+>> So, I I So, to download the raw source,
+uh you can link
+your raw source information
+somewhere maybe in readme or I will give
+a field that will show that particular
+source link.
+Uh see, that there is a home page
+section. There maybe it will take you to
+there or maybe I will add one more
+button here called source repo that will
+take you to the source.
+>> Yeah, like so so so there is like a link
+to my official thing here.
+>> Yeah.
+>> Like well, let me back up first. Like
+does that sound like something that
+people would want? I feel like if if I'm
+going to be checking this
+checking this project out and and
+bundling it with my client theme or
+whatever it is,
+you know, having the the source files
+which which don't get me included when
+you build it,
+you know,
+and distribute it to dot org. I feel
+like this option
+um
+would be the better one. Not but not not
+everyone's going to want this option.
+Like some people just just want to
+install plugins. So
+is that a use case? Like I feel like
+that that would be a use case cuz like
+when I was at 10up, you know, we used to
+have to do plugin reviews all the time.
+The client would say, "Hey, I I
+I want to use
+amazing
+a gallery slider plugin that we have to
+like spend hours and hours reviewing and
+all the JavaScript was always
+minified and [clears throat] stuff like
+that. And so like I I feel like
+being able to provide
+the source version of this plugin that
+then, you know, in the project you would
+just add it to your build process or
+your whatever
+would be something that people would be
+into. Am I I don't know, chat, what what
+do you think? Is that something that
+people would want? I mean
+if you're
+I don't see why somebody would be like
+you can have my plugin but not the
+source because it's
+my
+my thing process is that whoever want
+this level of observability
+most of the time they will be easily to
+figure out that from where the source is
+coming. For example, you were easily
+able to identify
+the referral link from the yeah.
+So they can they can just find it, yeah.
+And I can also add a like dedicated
+field that can link to the source.
+Generally
+most people do that to like home page or
+something like that from where you will
+be able to get all the information.
+And it's there already. It may not it
+may not even be something that that is
+that important
+because you're right. I mean like
+people will just say, "Okay, well, let's
+go look at the repo." And then they'll
+then they'll they'll sick
+like Copilot on it anyways to do the
+review. So, so maybe that's not a big
+deal. Okay, cool.
+>> Yeah. But I have like a lot of things
+planned up for this if it goes well.
+One is that uh
+that by looking at the source, all
+right, when I'm pushing things through
+WPM, I can quickly pass
+all the source code and find out all the
+custom hooks and document them on the
+website itself. So
+>> Oh, that's nice.
+>> Yeah, so many ecosystem does that. For
+example, if someone have worked with Go,
+Go have like really cool implementation.
+They just show
+the package
+So so we can also do that here.
+>> So, not only does it become a place for
+like to to download plugins and find
+plugins, it also becomes, you know, some
+a bit of documentation as well, which as
+we all know is the last thing that any
+developer really wants to spend time
+doing is is especially when you have
+like, you know,
+like like my plugin has got two hooks in
+it, I think. So aren't that it's not
+that that big a deal to document, but
+um
+So, Thirsty Ear is asking, so this is
+more of a version control system, and I
+don't think it is. I think it's
+basically along the same lines of
+and you know, I'm going to answer I'm
+going to answer for you, Lovkesh, and
+then you tell me if I'm wrong or not.
+This is not version control. This is
+This is like
+a distribution control, I think, is what
+it is. Like the same
+It's NPM for WordPress plugins and
+and and themes. So that's that's the
+that's the one-line elevator pitch, I
+think.
+>> Yeah. Yeah, yeah, that that's got it.
+It's not a version control, rather it's
+a
+uh you can have information about all
+the versions that you have published
+here. That's one thing.
+But, since not
+a version control in a like a strict way
+uh for talking about version control
+system like Git and all that kind of
+stuff.
+>> Right.
+>> So, so this does this ingest all the
+tags that are available on .org? Like,
+is that how the
+>> Yeah.
+Yeah.
+>> Okay.
+>> So, all the tags are available on WPM,
+and I do it because
+uh to support backward compatibility
+basically. Let's say someone is on
+version 1.00,
+so they can also they can also download
+But
+>> And you may also want to um
+you know, lock to a certain version.
+You know.
+>> Yeah. Yeah.
+>> And and stuff. Just put AI on the
+landing page and people will use Just
+put AI, Kevin. Kevin says, "Just put AI
+on the landing page and people will use
+it." There you go. He's You should call
+it wpm.so.ai,
+and now you'll get like a thousand more
+more people jumping on. No.
+Okay.
+So, I can import things from packages
+that I
+Trono Yeras asking a question. So, I So,
+can I import things from packages that I
+install? I don't think I I understand
+the question. Does that make sense?
+>> think they I got it. They are asking
+because
+this thing generally happens in NPM. So,
+you install packages and then you import
+them.
+But, the WordPress and PHP ecosystem
+works in a different way.
+You have to activate a plugin and then
+you can use their code. Like, if they
+are exposing hooks, then you can
+add your functionality to those hooks,
+but not import like you
+uh think in a thing or like you do in
+NPM or in Composer.
+>> Yeah. Okay, that's a really just good
+distinction. So,
+think of it as NPM, but just the part
+that manages what you are downloading,
+not the not how you're using what you're
+downloading, right? That's sort of
+Yeah. So, so the same way that like
+Composer is meant to to to download the
+PHP
+libraries that you want to use. Uh And
+then how you use that stuff is is
+secondary. But this is how you get
+access to it.
+Uh
+Kevin's asking, "How did all those
+versions get there? Does it slurp the
+SVN?" That's He's talking about the
+Yeah, it does. Yes. Yes, Kevin.
+So yeah.
+>> I I I can like explain a little bit
+more. So what happens is that like I
+mentioned before
+that every 15 minutes a cron will check
+the state of SVN repo since the last
+time it was described.
+And it will find the difference. And
+then it will try to figure out that what
+packages have been upload in that
+particular time frame and then it will
+migrate.
+So you can go to WP to WPM repo.
+Uh
+Ryan will share the link. And you can go
+to actions and you can see like lot of
+jobs there that are updating the
+uh
+repo there.
+>> Yeah. So in the GitHub one?
+GitHub workflows in here?
+>> Yeah, you can go to actions.
+>> Oh, sorry. I'll tell you
+>> On the uh on the actions tab itself.
+>> Oh, actions tab. Yeah, I'll I'll learn.
+>> On
+on the top on the right hand side.
+>> Mhm.
+>> Uh these are the like migrate jobs
+happening every 15 minutes.
+>> Let's take a look here.
+So oh, migrate theme, migrate I I Okay.
+>> Run migrate theme.
+>> Oh, okay, cool.
+So this
+So So what does this do? Does it just um
+Does it just kind of like get the latest
+ones that have been updated? Or is like
+did did this this must run on some kind
+of back because I I know how many
+plugins get submitted every day to the
+plugin repository. So this thing must be
+running constantly.
+>> Yeah, it's it's running every 15
+minutes.
+>> Okay.
+>> It finds the difference that let's say
+your plugin have 100 versions
+and it's published, then it will try to
+find the difference that both versions
+are already there on WPM and what
+versions are remaining.
+And then it will push those remaining
+versions to it.
+>> Oh, nice. So, like it starts with most
+recent and then kind of works its way
+down, I imagine. Something like that.
+Okay, cool. So, yeah. Um
+just as a as as an aside, I think the
+plugin team is getting something in the
+like four or 500 submissions a day for
+new plugins.
+That's insane. That's insane how many.
+And so many of them and it's because of
+AI. So, anyways, so shout out to the
+plugin team who's doing a hell of a job
+keeping that that queue time as low as
+it is.
+Anyhow. Um okay, cool. So, what else
+should I Okay, so what else
+can be done? So, we install the plugin.
+>> Yeah.
+>> Cool. Now what? What What I want you to
+show me the coolest like wow feature of
+this right now. I'm putting you on the
+spot. Show me the coolest thing it can
+do.
+>> Um let me give you one command in chat
+and try and install it.
+>> All right, let's let's do it. And And if
+it's an rm rf, I'm not running it. Or if
+it's a link to
+the Flappy Bird.
+If you're not familiar with what I'm
+talking about, chat or
+Look, someone
+uh
+linked a Flappy Bird clone Flappy Bird
+clone in in my chat one day and I, like
+an idiot, clicked on it. And it changed
+me I changed my life.
+And
+I'll never be I'll never be be the same.
+Okay, so this is a this is the command
+that you sent me. WPM install Dino Pack
+for Elementor.
+>> Yeah.
+>> What Well, first
+it's not Gutenberg, so I'm a little bit
+annoyed, but that's fine. What do I What
+do I So, what's this going to do? Or
+should we just run it and see what
+happens?
+>> Yeah, you you just run it and see.
+>> Okay, here we go. Are you ready? I'm
+going to zoom it in.
+Uh actually, before I I do that, I'm
+going to I'm just going to clear it out
+so we can see it. Here we go. Install
+DinoPack for Elementor. Bang.
+What's it doing? Okay.
+Now what?
+It did it.
+>> So, if you will notice that it just
+didn't install DinoPack for Elementor,
+rather it also installed Elementor with
+itself.
+>> Oh, so it just figured that out.
+>> Yeah. And now you will If you will do
+WPM LS
+>> What? Sorry. What was the command?
+>> WPM LS list
+>> LS?
+>> Yeah.
+>> Oh.
+Oh, that's cool.
+>> Now, it will show you that
+how many dependencies you [cough] are
+using [clears throat]
+and why Elementor exists there in the
+first place.
+>> So, this is very nice.
+>> your WordPress dashboard, I I doubt if
+you will be able to figure it out in
+such a way.
+>> That's really nice. So, this is showing
+me all the plugins. So, how does this
+So, like if I were to do WPM install
+Block Base, which is a theme,
+right? I think it's a
+>> I just hope it's there.
+>> It is. There you go. WPM LS
+Okay, so it doesn't show me the themes.
+So, do I have to specify if I want to
+see themes and and plugins? Like I Like
+themes Oh, here's a question.
+Oh my god, so many things. Okay.
+Let me I have I have 10 questions, so
+let me just start with the first one.
+Um if I wanted it to show me all the
+installed themes, is there Is there
+something that I have to do for that?
+>> Yeah, that would be a cool feature, and
+I would love if you can create an issue
+on CLI repo.
+>> Sure. Yeah, yeah, yeah.
+Off Okay. So, that's the first thing.
+The second The The The second part of
+that is it would be amazing if you could
+show child themes in the same
+hierarchical
+structure which I don't know if I said
+that word correctly.
+>> Yeah, that that could be done.
+>> Yeah, cuz that that would be very cool.
+Or you just run LS and it says plugins
+themes
+shows you what
+It should also show you what's Does it
+know what's active? Does it have access
+to the database or is it just more file
+structures?
+>> No, it's just uh
+uh FS on the no access to your WordPress
+installation.
+>> Well, that's good to know.
+>> Yeah.
+>> Um okay, cool. So it will just show you
+what you have installed not necessarily
+if if it's running or active or not. And
+that's that's cool.
+>> That's that's the thing for your like
+WordPress dashboard to figure out.
+That's why it exists.
+>> Yeah, yeah. No, I I think I think it's
+better. Personally, I think it would it
+would feel a bit icky if
+And icky's the technical term, by the
+way. It would feel a bit icky if
+if this tool
+had access to the database cuz I don't
+know why I would ever need to.
+>> Yeah.
+>> Um
+Okay.
+>> Okay, so one more cool feature coming
+your way.
+So let's say now you don't have just
+three or four packages here rather you
+have like 10 or 20 packages here.
+And you have spotted a plugin or theme
+that you don't remembering installing
+and you are questioning yourself that
+why it exists here then you can just
+simply type WPMY and that plugin or
+theme name.
+>> WPMY WP PM Oh, sorry.
+PM
+Y and then say what Block Base maybe?
+>> Yeah.
+>> Wait, it did list Block Base.
+Hold on. Maybe that's a plugin.
+Let me check.
+Just let me check that
+>> Ideally, ideally you should have copied
+Elementor because Elementor is something
+that you have you don't you haven't
+installed yourself and installed by
+package manager.
+>> So let's just see. Plugins, install
+plugins. Is there a Block Base plugin?
+No, there isn't. Okay. So
+Okay, they're not
+But that's fine. I'm just going to go in
+the themes.
+So it didn't install Block Oh,
+interesting. So it did install Block
+Base, which is a theme, and it's
+actually showing it in the list already.
+But it wasn't showing it up here.
+Oh.
+That's okay.
+That's cool.
+Um
+So if if I say why Block Base, it'll
+tell me why?
+Or Elementor is probably better one,
+right?
+>> Yeah.
+>> Okay.
+Okay.
+So it's unclear to me what that means. I
+I know what it means because of what
+we're demoing, but it's a little unclear
+to me that you say why Elementor and
+it's just showing me
+>> Yeah, so let's say you got tempted by
+some extension online and you just
+installed it, but now you just installed
+it and you just forgot. Now you're
+coming to your website and seeing that
+why Elementor exists here.
+And then you can just simply check that
+now you can figure out, "Okay,
+my project requires Dynamic Pack for
+Elementor and that package requires
+Elementor." So that's the hierarchy.
+>> Yeah. Yeah.
+>> Also, one more thing that you can
+>> sense.
+>> You can install a specific version of
+your plugin and themes. You just have to
+do WP-CLI install package@version.
+>> So if I wanted to install version one of
+Advanced Query Loop
+uh will this override anything that's
+already there?
+>> it it will replace the existing version
+with the
+>> Do I have to do Is it like that or is it
+the Do you use the at or
+>> Add the rate at Yeah, between you have
+to add it.
+>> Oh, okay.
+Should should Should there be a space or
+no space?
+>> No space.
+>> No space. Okay, so it's the same way
+that you would install So, it's the same
+uh syntax as NPM, which is nice.
+>> Yeah. Yeah.
+>> Okay.
+Okay, cool. All right.
+Uh
+Okay, so there's So,
+>> [laughter]
+>> throw a new error with the space. You
+got it. So, what won't WP-CLI do what
+you're asking?
+>> Uh WP-CLI will only install what's there
+on dot org, if I'm not wrong.
+Also, it will just download the zip. It
+will don't give you metadata and all the
+information that we are doing here.
+>> And it does not handle dependencies.
+>> Yeah, it don't uh
+I'm not sure about that. Uh if it will
+handle or not.
+But
+>> I don't know. And this is something that
+Well, we can test it right now.
+We can test it right now.
+Um
+So, if I if I go in here and I go into
+into iTerm in here and I say WP, I
+should have WP-CLI installed, right?
+So, if I go
+WP Oh.
+WP-CLI Let me zoom that in. Sorry.
+>> What I know is that if you will install
+uh
+plugin using uh WP-CLI, [clears throat]
+it will
+uh verify the MD5
+hash, but MD5 you shouldn't really use
+it because it's not collision free.
+>> Okay, so hold on.
+So, we got WP plugin
+plugin
+Right. Why is this not
+>> install.
+I think it would be either install or
+download, I think.
+Yeah, you need a database connection.
+>> Yeah, I'm sure it I
+I don't know why this this is this is
+for this site, so I don't know what's
+going on here.
+Like
+uh I mean, it will install plugins. I
+think this Yeah, so whatever for
+whatever reason
+I keep losing my database connection in
+here, which is super fun.
+WP plugin install
+Um what's it called?
+What was the name of that plugin? Dino
+for Elementor? Dino's What's it called?
+>> Yeah, I don't know Dino back plugin.
+>> Dino
+back for Elementor, right?
+>> Yeah.
+>> So, if I install Okay, so I can't do it
+here, which is super annoying.
+Um
+I I don't know why that's happening. Do
+I have to enable WP-CLI on this? Come
+on. Come on, y'all.
+That's super annoying. Hm.
+I could try it. Let me try it on a
+different site. Uh let me try it on my
+Badge Press site. Sure, why not? Let's
+just see. So, I go into iTerm and I go
+WP plugin
+install Dino Pack.
+Did I spell it right?
+for Elementor. So, what I'm trying to
+test here is if it will
+um
+if it will handle the dependencies of
+this plugin requiring Elementor.
+Okay.
+I give up.
+Studio, what's your problem?
+What is your problem, Studio?
+Um
+Okay, I don't have any way to test this
+right now.
+>> [laughter]
+>> But, I'm pretty sure I'm almost positive
+>> I need to
+>> I will look into it that WP-CLI will not
+look in in in the requires header and
+say, "Oh, you have to download this this
+plugin as well." So, that's something
+that that that WP-CLI does that I
+believe WP-CLI doesn't.
+>> So, so what So, if folks
+asking for that, what it unlocks that
+WP-CLI doesn't. So, let me answer that
+question. For example, let's say
+you are a plugin author, right? Every
+plugin every complex plugin have some
+sort of helper plugin that help you to
+debug it in a better way. For example,
+Jetpack has such extensions
+that can help you debug your
+uh site in a like different manner and
+that are like development only, right?
+So, in those particular cases, you can
+ship your particular plugin or theme
+with development only
+dependencies, right?
+Now, if user is in development
+environment, then they can run your
+plugin alongside with your development
+only plugin your theme.
+And in production, when you run it in
+your pipeline, you can just
+uh just ignore downloading the
+dev dependencies. Like all of our plugin
+and themes required in the development
+environment only. So, if you will just
+do
+uh just Let me share one thing.
+Query monitor.
+I will give you two commands.
+>> Okay.
+>> One is this.
+>> Okay, I'm just going to open my the
+console here so we can see it. The first
+one is
+I have a feeling I know what that
+exactly what that's going to do. So, I'm
+just going to run that. Okay, so now
+we've got
+query monitor.
+And
+>> So, if you will you will check your
+wp-json, it will add the query monitor
+into the development dependencies.
+So, those are only meant to be in
+development environment. These plugins
+don't need to sit in your
+like production
+>> Right.
+>> and being just sitting ideal there. You
+just don't install them or something
+like that.
+>> Right. Okay, and and then so you just
+you it's technically installed no dev,
+which is
+>> Yeah. And if you will just do wp-install
+hyphen hyphen no dev, no dev
+will be there.
+You will just have uh dependency that
+are strictly required by your
+production.
+You see it I've removed the query
+monitor now.
+And you have only production ready to
+go.
+>> stage we can install again.
+>> Yeah, so
+>> is this is this is pretty
+straightforward. This is pretty great.
+>> So, this also improve your life in
+not just in like while working locally,
+but in your CI/CD as well. Currently,
+what uh mostly people do is they just
+commit uh the plugin in their Git repo
+because they have to use it.
+And it will just sit ideal in your
+production environment, but you would
+just won't enable it. So, that sort of
+things happens. I have seen it.
+>> Okay.
+>> this is particular case for query
+monitor, but it can be with like any
+uh like plugin or theme. For example,
+let's say
+you are building a product and your
+product have some sort of let's say QA
+testers plugins
+that you want to distribute only in
+uh dev environment. So, currently it's a
+problem because
+you have to you don't have to distribute
+one plugin, rather you have to
+distribute two plugins that hey download
+my plugin and only download like beta
+tester plugin or QA plugin or testing
+plugin. With WP M you just have to
+distribute single thing and
+so that extra thing will be just shipped
+with it in development environment.
+>> Right. Okay. So, um
+Thrower here is asking, are you not but
+are you not slurping from dot org? The
+yes, but this is not meant like
+I think I think I think the disconnect
+here is is is that it's not when I don't
+believe LoveKush is trying to to
+um
+replace that mechanism for distribution
+in in dot org. What this is what this is
+doing, what I'm seeing is that this is a
+simplification of dealing with uh
+uh plugins and themes in a production in
+a in a like a large development in
+environment. You like if if if if
+Actually, this is a question. I'm going
+to say this and you tell me if I'm I
+feel like
+if you weren't dealing with any plugins
+that were not
+private or themes that were private, you
+could
+just use composer and WP packages to do
+some of these things as well. Yeah,
+because your composer you you're able to
+define all the plugins that you want.
+They're all available on on WP WP
+packages. That doesn't like
+that would work fine.
+>> Yeah.
+>> And you would get to the same point. But
+what WPM does is it gives you a little
+bit more
+niceties,
+like quality of life things. Like I'm
+going to install a plugin that requires
+another plugin. It's just going to
+install those plugins for me and it's
+going to add them. Oh oh, you know what
+I I'm I'm noticing is that it didn't
+install Elementor as a dependency.
+Is that something that I I would imagine
+that if I wanted to ship this,
+that I I would need that. But anyways,
+the idea is that when I install DinoPack
+for Elementor, Elementor got installed
+as well.
+That's not something that that composer
+will do automatically when you do
+install things, right? I I I guess
+unless the packages file indicates that
+somehow. But um
+yeah. Does that make sense? Am I making
+sense?
+>> Yeah, sort of. So so the thing is that
+how you want to
+>> Sort of. That's the answer ever. I love
+>> Yes. So actually see that what generally
+composer [clears throat] is doing for
+you
+is that it just downloads the zip
+from dot org to your local machine,
+right? And it maintains a manifest that
+okay, this project uses this much
+plug-in and themes. Next time someone
+runs WP sorry composer install, I will
+download the zip of these particular
+plug-in and themes and I will unzip it
+in the current working environment.
+That's the only thing, right? That
+composer is doing.
+So so if I ask you that
+you you can just write a 10-line bash
+script,
+right?
+Add plug-in and themes that you want to
+download
+and just run bash and that is script
+name. What's the difference between
+composer and that bash script now,
+basically?
+>> Nothing. And that's that's my point is
+is that
+you're not replacing composer with this.
+Like your intent is is is is is to make
+working with themes and plugins easier.
+>> Yeah, so my intent is that when when
+people say that composer is the package
+manager of WordPress, my simple take is
+that it's not.
+Because composer sorry, because package
+manager
+just don't download
+the artifacts from somewhere from some
+upstream to your local machine. It does
+like 100 things in between. It verifies
+many things.
+It resolves a dependency. It gives you
+information that why this thing exists
+in first place. It works based on an
+environment that you are using it in dev
+environment. You are using it in CI. You
+are using You are using it in live
+environment. It provides you tooling to
+do many things. For example, it helps
+you to verify
+uh the checksum of the things that you
+have downloaded. It helps you to audit
+the plug-in and themes for any security
+issues. So for example, people whoever
+you are using like NPM, they must have
+noticed when you do NPM install in the
+end NPM shows you that the 14 packages
+are in compromised state or something
+like that. It tells you that
+what what packages are like having any
+sort of security issues.
+Right? So so this is the like job of
+package manager when you do with
+dependencies that they
+take care of dependency management
+end-to-end, not just download something
+from up the stream to your local because
+you can just simply achieve it with a
+basic script or like anything, right?
+>> I think that's a really good point.
+>> And and on top of that, it gives you a
+like a streamlined experience.
+So, for example, when you have like
+you If most of you don't know,
+you can use your own NPM registry.
+You can use NPM registry on GitHub
+packages. You can use NPM registry on
+on AWS. You can use GitHub Sorry, NPM
+registry on Google Cloud. Now, why these
+solutions exist is
+that for enterprise, many times what
+happens is that they just don't trust
+the reliability of external registries
+or security state of external
+registries. So, they just bring in their
+own registry. They manage everything or
+in-house things there. And they just use
+NPM tool because they think it is spec
+compliant. You are building things in
+such a way that NPM understands. NPM
+understands the language. You can now
+build anything. You just type You just
+attach your registry with NPM. You can
+just download it. So, that is the like
+sort of vision I have with the WordPress
+ecosystem.
+So, people can just have like their own
+They can build own solution. They can
+plug in many things in the existing
+ecosystem. They can build things in a
+like a spec compliant way so that anyone
+can use it without like writing lot of
+automations manually. Rather, they just
+uh plug and play with existing tooling.
+>> Very cool.
+>> Yes.
+>> Very cool. I think um
+I don't know. I like it. I think it's
+fun. I think it's helpful.
+>> Also, WP Without WPM, it's
+without like a native package manager,
+they are a like This is not possible to
+bring many things to WordPress
+ecosystem. For example,
+that
+for many things you can use
+uh existing tool. Let's say how you
+update your dependencies today.
+Uh
+in many packages, depend about can
+download your composer packages, even
+WordPress themes and plugins.
+But what about the private ones?
+That is that are even not there on the
+composer. How you will download them? So
+there is a gap. Now you have to find out
+manually that, "Okay, this package is
+have now update every level." Or you can
+even figure out from WordPress
+dashboard, right? How you will know that
+a package has some malicious code in
+previous version.
+Right? So so there are like a lot of
+sort of things that needs to be here to
+make life easy at least for developers.
+That is what I think.
+I want same ecosystem as NPM in the
+WordPress. That is like you can put it
+that.
+>> Yeah, I mean, I think
+I mean, it seems like it it seems
+uh very straightforward. It's easy to
+share this stuff. Um
+Yeah, I mean, I don't know if I I I
+don't see any other questions. I think I
+think thrown new errors actually jumped
+off stream, but um he had a lot of
+questions. But So let me ask you this,
+if somebody wants to help,
+um how how can they? If if they want to
+do just head on over to the the the the
+the CLI repo or
+>> Yeah, they they can go to the CLI repo.
+They can just download it, try it. So
+see, you just uh
+taught me a good thing just a while back
+that add support for themes and plugins,
+right? That what WP-CLI and WP-CLI list
+plugins, right? So that is the like sort
+of feedback that I'm looking for. Now
+you can just create an issue I can work
+on it. If you are like technically
+proficient, you can just raise a PR. It
+would be like really helpful. You can
+give me ideas that what can
+actually what we are missing in our
+daily workflow and we can have it.
+So, there are like any number of things
+you can suggest, you can do.
+You can just
+help me like other people help in open
+source ecosystem and open source
+projects.
+That can be anything like fine-tuning
+docs, adding more things to doc.
+Uh raising PRs, fixing bugs, any any
+sort of things you want.
+>> Cool. Oh, something's going on. Sorry, I
+tried to drop the link in there and it's
+only going to YouTube. I don't know
+what's what's going on.
+Do you have the stream open there? I'm
+just wondering like did you see my last
+thing? I don't know what's going on
+here.
+Oh, there it is.
+Looks like it's going in there. I don't
+know what's going on. Anyways, maybe my
+Restream chats chats just going weird on
+me.
+>> Yeah. I can see the CR later on.
+>> Okay, cool. So, if you're interested in
+uh helping out, that's the place to go.
+I'm going to open up an issue after
+we're done here about adding themes and
+um into the LS command. Uh I did notice
+something as well.
+Um
+so, when we when we ran the install Dino
+Pack for Elementor, it installed
+Elementor but it didn't add it to the
+dependencies. Uh will it handle will
+will
+will it resolve these dependencies on
+install on on its own?
+>> That's why a lock file exists there that
+locks the Elementor to a particular
+version.
+>> Okay. So, if I were to say if I were to
+just delete all these plugins for
+example.
+>> Mhm.
+So, you just can do rm -rf wp-content
+and just run wpm install again. It will
+uh bring everything back. Yeah.
+>> What's what's I love I love rm -rf.
+Here we go.
+Uh
+is this going is this going to yell at
+me? Okay, so then I go n p o no sorry w
+let let me clear this so chat chat can
+can see it properly. And then just go
+wpm
+in Oh god, come right? Install.
+Okay, so then installed everything that
+it needed. Okay, so it doesn't need to
+Let me just Sorry, let me get this open.
+So, in here
+plugins
+plugins. Okay, so okay, it interesting.
+So, this is this is like interactively?
+Um I I guess that's the question. It It
+will figure out if any of these plugins
+have dependencies, it will just
+automatically install those
+dependencies. Now, is that That's
+triggered by the readme file?
+>> No, I I
+>> I imagine in here.
+>> So,
+um so, let's say first time you will
+install a dependency, right?
+>> Yes. So
+>> time it will So, see, what happens is
+that when I publish any new plugin to
+the WPM registry, it will parse your
+readme.txt and main plugin file.
+And it will take a look at the required
+plugins. Yeah, that's the exact thing.
+>> Okay, so
+>> And it will add that as dependency.
+>> exactly what it's doing. So, anytime you
+install a plugin, it just automatically
+scans that. So, is that more or less
+efficient, this is a random question,
+than just once it's determined it, it
+just adds
+Like, is it more efficient? I don't
+know. You You tell me. I I know that
+uh this is written in a way I want to
+say I think you told me that
+>> you should see the WPM.json inside
+DinoPack for Elementor, and it will make
+things easy for you.
+>> [snorts]
+>> In DinoPack for Elementor.
+>> Oh, right there. Okay.
+>> Here it is from
+Yeah.
+>> Yeah.
+>> Okay, and so is Is this something that
+has been shipped with DinoPack for
+Elementor?
+>> No.
+>> Ah! No, okay.
+>> in automatic.
+>> So, this is
+Oh, I There's There's one in there, too.
+>> Yeah.
+>> Oh.
+>> Every Every package will have it.
+So, this is This is the like metadata of
+the plugin.
+You will find everything
+>> Interesting.
+>> platform PHP WP like what platforms it
+supports.
+And tags, home page, everything it will
+add there.
+>> Uh
+okay.
+>> And from this metadata
+>> Mhm.
+>> And from this metadata WP-CLI resolves
+that what it needs to install.
+>> And so
+where at which at what point is this
+created? Is this created when you're
+running NPM
+WP I'm installing and installing this
+No, okay.
+>> It's it's created at the time when it
+downloads the tags from SVN in the
+GitHub extension.
+>> Oh, so So this is So you're adding this
+into
+the zip, I guess, or whatever
+on on the server side. Okay, so that's
+how it's handling. So it is just as a So
+we don't need to store that at the
+project level. We just need to store
+that this is the thing we actually need
+and it handles
+um
+Uh yeah.
+Uh okay, it's
+couple of questions. One is from Kevin.
+Um how will it make money?
+>> So my idea is to
+uh to make it sustainable is that
+registry also supports private plugin
+and themes.
+So instead So currently what happens is
+that let's say you are
+uh authoring a premium plugin or theme,
+you will have to set up your own infra
+to distribute that, right?
+>> Mhm.
+>> So instead of
+setting up your own infra
+publish your private plugin or theme on
+WP-CLI.
+For even less than
+it would take you to set up your own
+infra.
+And then in in a like better way how it
+will help ecosystem is that from a
+single place you can download all the
+private all the public plugin and
+themes.
+So this is the like So this is that
+that's why I keep the registry so that
+people can add private public and with
+any sort of visibility they can just
+push it there.
+And you just don't have to manage
+multiple authentication systems and all
+that to download your
+um private and public managed
+uh plugin and themes. Just type So so so
+you must agree with me that it was very
+fast when you run WPM install and the
+plugin name.
+Right?
+>> Yeah, it was very fast.
+>> And and you can like add 20 plugins or
+themes name there, it will just install
+them in less than a second. Now imagine
+that in that particular list, five
+plugins are private and five plugins are
+uh public. And And feel like what type
+of developer experience you will get out
+of it, right? So
+So even to test it, I can like give you
+a very
+big list
+to test its capability.
+>> [cough]
+>> Just
+>> Um
+Just while you're doing that, Ali man
+Ali ma'am is uh saying is this an
+interview? I guess it's an interview.
+It's
+with my man Lovekesh Kumar here and
+we're talking about his wpm.so
+um product. So uh you can scroll back in
+chat and see what's
+what we're talking about.
+>> small alpha like open source project.
+>> Yeah, small. Yeah, no no work involved.
+Let me Okay, so this is what you're So
+this is installing Yeah. 1 2 3 4 5 6
+7 eight plugins. Looks like eight eight
+plugins. So let's see how fast that can
+go. And are you ready to get set?
+That was lightning fast.
+That was really fast.
+>> And now imagine that out of these eight
+plugins, four are public and four are
+private. And this is the sort of DX that
+we deserve like at least as a developer.
+Instead of setting up 10 types of
+automation to download private stuff
+from 10 different servers.
+>> Yeah. This is cool.
+Um
+I don't if chat wants to answer the
+the question. It's a it's a WordPress
+package manager, wpm.so. Go and check it
+out. I'll drop the link and you can go
+read about this.
+Um
+Where is it? Oh, I've lost the link.
+Have I lost the link?
+wpm.so
+There it is.
+You go you can go have a read there.
+Um
+Cool. Anyways,
+um awesome. Okay, well, yeah, I like I
+think you're right. I think that like
+the the development experience should we
+shouldn't matter where these things are
+hosted.
+>> Yeah.
+>> Like I Cuz if you're just like setting
+up a project and going to work on it,
+you don't why would I care what whether
+this is a private repo or publicly
+hosted on dot org or both or whatever.
+Like it doesn't matter. So,
+>> Yeah.
+>> I think I think I think you're right.
+Just like a nice just install. There it
+is. Now now go do your work.
+>> Also,
+>> It's very cool.
+>> one great thing about this is that
+since this is a spec driven, everything
+is in a like in a deterministic way.
+It's universal that with WPM, you will
+have a manifest file and then you will
+have a tarball.
+So, you can integrate with
+it with like any tool you want. For
+example, I am seeing a comment in Twitch
+that
+uh getting this into playground would be
+cool.
+So, yeah, tell playground team that
+whether they want to integrate it.
+And see, I am sharing one more link with
+you if you can please open it on your
+screen.
+>> Yeah, sure.
+>> So, playground team can just
+uh like get whatever information they
+need about a package
+from the registry and they can just
+integrate into their own system
+because like there are no gotchas.
+Everything is in public here. They they
+can just integrate.
+>> Okay.
+>> This is the manifest for Jetpack plugin.
+>> Mhm.
+>> You can figure out that
+what things it will need like what WP
+version this plugin will require, what
+PHP version this plugin will require,
+and you can just just spin up your own
+thing. You can integrate in your like in
+studio or in your playground, whatever
+you like.
+>> Yeah. Yeah, yeah, yeah. I mean, I don't
+see why like playground does it have
+command line? Uh
+so, playground does have
+it does have WP-CLI in it, which would
+mean that there would be some sort of
+command line in
+interface. So, I I don't see why it
+wouldn't be a possibility. It's an
+interesting concept, though.
+Um because really like you're just you
+just want to be able to run
+command line commands, command line
+commands,
+right?
+in playground.
+Here's playground. Let's Let's take a
+look.
+That's not it.
+That's not it. I got to go to settings.
+So, let's go settings. Allow network
+access for remote site.
+>> On playground, I think you can add zip
+file save file.
+And it will
+uh download the plugin.
+>> So, you can you can um
+you can definitely
+uh
+install plugins. Um
+from
+>> So, you have to add in I think some sort
+of blueprint on the front.
+>> Yeah. Yeah. Well, that would be
+interesting. You know what would be what
+might be be super helpful for you is to
+generate a blueprint that
+demonstrated this.
+Um
+like just to be like, "Hey, yeah, it
+works with playground, too." Here's you
+know, blah blah blah. Here's your Here's
+a blueprint showing you how to do that.
+I I think that would be very neat.
+Because um you can use CLIs. You you you
+can actually like have it install CLI
+uh
+like WP-CLI and then and then run it
+that way. But um I'd have to look at the
+steps and maybe um
+uh uh Filip is probably someone that we
+should talk to you about this.
+Um just to see what command line stuff
+is actually available. Uh which is kind
+of neat. So.
+Uh oh, you can search anything from
+Oh, yeah. Cool. Oh, now now you're
+you're just answering the questions. You
+don't even need me here anymore.
+I'm just
+I'm just hanging out.
+>> I just learned
+a lot from you.
+>> No, no, no. No, please do. I talk too
+much, man.
+>> also like one more thing that I am
+planning to expose or composer
+compatible AI as well
+from WPM. So, it's not just like that
+you can only take take advantage of this
+WPM registry from WPM CLI.
+Even though it's preferable that you use
+for like all sort of security
+measurements and that is stuff, but you
+in near future you will be able to use
+WPM registry from
+uh composer as well.
+So, I I am doing so because uh
+it will be uh measurable faster since I
+will be distributing
+uh plugin or themes artifacts as gzip
+compressed tarballs instead of zip.
+>> Mhm.
+>> Which and gzip has like better
+compression ratio, so you will uh found
+like better latency if you are using
+WPM composer API instead of the existing
+ones.
+>> Uh sorry, I keep clicking on the wrong
+link here. Um
+okay, cool.
+Um well, this has been great, man. This
+is really good. I I I think this is fun.
+Um I mean
+I'm not building massive uh uh uh
+projects anymore, um but I can see how
+this is super helpful in in that case.
+Um
+so, the model that you're hoping to to
+implement for sustainability is
+basically paid
+um in infrastructure for folks that want
+to manage their
+their their stuff, but is there also
+like if someone if someone just loved
+what you were doing and wanted to donate
+is like do do you have a
+I don't know. Like like is there a a Can
+they get out Can they donate to your
+GitHub account or anything like like
+that?
+>> set the sponsors yet.
+>> That's what I was trying to say. That's
+the word I was trying to Yeah.
+>> Yeah. I I haven't set it up, but maybe I
+will set it up.
+>> Sure, yeah. I I would. And then yeah,
+merch.
+I Is there Is there going to be a WPM
+shirt? Cuz I I'll wear it. I'll WPM.net
+so here.
+>> Yeah, but I would appreciate if you can
+>> Anything?
+>> give the repo a star, it will help me to
+>> Oh, yeah, yeah. Sure.
+>> open source grants
+>> from like different equal system. I'm
+trying to get one from Docker
+so that I can publish uh images on
+Docker and then anyone can just pull
+them without great limits. So, this
+thing will help.
+>> Oh, nice.
+Yeah, so go and I'll uh drop the link
+the link in here. So, if you're in in
+chat and you have a GitHub account, get
+over there, click on that, star it. Um
+this has been great. This has been
+awesome, man. Well, thank you so much.
+Love you. We got about 4 minutes left.
+I feel like this is a pretty good place
+to kind of wrap it up, but uh Does any
+any Is anyone in chat have any questions
+that they want to ask? Um
+and I have a couple of things, but
+>> [clears throat]
+>> I will
+not just because I'm
+constantly self-promoting, but
+>> [laughter]
+[cough and clears throat]
+>> Excuse me. Oh my god. No, not Okay.
+So, let me I I'm just going to do a
+little back scroll here. So, I think
+we've got everything. We answered all of
+the questions, but
+um
+is I When will we see you next? Are you
+Are you going to be Are you Are you Are
+you Are you coming to WordCamp Europe by
+any chance? What what do you think?
+>> no, but I won't be there in WordCamp
+Europe.
+>> No?
+>> Yeah.
+>> Okay. Well, I guess we'll have to see
+you online until we don't, but um it was
+great hanging out in
+>> Yeah.
+>> India. It was my first time in India. I
+I I enjoyed it. Now, is going to be a
+WordCamp India. Like specific fourth
+flagship. It's going to be very cool. I
+don't know. Did they announce where
+where it is yet? Have you heard?
+>> I don't know, but I don't think they
+announced it yet.
+>> No, okay. So, that'll be interesting.
+Um so, cool. So, if I don't see you,
+hopefully I'll see you at one of those
+ones, but
+speaking of this is a really nice segue.
+Speaking of WordCamp Europe, I'm going
+to be there. And
+I if anyone wants to grab some time with
+me, I have a Calendly link set up. I I
+dropped it in chat. We can talk about
+AI. We can talk about wp.so. We can talk
+wpm.so. I'm sorry. We should all could
+also talk about coming on the stream.
+Talk Debbie to me, which is
+ridiculously fun title.
+But, yeah. So, if you're interested,
+grab grab a slot of time with me and
+I'll be tweeting this out and everything
+before we go. But, I think it's next
+week and I believe to go. I'm doing a
+workshop there. It's on the
+interactivity API. So, hopefully we're
+there.
+Um
+What about a plugin search? Kev Kev's
+always got great ideas. Just ask Kevin.
+Kevin be like, "Yeah, here's 10 ideas
+and here's
+20 ways to do it."
+He's He's smart dude.
+All right, cool. Well, maybe we should
+wrap it up.
+Love Thanks again. I don't know what
+time it is for you. It must be super
+late right now.
+I don't know.
+>> No, no, it's not that much late. It's
+9:30 p.m. Yeah.
+>> Okay. Well, yeah. So, you're 9 hours
+ahead of me. So, that's 9 and 1/2 hours
+ahead of me. It's only noon here
+my time. So, it's not too bad. Not too
+bad. But,
+thanks again for taking the time to to
+talk to us about wpm.so and
+and walking us through it. I loved it.
+It was fun. Um so,
+in the YouTube description, there are
+all the ways to get in touch with with
+Lovekesh. And we've also
+linked everything everywhere. So, if
+you're interested, reach out to him or
+me and uh you know, we can make some
+connections here. Get some
+get some love happening to wp-a.m. .so.
+Cool. All right. Well, we're going to
+call it. But uh thanks for hanging out
+today um everyone in chat and we will I
+won't be streaming next week cuz I will
+be at WordCamp Europe, but then the week
+after
+I will be streaming and then I think I
+have my next guest set up. You know him
+and love him as Terrence. Uh he's he's
+he's going to come on and show us
+something that he built that I'm going
+to completely make fun of
+cuz that's how we do things. Anyways,
+okay. Enough about that. Love guest,
+thanks so much, man. And we'll talk to
+you all later. Okay. We'll talk to you
+soon. Have a good one. Bye.
+>> Thanks.

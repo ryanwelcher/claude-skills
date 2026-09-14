@@ -1,0 +1,1 @@
+/write-article Write a tutorial for the WordPress Developer Blog: how to add a custom toolbar button to a block with BlockControls, ToolbarGroup, and ToolbarButton. The example button clears an image attribute. Audience: intermediate block developers. Skip the outline confirmation and do not ask me anything: write the full draft and save it to draft.md.

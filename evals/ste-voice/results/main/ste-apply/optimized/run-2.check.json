@@ -1,0 +1,1 @@
+{"skills_invoked": [], "ref_files_read": 2, "ref_tokens_read": 2536, "full_transcript_read": false, "ste_card_read": true, "refs": ["ste-pass/references/ste-card.md", "ste-pass/scripts/ste-lint.py"], "steps": 0, "steps_le20_pct": null, "step_swap_words": 0, "admonitions": 3, "make_sure": 11, "fixture_changed": true, "code_identical": true, "overview_voice_kept": true}

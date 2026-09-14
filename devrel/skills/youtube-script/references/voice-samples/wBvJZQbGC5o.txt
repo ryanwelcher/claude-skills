@@ -1,0 +1,2014 @@
+Go home. When all
+All right.
+Hi, everybody.
+How's it going? Oh, my microphone. It's
+way over here. Hi, everybody. How's it
+going? Um, welcome to the stream today.
+It's been a while since I've streamed.
+It's been a couple of weeks, I think.
+Um, I was sick last week and then I was
+at work at Asia which was an absolute
+blast. Although I did stream on that one
+maybe two weeks ago. I don't remember.
+Anyways, it's the last time I streamed.
+It was a while ago. I'm putting on my
+glasses because I can't see anything
+anymore.
+So, there's that. Today, um, is kind of
+exciting. I'm I'm I I'm pretty excited.
+I don't know if you heard about this or
+not, but my my employer, Automatic, is
+doing this thing called Radical Speed
+Month, which is really really cool.
+Hello from YouTube. Hello Stefan Frazzo
+Penzola497.
+That's a mouthful. Welcome to the
+stream. We're over here in Twitch if you
+want to come hang out, but you're
+welcome to chill on YouTube, too. Um, so
+I don't know if you heard about this or
+not, but my my employer automatically is
+doing this thing called Radical Speed
+Month. And uh Oh, hello O. [laughter]
+It's
+>> welcome, Lord of Blood. Welcome. Um,
+yeah, we're doing this thing called
+Radical Speed Month. And basically, the
+idea is to just like uh work in small
+teams. So, I'm I'm teamed up with a guy,
+uh, Atimus, who's phenomenal, way
+smarter than I'll ever be. Uh, and, uh,
+we work on things with basically no
+no red tape for for for lack of a better
+way of doing it. like the we can kind of
+it's just we we're radically building
+stuff fast and uh yeah so that's what
+that's what we're doing now. It's not
+like official products or projects by
+automatic. It's sort of like let's see
+what we can do. Let's have some fun with
+it. I think it's pretty cool that like
+my boss Matt was just like hey everybody
+stop what you're doing and go build cool
+[ __ ] for the next month. I think that's
+amazing. That's super super cool. So
+what I'm building is um this thing I've
+I' I've called it WP director um and uh
+it's uh the idea behind so it it stems
+from a conversation that I had with
+Jamie Marslin at um Work Camp Asia this
+year because we're because uh Jamie as
+you know is the head of of WordPress
+sorry the head of you have YouTube and
+automatic does everything on the YouTube
+uh channel there also has a very
+successful YouTube channel of his own.
+Um, so [clears throat] like creating
+demos, creating coding demos,
+specifically WordPress things is very
+it's it's timeconuming. It's a bit of a
+pain. So like let's say I have a demo
+that I want to set up. So I have to
+like, you know, I'll spin up studio,
+I'll populate some content, I'll maybe
+add a bit of code or whatever it is, and
+then I have to like, you know, then I
+get QuickTime or Screen Studio or
+whatever it is that I'm recording in.
+And then like I literally click through
+all the things and then I'll miss
+something or I'll whatever. Uh, and then
+I I have to do it all over again. So,
+the thing is it takes like
+forever. Why is my
+Hold on one sec.
+What is that all about?
+Hey,
+sorry I'm having some technical
+difficulties here. My screen is showing
+stuff.
+>> We should
+see back on correct now. Weird. Okay.
+So, I don't know what what what happened
+there, but it was showing an outdated
+version of my um it was showing an
+updated version of my screen sh of my
+desktop there. So, you're seeing like
+all my Slack messages. [laughter] So,
+I'll be trimming that from the video.
+Anyways, um I think we're good here.
+Let's see. Let's look. Okay. Yeah,
+that's that's moving. Anyways, so
+Oh, look at this. Look at that. All good
+mornings. Hello, Terrence.
+How you doing, friend? Good to see you.
+Can you share something you built? Maybe
+is it a link to a Flappy Bird game?
+Because if it is, I'm not clicking on
+it. Um, yeah, you go ahead and drop it
+like I'm going to continue talking about
+this thing and then we can look at your
+your thing. Um, and we'll go from there.
+But, um, all right. Well, let's just
+click on this right now because
+hopefully,
+let's just see. There we go. Wireframe.
+What is this thing? What is this thing?
+Terrence, what do we got here? Skip the
+UI admin. Ship your plugin.
+>> Hey, Troy. What's up? Um, so Oh,
+okay.
+So, what is this thing? This might be a
+good ex This might be a good uh Maybe I
+shouldn't look at this. And we'll have
+you on for um
+You know, you you you said a small
+package in there and there's jokes
+there, Terrence. There's jokes. There's
+jokes there. I'm just I'm But I'm too
+mature. I'm too mature as an adult to
+make those jokes. But I'm very excited
+for for [laughter]
+um I am not Lord of Blood coming in with
+the shade. I love it. Troy. Anyways,
+this looks really cool. But why don't we
+save this and why don't you come on as a
+guest for Talk Debut to me and you can
+walk me through all this stuff. Well,
+how do you feel about how you like them
+apples? Why don't we do that?
+Um, this is cool though. I I mean, it's
+a it's a framework for for building out
+uh UI, right? Have you looked at what
+they're doing in like the sort of the
+new UI stuff? Um, it's it's pretty
+experimental, but it's pretty pretty
+cool stuff. But this looks great. So,
+this is React. Is that what this is? I
+don't Oh, admin UI. Okay, cool. Very
+nice.
+Yeah. Okay. Okay, so I'm going to stop
+looking at this because the whole
+premise of it of talk to me is that I
+don't know anything about it and then we
+can I can use it and we can play around
+with it and we can have some fun with
+it. So, ping me after um
+uh ping me after the chat or I I'll
+reach out out to you and and and we'll
+schedule something um and and get you
+on. This is great because I have a
+couple of really cool guests. Um I have
+one lined up uh Love who I met at at
+Work Camp Asia. He's doing this this
+thing. It's called WPM and it's really
+cool. Um, so I'm gonna get him on and
+then Alpus, thanks. Yeah, it's my uh
+it's my it's my smart look. So, and when
+I when I when I'm annoyed at you, I I I
+I can do this.
+>> Oh, I love your new uh
+>> He's getting old. Right. Right. I am
+getting old, Terrence.
+>> [laughter]
+>> We're not all in our teens.
+Look it. I disappear when I do this.
+Yep. Green screen.
+Anyway, you streaming Call of Duty.
+Nice, man. That's cool.
+Um, what's your Twitch? Like, do you
+can't be going to working out parties
+and getting drunk, eh? Yeah. Yeah.
+I bet I can. I'll put original like on
+Twitch. Yeah. Hold on. I think I have a
+highlight. What's this? No, I got a
+shout out and it's uh
+let's see.
+Ah crap. Sorry, that didn't do it. I
+have this shout out thing that I'm uh
+don't even know what I'm doing here.
+What's that do?
+Okay.
+Is this it? I'm I'm going to go follow
+right now. Th This is you. Boom. Can I
+Can I sub? I can't sub.
+Everyone go follow Alpus right now. Do
+it. I'll wait. Nice.
+Now, the thing is, are are are you good
+at Call of Duty? Because you know how
+awesome and funny it would be if like
+you were horrible. Like if I played call
+uh Call of Duty, it would be like I' I'd
+die every three seconds and people be
+like, "Ah."
+So yeah, nice, man. That's the way to do
+it. I I have this idea for for a a a
+channel where like a 46-year-old man,
+me, plays games that requires like, you
+know, [clears throat]
+late late teens, early 20 re reflexes,
+[laughter]
+so I just get my ass handed to me the
+whole time. I think that'd be a lot of
+fun. And it's just me raging out and
+breaking controllers. That's the whole
+idea.
+That's cool.
+Yes. Uh Troy, when your validation API
+is in a place, we're going to have to
+have you on uh the show again. The show.
+I sound like I'm like a late night talk
+host. We'll have you on and you can uh
+you can uh we we can we we can work on
+it. What am I saying? Oh my god. And
+then you'll be the first two timer.
+Be great. It's like Saturday Night Live.
+Okay, anyways, enough of this
+shenanetry. Um, so the thing that I'm
+working on is called WP Director. And
+the idea behind it was um that it's it's
+it's a pain in the ass to to set up
+videos, right,
+Terrence? Why do you show up? You're so
+mean. I can't imagine you as a gamer.
+Look at this. Look at this guy.
+Where is this spotlight message
+guy sits into Sudoko and word searches.
+>> [sighs]
+>> I play I I I I am in love with this one
+game. It's called The Long Dark and it's
+probably the equivalent of like Sudoku
+and word searches to people that like
+live on like Fortnite and all that
+stuff, but it's like it's an amazing
+game. I have a lot of fun playing it.
+You're Yeah, it's like a It's like a
+wilderness survival game. I love it.
+It's so much fun. Uh
+yeah, so anyways, that's the game that I
+like to play right now.
+Anyhow,
+okay. So, s setting up a demo in
+WordPress is not easy. Like if you want
+to do uh Oh, here we go. Is direct like
+a WCA WPA AI record? No. So, what it is
+is yes and no. Okay. So, okay. So, so
+the premise is I I want to create a
+video using like of a of a demo in
+WordPress. So, you know, Playright is a
+really great way of doing endtoend
+testing and it's basically like a human
+or like it's a, you know, you get a
+headless browser and it will click
+through and do things for you. So, what
+I thought I would be really cool is the
+ability to use natural language, say
+things like go and create a post and
+then have that be translated into
+playright end to end like playright uh
+selectors and then generate a video. So,
+playright will will spit out videos for
+you. So the idea here is that I I can
+say things like
+uh create a new post then install jetack
+right so I click that hit go
+and then so it's got the it it's got
+these these two directions as as I'm
+calling them and then if I click preview
+now what should happen
+uh oh
+it's taking There we go. So, we're going
+to create a new post, I hope.
+Is this just failing on my first demo?
+Why? Okay.
+All right. Hold on. Stop this. I've got
+some some other ones. So, let's do one
+basic insert test. Okay. So, so this is
+saying create a new post. So, if I
+preview this, I I wonder if my branch is
+is breaking this.
+So, [clears throat] yeah. So, here we've
+created a new post. We're going to
+pre-populate the title
+and it's going to do a bunch of stuff.
+All right.
+Um, so what it use Yeah. So, it's it's
+using playground. So playground is
+powering these instances here and uh
+it's and and and we're using uh I'm
+using code to u to uh translate things
+from natural language into um
+into uh uh playground steps and so what
+you can do or not playground to end to
+end test. So I have a ton of these sort
+of uh uh uh testing scripts. So the idea
+is you you can save some some scripts.
+Um let's do let's load this block
+selection one. Yeah. So this is so I've
+created each of these steps. And so what
+it's going to do it's going to go
+through it's going to create new post.
+It's going to pre-populate the post with
+some headings and titles and content
+blah blah blah. It's going to select the
+text. It's going to set it all to bold.
+It's going to unbold it. Then it's going
+to make it italic. And then it's going
+to move the paragraph up. So I don't
+even see that video very well. But
+basically so so that's the idea. So
+after you you preview this, you can
+record it and it will um so that's going
+to record now. And then it's going in in
+my recordings. I've got actual videos.
+You can set the
+um I I've been using code a lot. I I I I
+just got access to codeex through work.
+We have like a bit of a demo for for 3D.
+So I haven't really played around with
+it too much yet. And I I hear people
+love it. Um, so I'm all for uh uh giving
+the world. So what this is doing, so so
+when Playright generates a video, it's a
+webm and then so what I'm doing is I'm
+taking that webm and converting it under
+the hood um
+to um
+uh into an MP4. So and I I can pick one
+of the one of the presets here. So now
+if I look at this block selection thing,
+I can load the video. I can download the
+video, right? And um yeah, so that's
+kind of what it does right now. There's
+a lot of stuff going on under the hood.
+Um I've been spending a lot as I is
+there a way to highlight to clicks or
+sections? Um well, yeah. So right now
+there is so I have this this this admin
+uh sidebar thing. So it does a lot of
+stuff. So if I were to preview this, if
+you look you here, let me click that.
+You should see a little blue circle
+where things are being clicked on, which
+is a little bit maybe not great. Um, but
+that's kind of where where we're
+starting. Um,
+did I just break?
+Huh? Okay, cool. Let's stop that.
+Another really cool feature that I like
+is you can if like there's a lot of
+steps here. So,
+um, yeah. Well, my plan though is to
+allow that to be a little bit
+customizable. Like, I think it'd be very
+cool to be like, um, uh, you know, make
+it a big mouse, like make it a big mouse
+hand, right? Um,
+uh, so, right, and and maybe be able to
+choose the colors and stuff like that,
+but that's sort of that's a bit down the
+road. But but one feature that I I quite
+like is the ability to to to do things
+like this. So I I can say I want to just
+start from from the user uh uh section.
+So So what this is going to do is this
+little this little pin are steps that
+that are always run. Um no, it doesn't
+support zooming yet, but that's a pretty
+cool idea. Um but you can also do that
+in the post-production of the video. So
+um that's sort of Yeah. Um, so we we can
+start by opening the admin and then jump
+directly to going to the users. So let's
+just go from here maybe. So so if I
+preview this, what should happen is it
+should go to the admin section of of the
+page and then it should jump down when
+it gets there. It should try to click on
+users. I don't know why this isn't
+working now. This is so frustrating. I
+spent so much time messing around with
+the rules
+and selectors of all this stuff. Uh, let
+me I'm going to stop this. I'm going to
+jump back over to a different branch.
+Um,
+so maybe I borked it in the branch that
+I'm working on. Okay, never mind.
+Um,
+so anyways, there's a a bunch of things
+that are going on. One really cool thing
+that that we did, and I didn't do it. I
+didn't I can't take the credit. My
+partner did it, and he did a great job.
+Hey, Dave Bunty. Good to see you. is we
+have this concept of like uh playground
+pools. So behind the scenes when we
+start up the server there is the ability
+like so the like playground takes a long
+time to spin up right. So when we hit
+preview we don't want to wait 10 seconds
+14 seconds or whatever it takes. So we
+have these like these these pools kind
+of um ready like warmed and ready. So,
+so there's two in instances of
+playground that are being run and and so
+so if if I were to come in here and grab
+I don't know what this block select, it
+should be pretty quick to spin up like
+that that that's pretty fast considering
+we have to spin up an entire instance of
+playground with a blueprint using this
+CLI. So, it's it's it's pretty fast,
+right? So,
+um, and and so what I'm working on today
+is we have this, um,
+this this, uh, oh, you can't see me all
+myself over there. So, if you look, so
+we have the like the some some blueprint
+settings. So, if you're not familiar,
+uh, Playground has this concept, the
+blueprints where you can provide it an a
+a a blueprint for the WordPress instance
+that you're spinning up. And so what
+I've been working on is the ability to
+have the inst the the WordPress instance
+um be configured on this blueprint level
+and then when I save it, it actually
+rewarms the pool. So it kills the
+existing uh playground instances because
+the way that it works is when playground
+is spun up, it it uses the blueprint,
+the default blueprint. And so when it
+tries to connect to that after I've made
+changes here, the there's a hash that
+that referred to those things and it's
+based on on the blueprint, it doesn't
+match. So what we have to do is we have
+to basically kill those we we have to
+kill the instances in the pool and spin
+up new ones um that use the the the
+latest environment here. So like for
+example, if I wanted to not have to do
+this create post like if I preview this
+now we should show we should start at
+the dashboard which we do right but then
+it goes create new post and then it's
+saying set a post title and it's doing
+all of that. So what we can do with this
+now is say instead of telling it to go
+create a post just start on the new post
+page right and then hit hit save. And so
+so down here there's a little indicator
+saying what what's happening. So and
+what's actually happening behind the
+scenes is it's old process it's it's
+killing the old old um playground
+instances and then spinning up new ones.
+So now if I were to say delete this step
+and and and run this I should just start
+at the new post page.
+And there we go. So,
+um, which is which is pretty cool
+because, [clears throat] you know, a lot
+of times you're just always going to be
+in in the browser. So, like we don't
+need to be like, well, go log into
+WordPress and do all of that, right? And
+so, there's there's all the environment
+settings for WordPress itself. You can
+set the you can set PHP versions. You
+you can set the WordPress version. Now,
+I there's a thing in here that I want to
+add that you can actually um because you
+can say beta and and that'll give you
+the let either the beta or the RC of
+WordPress and that's not that's not
+reflected here, but that's fine. So,
+we'll add that in. And then maybe some
+more options here. This is, you know, so
+then in the site settings, you can do
+all your regular old site settings,
+right? You can add plugins. So, like if
+I wanted to add the most
+amazing
+um plugin ever in uh created by by man
+or woman. Um you can add that and it'll
+be automatically uh created. You can
+even tell it to generate a bunch of
+posts if you want. So, if I save this,
+so I have to save this now and the
+playground instances behind the scene
+are being being dumped and being uh
+created. And so this is just saying
+configuring environment. When that when
+that goes away, I'm good to go. So now
+if I were to go um let's go like this.
+Go to the plugins
+page. All right. So it's going to it's
+going to do that. I'll just move this up
+here.
+All right. And then uh where'd that go?
+Go to the plugins, please.
+So, so what should happen now is if I go
+to the plugins page after so it's
+setting the title. [clears throat]
+Yeah. Yeah. The author seems so cool and
+good-looking and tall and wears glasses.
+Uh oh, I broke it. What happened?
+Let's just do this.
+Why is it configuring the environment?
+Uh oh. There we go. So, you can see that
+it's actually pre-installed there.
+Um, and that's because I added it there.
+So I I don't know what happened there.
+That was weird using.
+Okay, cool. Um, yeah. So that's kind of
+that's the sort of high level high level
+overview of this.
+[laughter] I sell it showing your free
+plugin to everyone. That's right. That's
+right. Terrence, who wants to come on my
+show and show his stuff?
+This guy. This guy over here. Over here.
+Wherever he is. I don't know. Um. Oh
+yeah. Oh. Oh. Did it create content? So,
+let's um let's let's tell it to start on
+the the post page and then
+uh we'll set we'll we'll say save that.
+Oh, why did that fail?
+Wait, wait till that's configured
+and then uh we'll preview it. So, this
+should go to the post page and I think
+we should Yeah. So, so there's nine
+posts. So what what this is all doing
+behind the scenes, it's all stuff that
+um that Playground supports natively and
+you can actually see the uh uh the JSON
+here. So it's you know it's pretty
+straightforward um what we do
+automatically.
+Yeah, for sure. So, so there's there's a
+number of really good use cases I think
+for this one is like demo videos like
+for example my advanced query loop
+plugin the number of support forum items
+that I get where it's like I don't know
+what like why isn't this working how do
+I do this and it'll be great to be like
+like here's a video showing you go here
+go here go here go here done right
+there's that also like like um uh any
+kind of support request at all actually
+would would be would be But like
+integrating it with like your.org org
+account so you can you can reply to the
+support forums or like at at work like
+on the.com side that would be a really
+big win generating the videos which is
+the sort of the the initial idea like
+the the thing was my my sort of first
+level um
+metric is is like creating videos in
+under five minutes and I think that that
+is is doable now like I I loaded a
+script Right. Uh, what's this one?
+Right. And and so now
+I tell it to do that and and and I hit
+record and it takes the the time it
+takes to run this and process that
+video. That's how long it takes,
+right? Yeah. Outputting as as GIFs would
+be very cool. I'm sure that's something
+that we could do, right? Um because I'm
+I'm using a library under the hood to
+convert the the videos. So I think it's
+what library is it? I can't remember.
+Let's look
+uh FFmpeg. So, it might be able to to to
+do it with uh
+what's arcade.software.
+Oh, yeah.
+Yeah. Yeah. I I I mean I I mean what I'm
+doing is not uh or what what we're doing
+I don't think is like um
+it's unique in
+you know but it's definitely it's using
+all all pre-existing technology which
+which is nice and um I don't know it's
+it's WordPress uh specific and it's fun.
+Um
+so yes so specifically what I was
+working on is this poll request for the
+blueprints. Oh, what is this?
+Oh, this is cool. Oh, I want to check
+this out.
+Okay, we're going to look at this. Um,
+first I have to commit a small change.
+Um,
+that small fix uh to
+I spell variable right
+that come in here like this.
+Get check out. Boom. And okay, cool. So,
+let's go and start. I'm excited about
+this one because one of the settings
+like one of the things that that we've
+done here is Oh, he's moved all that.
+So, where is it? Is it in here?
+Recording settings.
+Oh, nice. Okay. So something that I
+wanted to So there's I guess just a set
+up to the house and give it whatever
+local. Yeah. Yeah. So one thing there's
+a couple of of settings that were over
+here before. So first is is the video
+size. So this is 720p 1080p and then 4K.
+Um and then we had outro length cuz what
+at the end of the last step it just kind
+of like dies like it stops creating
+video. So what we wanted to do was add
+some some padding on on the end so you
+could actually do something with it. So,
+um, but what a has just added is typing
+speed and paused between steps, which is
+very cool. So, I want to see what
+happens if I go to my block selection,
+right? Boom. So, let's preview that.
+And so, the pause between steps is zero
+milliseconds.
+So, I want to see what that looks like.
+Okay, that's pretty quick.
+This is cool.
+I wonder why it's zero mill because
+there is a default I think there's a
+default space. Okay, so now I'm So
+there's two things that I want to check.
+There's the the the typing speed. So
+let's make it type super fast, 10
+milliseconds a character. So we'll see
+what that looks like.
+Um because when it populates the post,
+it should type super fast. Okay.
+Awesome. Oh. Oh, yeah. Yeah. No, that's
+fine. Okay. So, let's stop that. Let's
+So, we can we can
+Huh. All right. Let's see. I set it at 7
+seconds or whatever. So, this should
+slow things down. The the spa the time
+[music] between steps should take
+longer, I think.
+Is that going slower?
+No.
+Okay. I can't tell. I can't tell if
+that's slower.
+I feel like that's faster than than what
+it was before. So, let's let's set it to
+like 0.1 and see see how how quick that
+goes.
+That's
+okay. That's not having the same the
+same kind of effect that I was hoping it
+would have, but that doesn't seem too
+too slow. Okay, that's cool. I I like
+that. Um that's super cool. And I'm glad
+that we've moved the recording settings
+into a a thing. I think we need some
+more spacing in here. make it look a
+little nice a little nicer. Probably
+move video size above that. But it's
+cool though. Okay. Awesome. Um anyways.
+All right. Let me uh go back to the
+other branch.
+All right. Start working on what I was
+working on.
+Cool. Guess this is a Saturday.
+Wait, what do you mean? Oh. Oh, this
+thing. Um, are you talking about WB
+director
+parents? Is that what you mean?
+U I was I was thinking eventually it
+could be an Electron app basically. That
+would be that would be kind of cool I
+think. Um, so anyways, the PR that I'm
+working on, so
+there's a lot to it. Um, but there's
+some things that that seem to be getting
+broken. Um, so that's what I'm working
+on right now. And so I have been, full
+disclosure, I've been vibe coding the
+heck out of this thing and it's been a
+whole ton of fun. My director's
+eyeglasses. Yeah.
+Yeah. I can't see anymore, man. So I
+need glasses. Um, so what?
+>> All right. So here's the plan.
+Oh, no. Sorry. This is the plan. So,
+[clears throat]
+I used I've been using the skills a ton.
+I I used the skill to create a PRD for
+this and then a plan based on this.
+Taking this really great course by Matt
+Ponaki, I think his name is. Um, and
+it's uh introduced me to some ideas
+around how to approach things like
+planning and this idea of the tracer
+bullet, which I don't know today. thing.
+So, if you're not familiar, so it
+I'm not going to explain it the the
+right way, but if you haven't heard of
+this concept, like the like a tracer
+bullet is a thing from World War II
+where they used to put like a phosphorus
+bullet in every eight or 10 bullets or
+whatever it was, so when anti-aircraft
+guns were shooting at planes, they could
+see where they were actually going,
+right? Um so so but it it's a it's also
+a software like a a software and
+engineering uh concept because AI when
+you make a plan it tends to go very much
+like it's stacked right so we we have
+the first thing that relies on the
+second thing that relies like the the
+fourth thing relies on the third on the
+second on the first and so on and so
+forth so it can be very brittle and when
+you do a plan sometimes like your fourth
+step will have a function name that may
+not even be accurate at that point. So,
+this the concept of like a Tracer bullet
+approach kind of goes um Yeah. Yeah. Uh
+Terrence, I I do. Let's uh let's figure
+that out. I'm going to I I have a bunch
+of travel coming up in the next few
+weeks. So, I think there might be like
+one week between I'm going to work in
+Portugal like next week and then I'm
+going to work in Europe at the beginning
+of June. So, in between there, I think
+we can get one in. But, I think that
+might be already accounted for. But,
+when I get back, I'm going to go uh
+crazy and get everyone on. So it'll
+either be in, you know, late May or
+maybe even or or June, but we'll talk
+about it. Um, cool. Anyways, so the
+concept, so when you apply this tracer
+bullet approach, instead of being like
+um a vertical stack, it's sort of a
+horizontal thing that runs the entire
+length of your application. So each each
+little piece is sort of almost
+standalone. So you can do like slice a
+as it's called here, and then that'll
+just be a thing, and then everything
+else continues to work. And it's
+actually worked out really really well.
+So I just tell like Clo like create a
+plan for me using the tracer bullet
+approach that does this right and it's
+actually been been quite good. Um I
+actually quite uh I quite like it. Um
+so
+yeah.
+So, I'm going to I'm going to tell it to
+do slice A, but I want to make sure that
+slice A stops logging. Okay, save weight
+save weight save preview
+stops logging that. Okay, so let's see
+if we if we can reproduce that. So, in
+his
+in here
+in the terminal once it started
+happening happen every time I previewed
+anything previewing itself worked
+though. I think I can get it to repress
+by making a change to the blueprint,
+waiting for it to load, then making
+another change, and clicking preview.
+The first preview is disabled, but the
+second time preview is enabled. Okay.
+All right. So, I think what he's talking
+about is let's get these things
+happening side by side so we can see
+this, right? So, we can see that we've
+got slot one, whatever is warm and
+ready. Uh, we're going to move this over
+here. I'm going to make a change to my
+blueprint.
+I'm just going to load this this block
+selection one. It doesn't matter right
+now. I'm going make a change to my
+blueprint. I'm going to go to new post
+and hit save. So, this gets
+this goes away.
+And do I hit do I make another change
+and then hit save again?
+I can't reproduce this.
+Huh?
+Okay.
+Huh? Okay.
+We can change the book right. Wait for
+it to load. Then make another change.
+Clicking preview
+first time for second time.
+Okay.
+All right. So, let's see if we can do
+this. Hint
+this4.
+That's
+I can't I can't reproduce that.
+Huh. Okay. Well, I mean, I can
+weird.
+I mean, it's working. I'm just not and
+I'm not getting that error. So, I'm not
+really sure.
+So,
+okay. I'm going to I'm going to I'm I'm
+going to try this. Okay. I'm just going
+to see if this makes any difference. Uh,
+so cool. So, what I'm going to do is I'm
+I'm going to
+plans I have it uh what's it called?
+It's called
+cool
+build
+and blue
+print
+dash UI
+fixes.m MD
+I'm going to say do
+slice I call it slice Okay.
+Sorry. Sorry. Let's see. Do a close
+test.
+This is how I've been coding now. Oh,
+and oh, the other thing that I've I I've
+been using is I've been talking to Clo
+directly. I've been using Super Whisper,
+which is fantastic.
+And so, so when I want to talk it, it
+does kill my music though. just a bit a
+bit of a bummer. So,
+we're going to let that spin. We're
+going to let that run.
+And
+does anyone know include? So, I can't It
+doesn't seem to it doesn't seem to be
+able to access files that have been get
+ignored like when I try to access the
+plans thing. Um, it's it's annoying.
+Maybe I'll ask You know what? Maybe I'll
+ask Clo.
+[laughter]
+Check this out. Come on, Clo.
+How can I have Clo reference files using
+the at symbol that have been get
+ignored?
+There we go.
+14 skills dropped. That's weird. I'm
+going to figure what that is. Okay, so
+that's doing that.
+Oh, that's weird.
+How are we doing? Say change. I'll make
+boot indemn. I can't say that word.
+Whoa. Okay. What's going on here? Let's
+look.
+If the boot is already in flight over
+the slot, is it promised to turn into
+spawning a second? Cool. Okay. If
+actual work for does not manage.
+All right. Say yes.
+Oh, really? That's all I have to do.
+Respect. Get ignored. So, I should be
+able to put this in this in my settings
+in here, right? Boop. I should be able
+to go like that.
+Oh, no. That's not the right one.
+Okay. See, what's this? What's this
+thing doing?
+All right. We're going to try it. We're
+going to We're going to run it. We're
+going to do this. We're going to yolo
+this.
+Okay. So, let's just see. What does this
+do? Okay.
+Okay, we'll get rid of that. Is that
+what he's literally talking about here?
+This refresh another. So, the way I
+built this was I I I pointed code to
+this PR and said, "Take a look at the
+comments and come up with a plan around
+how we can implement these things using
+the tracer bullet approach." And that's
+what it came up with. And it literally
+like pulled in the images. It's pretty
+pretty cool. What is that? Um, what is
+that?
+What's it doing?
+So I say done. Okay. So lock can be
+held. Okay. Remove acquire. Okay. NPM
+start wave state.
+Then save. Wait. Save. Preview five
+times in a row. The duplicate workplace
+blocks and it should be gone. Okay. So
+let's do that. So okay. So we're going
+to come over here. Uh I'm just going to
+kill this and restart the server
+entirely. Okay. And then come over here.
+And it's what? What is it? What is it?
+Save then wait. Then save preview five
+times. Okay. So let's get a script.
+Sure, we'll get that one.
+And then I got to go blueprint. I got to
+reset the blue the blueprint. Vig
+environment already.
+So what's actually happening over here?
+Opress is started. Okay. Okay. So we got
+to make a change. So I'm going to say
+8.4 save. We're going to wait. That's
+going to go away. Then we're going to
+hit save again.
+Save preview.
+Huh? YOLO. It's right. Hey, Mr.
+Revelus, Rebels, Revelless, Mr. Revelas,
+welcome to the stream. Thank you for
+being first- time chat. YOLO. I like
+YOLO. YOLO is fun.
+See, the way the way this works on this
+project is Aanus is way smarter than me
+and way better at being a developer. So,
+what I do is I come up with these ideas
+and I and and I vibe vibe code the crap
+out of it. And uh you know what? Yeah.
+And then and then he comes in and goes,
+"Oh, hold on now. [laughter]
+let's fix this, this, and this. And I
+go, okay. And then I fix it. Um, so
+without him, this this project would
+just be spaghetti code wrapped up with
+duct tape and best wishes.
+Um, so yeah. Anyhow,
+like Justin Wait,
+who? Wait, do I know do I know you?
+Who's Justin? What's Justin.tv? I don't
+want to click that link. I can't click
+that link.
+Do we know each other outside of uh our
+interaction here?
+Justin TV sounds very familiar. Ryan
+doesn't know Justin TV.
+Don't click. Twitch bought it. Yeah,
+prop.
+>> Hold on. is XD.
+Okay.
+Doing this off stream.
+Feel like I should I should know.
+feel like I I I I feel like
+Oh, okay. All right.
+Oh, I I'm getting it now. Okay. Yes. I
+didn't know that Justin TV was it was
+was Twitch is is is Twitch because I'm
+46 years old. Okay.
+[sighs]
+I have my my phone is set up with large
+font and I have to fat finger it all the
+time. You're 55.
+Well, welcome to I'm 46. So,
+Mr. Revelas, thank you for joining, sir.
+[laughter]
+That's awesome.
+Oh, share the playlist. Yeah. Yeah. So,
+there's actually a uh there's actually
+dad. Um there's a playlist. Yeah.
+Playing. There is a playing thing that
+shows what's happening. Um and I do I
+can get you the the playlist. It is a um
+stream safe
+uh copy link to the playlist. I I'll
+just drop it in here. Um
+so that is the Spotify playlist on
+there.
+Yeah. Cool. Uh you're in the you're in
+the WordPress page. You probably My
+handle isn't YouTube. Y'all probably
+know me. My handle isn't.
+Well, what's your hint like what's your
+I mean do do we have WordPress like do
+we have like WordPress royalty in in the
+room right now? Yeah. I want a hint.
+Come on.
+What is Oh, WP director uh what is it
+doing? Tobias Dirkson is asking what is
+warp. Uh so W director is um like what's
+it doing great this second or what's it
+uh what's it meant to do? It's basically
+to create videos using what using
+playright and playground and natural
+language to convert things like you're a
+p you're a podcaster
+a podcaster.
+I'm trying to match the age now or with
+the with the I know a couple of
+podcasters. Have we met in person?
+That's that's the question. Have Have
+you and I met in person?
+Anyways, um 75% chance. Why? Why? Why
+are you being so evasive? Do you owe me
+money? [laughter]
+>> [snorts]
+>> Is your name Matt?
+Kids are adults. Yeah. Not a Matt. Not a
+Matt. It's a Not a Bob, is it?
+still living in states.
+[laughter]
+We get to be guests on his most
+successful p on their most successful
+podcast. That's that's the guest. That's
+the thing.
+Um anyways Tobias to answer your
+question WP director is uh basically
+allowing us to create videos um using
+using playground and playright. So the
+the idea would be that you would add
+these um
+does this one work?
+um you would you would you would create
+these things and then it would it would
+generate a video and so then you could
+take that video and you could upload it
+you could use it uh to create a video
+for example like so here's one that that
+we created earlier um that uh
+that does all this and then you would
+take that and you could do whatever you
+want with it you add to to a support
+form you could you could use it in a
+larger video which is sort of the the
+idea that kind of spawned this was to be
+able to quickly set up WordPress
+uh uh demos that are click by click
+stuff like that. Um [clears throat]
+I know why this isn't working because I
+keep changing the uh the place where it
+starts.
+>> Hug props work.
+>> All right, I'm just going to Google you.
+That's what I'm going to do. We're doing
+it, mister. I'm doing this off.
+I'm doing this off.
+Oh, I don't know.
+>> All right.
+[laughter]
+Um, cool. Okay. So, I can't reproduce
+this error at all. Um, and so what I'm
+going to do is I'm going to I'm going to
+just move on from this error because um
+I think what what is this? Oh, the
+blueprint that that that blueprint's
+wrong. Um,
+>> okay. So, I need to fix that up. Who
+wouldn't want a hug if it's from you,
+Kevin? Nobody. Everybody wants to get a
+hug.
+What the heck? Okay, that's it. We're
+googling that. We're googling it.
+>> WP Tonic.
+>> Nope. Longer. The Matt report. We
+already said you're not a Matt.
+I don't know. You're just going to have
+to tell us. You're just going to have to
+tell us unless someone else knows. I'm
+at a complete loss. I'm at a complete
+loss.
+I But your the your handle sounds
+familiar for some reason. I can't place
+it. I can't place it. and
+frankly.
+Okay. So, let's see. So, I'm going to
+commit this. I'm going to I'm going to
+commit this, I think, um because we're
+not able to reproduce anything. So, I'm
+going to say commit. Commit this.
+Commit this.
+All right. I love just telling Clo what
+to do. It's fantastic.
+Not a ter good hint. I was part of the
+trial two years back.
+to be a writer for them.
+[laughter]
+[gasps]
+I have no idea. Negative Troy. Yeah, it
+can be very negative.
+Um,
+okay. So, let's see what the next step
+is here. This is This is gonna drive me
+crazy.
+I can't. Good thing is my suggestion the
+rest of Kim will probably limit whatever
+was. Yeah. Oh, there's Atas right there.
+Hey, how's it going? He's on u he's on
+YouTube. We're over here on Twitch if
+we're um
+if we're if you want to jump on on
+Twitch to join the chat. But uh yeah,
+but you're welcome to hang out there.
+Yeah. Yeah, I I know it's become
+spaghetti. He's he's saying funny things
+that my code is crap. Basically, it's
+not not my code, but it is my code. But
+uh yeah, he's right. It is turning into
+spaghetti code. So, let's um
+>> Okay, so I've fixed that first step. I'm
+gonna I'm I'm going to take a look at
+the second slice. We we we and we can
+see what this was. Preview run disable
+instantly unsaved. Clicking save
+disables preview run in the same frame.
+No, preview was enabled the second time
+race. Okay, so that's kind of cool. Um
+but yeah, but just because Troy is
+throwing in a towel doesn't mean you you
+you're not going to tell us, right? Like
+you have to tell us. You have to tell us
+at this point. I don't know. I'm going
+to move over here. You have to tell us.
+It's a rule. Someone, you can look it
+up. Okay. Clicking save disables preview
+run in the same frame. No. Preview was
+enabled the second time, right? Would a
+DM work over? Yes. DM me. Are are Well,
+let me ask you this. Are you trying to
+keep your identity secret for security
+reasons or safety reasons?
+Will I will I I don't want to dox you.
+Okay. Yeah, you can ping me over on uh
+I'll get my uh
+>> I'll get my Slack open here and move it
+off screen. You can you can ping me in
+in there if you want. Is that how you
+found out about the stream
+through the the self-promotion channel?
+>> Ah, nice. Okay. Well, um DMs are open.
+So, here we go. And I appreciate you
+being here by the way. So thank you so
+much and I will absolutely follow
+whatever your podcast is unless it's um
+you know something really boring in
+which case I won't but uh I will most
+likely. Okay. So slice B is disabling
+the preview run. No preview. Okay. So
+let's
+click save preview the same frame. Let's
+click not. Okay cool. So let's do let's
+do that. Do slice B. Bam. DM sent.
+Oh.
+Oh.
+Oh.
+Well, welcome to the stream. Thank you.
+And thank you for adding a certain level
+of drama and intrigue to the stream.
+Otherwise, it would have been pretty
+dry. So, I appreciate you. Um,
+and I should I keep you secret? I I'm
+fine to keep you secret. [laughter]
+Chat really wants to know. Uh oh.
+Actually, you know what? I'm I'm going
+to out you because we have to because
+just because of all of that, you're
+going to have to go Oh. Oh, can you can
+you let some figure it out? Okay, great.
+Well, by the end of the stream, if we
+haven't figured it if they haven't
+figured it out, can you drop the link to
+your um podcast in there, too? And I'll
+uh I'll make sure that I uh I drop it in
+the chat and we'll get everybody to uh
+um to uh subscribe.
+Nice. So much fun. Well, I hope you come
+back. Thank you so much for making this
+uh
+>> way less boring than just me insulting
+Terrence.
+So
+>> all right, that's very cool. Hey, ATS is
+in um is is in Twitch there. I I see you
+in the viewers. So um
+>> yeah
+actually if you feel like it you can
+come I I I can turn on um stream
+together and you can you can jump in the
+the the the the
+Oh my god this
+we can't talk. You can jump on stream
+with me if you want to but you don't
+have to. That's cool. Uh, I know it's
+probably pretty late for you right now,
+but um, happy to have you on if you want
+to join. Um, okay, get back to the
+project. Okay, cool. So, this is still
+running. Uh, so what it's going to end
+up doing is I think the plan is here is
+that Okay, so if we were if we go and
+look at WP Director, if I uh I'm I'm
+just going to reset everything here. Uh,
+that's something I I want to change. I
+don't like that. We're going to clear
+this. We're going to reset it. So,
+that's going to configure the
+environment for us when that's done.
+Um,
+>> okay. So, this this should be good to
+go. So, when I hit uh what what is it?
+Okay. So, when I hit save, when I change
+this to go to just the the new post and
+I hit save, there's a a second before
+that. Oh, this is something going on
+here.
+>> Okay,
+there's a apparently Oh, because there's
+nothing in there, dummy. Okay. Standby.
+Standby.
+Block selection. Okay. So, what should
+be happening is when I hit save, there's
+a bit of a delay between hitting save
+and this preview button being disabled,
+which it should already have been
+disabled by this point. I'm going to go
+ahead and and ref and refresh this. So,
+when it So,
+block selection. Okay. So, the preview
+button is active here. But what should
+happen is when I come into the
+environment and I go new post, I hit
+save. This should get to save. So
+there's a delay there, right?
+>> Nice. No, please do. Atas is uh taking
+the little agent of chaos, which is a
+fantastic name uh to learn how to ride a
+bike. So that is way more important than
+what we were doing here today. Please go
+and enjoy the sun and your little one.
+That's amazing. Um but yeah, so that's
+what this fix should do is it should
+make it so um
+advert flag. Okay, according to the
+plan, it should make it so that's
+instantaneous so we don't get into any
+race conditions. So,
+um, yeah. So, I'm just gonna I I'm
+basically just like approving all of
+these changes, but I also like to look
+at them. I I'm kind of, you know, like
+the these are pretty minor, but I it's
+it's I've I I I've noticed something in
+a project. So, this is a project like
+real project. I consider it a real a
+real project that I've it's really the
+first one that I've been like this is
+going to be some kind of production code
+at some point. And I've really learned
+like I really realized that like I don't
+really know what's going on with the
+code. I I I do in in a sense of like I
+know what the project is doing. I know
+what Atnes has worked on. Um I know the
+what what what's happening behind the
+scenes, but like the the me like the
+real like line by line stuff, I don't
+know. So I'm finding that I spend a lot
+of time looking at these things even if
+they're like you know sometimes it's a
+big wall of code but just to like to to
+get a sense of of um what's actually
+being done and I'm also you know I'll do
+a bunch of stuff and then I'll come back
+and say okay now take a look at the code
+is there anything that is redundant or
+not being used or you know can be can be
+made more efficient and stuff like that
+and that seems to help because it it
+will go through and it'll it'll tell me
+it's suggestions and then I you know and
+so it helps me to get more familiar with
+the code um because I can see how this
+could just get like super duper messy
+and not not easy to maintain at all.
+Yeah.
+Oh. Oh.
+There we go. We have a winner. Kevin.
+>> Kevin.
+>> Kevin is the winner. [laughter]
+Nice. I It's Adam from the Kitchen Sync
+podcast. Um
+I will just I'm going to drop the link
+in chat. Everyone go and everyone go and
+subscribe right now.
+Um, well done, Kevin. Of course, Kevin.
+Of course Kevin got it. Of course he
+did. [sighs and gasps]
+[laughter]
+And I can read backwards.
+Oh, what's Oh,
+silver R.
+Oh, man.
+Silver RM. What's RM?
+Oh, Kevin is
+Kevin, you're just so smart. And I'm
+really sorry that I didn't see you at
+Word Camp Asia.
+Reless equals silver. Mr. Silver, so
+good. Well done. Well done. Well done.
+Um Oh, I know what I know what this
+calls for.
+Can't believe nobody's uh I can't
+believe nobody has uh where is it?
+Nobody has uh has beaten that. Got it.
+Nice.
+Fantastic. Fantastic. That was such a
+good such a good use of time. [laughter]
+Awesome. Well, Adam, what is what what's
+your next episode about? Tell
+[clears throat] us.
+tell us everything.
+Okay. Open. Okay.
+All right. Let's make sure that we have
+um this this running
+next Monday. And can you share the topic
+or is it just is it a secret?
+All right. I'm just going to go ahead
+and restart the server there. Okay.
+We're gonna go over here. So, this
+should fix that the um this should fix
+the issue that we talked about. So, this
+should now if I come in here and I make
+a change to let's say I want to go to
+the new post page and I hit save. This
+should There we go. So, that immediately
+did it. That's so much better because
+it's just better. It's just better.
+Stand by.
+Um,
+already warmed with this blueprint.
+Interesting. Okay,
+so reset. Let's reset.
+That's weird. Okay, so
+I don't know is that because
+So I'm already noticing. Okay, so that
+worked. So I I got this interesting I
+got this interesting
+um edge case here. So if I go to new
+post, I'm going to uh
+Oh, nice. Oh. Oh, that's a great title.
+Understanding licenses, Ownership, and
+why it matters. That's so good.
+I think I I think that's a that's an
+area that people don't really understand
+a lot like the licenses and why the
+licenses are so important and why um
+so that's a great that's a great title
+is this do you do you have a guest or
+nope so cool awesome well that's very
+exciting okay so I hit an edge case
+there where it was already warmed.
+Rewarming where we got the already
+warmed and that that failed it. So I
+guess let me see what the next step is.
+Handful of guests a year. Well, it's got
+to be pretty hard to never miss a week
+and always be lining up guests. Um I
+mean I'm just dipping my toe into sort
+of the the concept of having a guest.
+Like my talk devity me stream is pe
+people come on and they show me the
+thing that they're working on. So, and I
+mean just like just the logistics of
+getting people to, you know, send me
+head shot and um you know, logos. Uh
+it's been pretty good so far, but just
+like you have to book like so far out,
+you know, like uh Nathan Wrigley um I
+know does a lot of guest stuff and he's
+always like trying to find guests and
+you know, it's hard. It's hard. It's a
+ton of work. So, hats off to you. I was
+wearing a hat. I take offh um but yeah,
+very cool. All right. So, let's
+So, okay. So, here is the issue that I'm
+seeing. When we had this the the error
+of already warm with this blueprint, the
+um preview never came back. So, if I hit
+save here, I should have the same. Okay.
+It's already It's already warm.
+Okay.
+Then preview just never comes back. Now
+I'm wondering if that'll be fixed with
+the later.
+No, I'm I'm I'm going to fix it as part
+of this. Um Okay. So I I'm I'm use super
+whisper when I save a blueprint and I
+get the warning or the message that the
+the pool has already been what what
+message um
+is already warm with this blueprint. The
+um
+UI never comes back. So preview is
+always is still disabled and the
+configuring in in environment indicator
+is shown. This is going to be just junk.
+Okay. So, now I have to clean this up.
+All right. So, let's put that in there
+and see what happens. Hey. Okay. Hey,
+Paul. How's it going, Paul? Uh, let's
+see what we got over here. Dashboard.
+Uh, my first vibe coding. Nice. Good
+catch. That's the the the degenerate
+case. Oh, it's the Terren case. We're
+all We're warm all skips all slots. So
+spot says never never called. It's
+stuck. It's like fix only flip the flag
+when at least one slot actually gets re
+rebooted
+work.
+Oh, thanks Dave. David, thank you so
+much over on LinkedIn.
+Uh,
+just nuke the the contents of acquire.
+Ask it to reset all instances in case of
+a blueprint change.
+Oh, Atton is giving me some direction
+over there on YouTube saying
+uh nuke the contents of a choir. I have
+to look at a choir here.
+Right. Should have a choir.
+I didn't even see a thing of the choir
+here.
+Oh, right there. How did I not spell
+their name? Oh, they didn't put a C in
+front of it cuz I'm an idiot.
+Okay, that's interesting. Okay. Um,
+okay. So,
+do that and get the thing happening and
+then I think maybe what I'll do is try
+to just take those comments and plunk
+them in client
+client 360 waiting for the next pool to
+reconcile. Let me make immediate pool
+status refer results. Okay, so just see
+what that did.
+All right. So, read the script. Did my
+music not start up again? No, of course
+not. A little time.
+What's happening with the tunes?
+I'm not hearing it, but
+you guys hearing the music. Okay. Okay,
+it's cool. I don't know. I don't know
+what happened there, but
+there it is. Okay. Oh, it's probably
+just between songs.
+Yeah, it was just between songs. Okay.
+So, let's try this now. So, I have that.
+I'm going to save. [music] I'm going to
+change the environment dashboard. I'm
+going to first I'm just going to hit
+save,
+right? And this should tell me.
+Okay. So, that's starting a new process.
+Whatever. Warm and ready. Comes back.
+Save. Already warm. Okay. So, that fixes
+that issue.
+Okay. So, that fixes that issue. I'm
+going to commit that and then I'm going
+to come back.
+>> Oh, you made a wise choice, my friend.
+>> Oh, thanks for the follow. Appreciate
+you. I'm I'm going to commit this and
+then we're going to come back and look
+at what Attonas was saying over on
+YouTube. He's saying that we don't need
+the contents of acquire. Um, and maybe
+that Let's look and see what else is in
+our plan for poor reliability.
+Okay.
+Okay, that's done. So, instead of doing
+slice B, where am I? I'm with context.
+I'm going to What? What did he say here?
+I'm just going to take this.
+I'm going to literally take his comments
+like that. I'm going to drop them in.
+Oh, no, no, no. I'm not going to do
+that. I'm gonna format them
+to the bottom there like this.
+come up with a
+tracer
+bullet based plan
+to let's see what this does. Plan to
+just mute the contents require
+and reset all this as a new
+Okay, put that in there.
+Okay, let's copy that and paste. There
+we go. We'll do that. You see, this is
+why we work so well because at is very
+smart. I am not. So, he just tells me
+just do this and then I tell AI to do
+the same thing. Uh
+uh yes. So Paul, the idea right now for
+for director or WP director is that in
+your blueprint,
+um,
+so
+right now the UI doesn't doesn't account
+for the being able to upload a plugin or
+provide a URL, but that's easily done
+because you can do that in in in
+blueprint. Um, for the content, you can
+you can pass a WXR import like a URL.
+So, you can do that for sure, 100%. Um,
+I really want to expand on the plugins
+and the theme syncs. Like, right now,
+there's a bit of it's a it's a it's it's
+totally janky, but like you could it's
+just based on slug. So, you can put
+whatever slug in there and it'll try to
+add that. And that's not that's not good
+at all. So, what I'm going to do is hit
+the the
+I'm going to make this searchable. So,
+like for example, if you were to say, I
+want to install Yoast, and you type
+Yoast, that won't work cuz that's not
+what the slug name of that particular
+plugin is, it it so your your blueprint
+will fail. It won't load because it
+can't load a plugin that does exist. So,
+there is work to to be done to to to
+get that um in place. But the idea will
+be that you can configure the
+environment in any way that you want
+[music]
+um in any way that blueprint sorry that
+uh that playground blueprints uh
+support.
+>> [laughter]
+>> says,"
+He says, "Have you seen war games? Maybe
+I shouldn't have used Nuke with AI."
+Yeah. Yes. Maybe. Maybe not. So, let's
+see what it says here. Okay. Uh, okay.
+So, let's let's read it. Here's here's
+the Tracer bullet plan. Each slice ships
+independently. Outcome: Dumb Acquire.
+Acquire no longer knows what blueprints
+just handles a warm slot. Um I'm gonna
+write this actually I'm Yes. Yes. Uh
+save this plan.
+Uh and then while it's doing that I'll
+read it. Uh outcome
+replace body acquire with any sl okay
+else boot promise then retry step one
+else the warming slot.
+Reboot the first acted not active slot
+and return it. Delete the hash compare
+the matching boot race matching. Yeah.
+And the pool expansion branch. Keep the
+blueprint parameter for now so callers
+don't change. Pass to certificate. Oop.
+Sorry. Where' that go?
+Reset all blueprints on change. Save.
+Reset blueprints. Kills and reboots
+every non-active slot unconditionally.
+Yeah, I think that's probably the right
+way to do it, right? Uh, reset entire
+pool. Save. Okay. Drop blueprint hashing
+bookkeeping slot no longer carries
+blueprint hash. Pending hash hash
+blueprint is gone.
+The sacrifice one optimization today. If
+you save the same blueprint, slots
+already worn with it or reused after
+this plan. Save reboots everything.
+That's an annoying. So we can read
+oneline hash check.
+I think I think we need to
+now I think we need to keep so so part
+of what at at was doing he's just he's
+commenting in in in YouTube here was we
+the idea of like the pool will auto
+expand. So if if you have two like we
+start with two instances and if we need
+a third one it will actually it'll um it
+it'll create a new one. Right. So I
+think we should keep I think we should
+keep the pool expansion stuff. Uh I'm
+going to just I'm going to say no. No no
+I'd like
+No, we want to keep the pool expansion
+in place. I think think that's good. I I
+I don't want to
+Yeah, is saying that like we could start
+by just booting five instances, but that
+could hurt, you know, performance and
+CPU usage and all that stuff. So, I
+think we want to I think that's a good
+thing to keep. I think we want to just
+make I think the the idea is that we
+just want to make it simpler to uh
+doesn't Okay, so we don't need to hash
+log it logic. The other thing that I'm
+not super sold on is that
+I I think I want to keep the hash logic
+because if we've already if the
+blueprint
+if this if the blueprint hasn't changed,
+there's no need to to kill all the
+instances and bring them back, right?
+I think I think that makes sense. like I
+don't want to um
+uh
+we don't want to um kill the instances
+when the blueprint hasn't
+changed, right? Because then it's just
+needless turning,
+right? And I think the also also the
+thing that we should do is we should
+disable the save button unless there's a
+change.
+Now, did I just undo everything that we
+just did here?
+Um,
+show me the plan again and ask any
+and um
+All right. So, two var two invariants we
+keep. Pool expansion. Yeah. Still grows
+the pool initial slots up to maximum.
+Okay. Cool. No op saves. Don't kill worm
+slots.
+Oh, I see. Okay, that's sorry. We're
+we're having a conversation through
+YouTube so that that none of you in chat
+can see. [music] So he's saying we can
+detect whether the blueprint has changed
+when we hit save. Yeah, it has ch if it
+has changed and there's no way for any
+instance to have that blueprint. No,
+that's true. But what if we're running
+what if we're running uh a preview?
+So I I I mean I think we can do the
+opposite and make it so
+Yeah. Okay. So, so you think we
+shouldn't care about the hash thing
+then?
+Yeah. Okay. So, it's asking when the
+pool is full and nothing more which shot
+which nothing is warm or rebooting.
+Today it picks first non-active. That's
+fine. Yeah.
+Active slot during blueprint change.
+When you save mid- recording, the active
+slot is running with the old blueprint.
+Two options for when the recording
+finishes. Always reboot the release and
+on release the current blueprint. Always
+boot full stop. Simpler. No flag.
+[laughter]
+Ainus is saying that if he wants me if
+he wants to take if if if I don't want
+to deal with this, he's happy to take
+it. I'm fine to work on it. I don't um
+I I feel like you probably know more how
+you want this to work than than than I
+do, but I'm happy I'm happy to give it a
+shot here.
+Race when save fires acquire into a
+midfight. Has this claimed the warm slot
+and save? Okay. Uh
+so I think I think
+I think it needs to take the first slot.
+Uh for number one, uh pick the first
+nonactive
+uh active. Okay.
+During blueprint change,
+when you save mid- recording, the active
+slot is running with the old blueprint.
+Two options when the recording finishes.
+I think we go option
+option
+B after recording finishes.
+I think we're we're going to go always
+reboot our release.
+Oops.
+Oh my god.
+Next one is
+race when save fires while acquires the
+midflight. If acquires just claim the
+warm slot but sage reset pool runs a
+tick later. The out of slot keeps the
+old blueprint run until successful. If
+you want to save
+I'm going to say acceptable.
+Hope it knows all this. And then uh yes,
+that is the name of the file. All right,
+we're going to do this.
+>> [sighs]
+>> So, my feeling on on this is like I
+don't think we need I think we should
+disable the button after it's been saved
+and only enable it. The save button that
+is uh because
+we can check if anything's saved or
+changed, I believe. Or can we? I don't
+know. Um, it just seems I think I think
+we need to disable the button until
+something's been changed because there's
+been so many things that um um Okay. Uh
+how can we disable the save button until
+there is a change in the settings?
+I think that's what we need to do
+because otherwise well first of all it's
+good it's good use UX because there
+there are so many things in here like it
+so it if you do this and I have this and
+I whatever I I go and I put in 10 pieces
+of content then I close this and I go
+over here and I don't change anything
+and this is always enabled it's going to
+be sort of like I don't know if I need
+to actually save this or not. So, I
+think what we should do is make this
+disabled until this is saved, until it
+changes is in here. And then that way
+people can't
+resave
+a blueprint that's not been saved,
+that's not been modified. That's that's
+sort of the idea, right?
+Yes. Make the edit.
+I'm going offline. Good to see you,
+Atines. We'll see you tomorrow. And you
+can uh we can talk about it, but if you
+want to take over on this, that's fine.
+I'm I I'm I'm going to continue messing
+with it for the rest of the day to see
+how far I can get. But you're welcome to
+just take a look at this code and be
+like, "This is junk. Delete." [laughter]
+Thanks a lot, man.
+Okay, I'm going to do that.
+Okay. Save is not disabled until
+compiled blueprints did differ from the
+last saved app blueprint. Okay. So,
+let's select all. Delete. Yeah, that's
+that's the correct way of handling most
+of my code. Okay. Mr. Silver, welcome to
+the stream. Thanks for hanging out.
+Okay, so let's go in here. Uh, okay. So,
+I'm if I go in here and I make a change
+to content and I go boop boop. There we
+go. So, now we have a save. So, that
+goes back. Very cool. Very cool. Reset
+that.
+Oh, okay.
+Okay.
+When I reset,
+um, the save button
+stays enabled. Resetting should
+automatically save the blueprint, but
+also disable the save button once that
+save has completed.
+Okay, so we're going to do that. This is
+so much fun coding like this.
+Cool. All right, somebody was linking
+some stuff. What was it? I don't think I
+want to click on work. Is that
+workshituation.com?
+Where's my safe browser window over
+here? Uh, do I have one?
+Window over here. Quick look.
+Although it's not going to help anything
+if this is like
+not
+Oh,
+this is funny.
+What does this say? You know what this
+reminds me of? Um, co-worker. Is it
+called cooworkers from hell or
+this is cool.
+Anyways, nice. I I I like that one.
+Okay, so let's Let's just get that
+cleaned up and then
+not co-workers from hell. I can't
+remember what it was called, but it was
+it was a website that was kind of like
+that, but I like that one a lot. That's
+very cool. Okay, so what does it say?
+Deputize.
+Okay, save the normalized version.
+Now it was all okay. So let's let's
+uh
+so let's refresh this page. So what does
+it look like now when I go on here? So
+okay,
+let's test it. So let's just say that's
+weird. Okay, that's weird. All right,
+I need to fix that because the default
+blueprint there is a default uh
+blueprint. Okay, so this this shouldn't
+be this should not be set as custom now.
+That's a weird state. Okay, so let's
+just do this and then I will hit save.
+It's going to do that. When I reset, it
+should take it back to custom and it
+should that should after it's finished,
+it should uh
+this button should all be disabled.
+So hit that. Yeah. Okay, cool.
+What? This doesn't
+H. This isn't
+working. The This isn't This isn't
+working.
+When I hit reset, it should use the
+default blueprint.json
+file um
+to populate the generated one. Uh and
+reset and save should be uh disabled at
+that point because it's the default
+values. Nothing's been changed.
+So, the blueprints work like this. we
+have sort of like this is what I call
+like the default uh blueprint which is
+actually a little bit out out of date.
+So this this should be the one that that
+gets automatically loaded when it's when
+this when the site loads right and then
+when we make changes there's a generated
+blueprint. So this is being changed all
+the time. So it moves you know stuff
+does stuff stuff is done is is kind of
+what I'm saying. Uh yeah don't say that.
+So we're going to see if we can fix this
+stuff and then it's just after 12 so I'm
+gonna probably have to drop off soon.
+You're right. The approach was over
+complicated. Cleaner fix compare on form
+state not uncompiled JSON but size up
+the Q and reset and go back to writing
+the little literal default to disk. I'll
+hand revert
+form state. Okay cool. All right.
+I wonder if my context is getting a
+little
+full. Let's see.
+Okay, let's see.
+And there's no default. All right, let's
+crush this now.
+I'm gonna I'm going to restart the
+server. That's what I'm going to do.
+Restart the server.
+Right. So, that's that's interesting
+because why is it saying custom when a
+server starts? It should always use the
+default.
+Or should it?
+Maybe it shouldn't.
+Going to reset that.
+It's actually fine if it doesn't because
+when if you if you think of this as an
+application when you open it up, it may
+not always Okay. Okay, that's cool. It
+may not always like if it just remembers
+the last thing, the last blueprint and
+marks it as custom. But I think I think
+that's okay. I think that state's fine
+actually, like now that I think about
+it.
+Okay.
+Okay. All right. That I like. So So now
+we can't save this again. So we don't
+get in into that weird roundtpping stuff
+um on save. Okay. I'm going to say
+commit this. Boom. And then I'm going to
+get back to the pool stuff and see if I
+can fix it. Cuz now it's just cuz Atinus
+is like going, "Yeah, yeah, he doesn't
+know what he's doing." No, he's not.
+He's a wonderful guy. I'm I'm being
+facitious. Um but I want to I I want to
+impress him.
+>> [laughter]
+>> I want him to think I'm smart.
+Okay,
+now that we have disabled the save
+button for when for instances when um
+there is no change to the blueprint, can
+we simplify
+um the plan
+uh to take that into account?
+How much fun is it? I just get to talk
+if and that's that's just that's
+how I roll.
+Okay,
+I don't think we need to worry about
+that.
+Okay, with the UI getting save behind
+real forts is no op save can't reach
+service hash check is res no longer load
+bearing this take warm slot take else
+slot blah blah okay no hash compare no
+fine okay okay reset pool on save reset
+always reboot on release replace okay
+cool
+drop the blueprint hash booking entirely
+okay that that's cool that's cool okay
+uh yes we'll save that plan that sounds
+Good.
+So, the only issue there is that if we
+hit it with uh curl or some other API,
+we need to reboot the pool. But I don't
+I don't think we need to really worry
+about that right now.
+Okay. So let's let's do
+Oh, that's still doing its thing. Okay.
+Oh, okay. Yes. Boom. Okay. So, we're
+going to do that. I'm going to go ahead
+and I'm going to clear the context here.
+And then I'm going to say plans
+uh
+pull simplify acquire do slice
+one.
+See what that does.
+all those uh users out there for um it
+uh like like clone users, at what point
+do you clear your context? Like how far
+do you go into it? Like is is there a
+point where you start to get jittery?
+Because I get super jittery on some of
+it. Um like if it's just going on too
+long, you know, 70 to 80k. Okay.
+So, all right. Is that based on like the
+one million context or
+I I guess it depends on which um I guess
+it depends on which um model you're
+you're using. See what this does.
+Okay, so this I feel like I hope there's
+less. It looks like we're taking out
+more than we're adding. So that's good.
+Let's do that.
+Right. Yeah, I'm pretty spoiled.
+Automatic is very bullish on AI, so we
+get to do a lot of cool stuff. All
+right.
+Run, run, run on the same blueprint
+reuses warm slot. Concurrent runs
+between bond initial slot spin up to my
+slot. Save with new book that requires
+all walk.
+Okay, let's let's test this. So, what
+does it run? Okay, it always re reuses
+the same slots. Okay, so here we go. So,
+if I go I'm going to do a really short
+one. I'm going to go to uh go to the
+plugins page.
+All right, so that should navigate to
+the plugins page. And I should be able
+to preview this using warm one
+goes plugins page
+and done
+preview.
+Why is it
+H
+I don't I don't like I don't actually
+like how it's doing that. But maybe
+that's in the next slice. Let's see
+what's what's in the
+is all influ.
+Okay. So, what does slice do to do
+again? Can't remember.
+thing is I don't but I I I I guess the
+only way to do it is Oh, I don't know.
+Okay,
+I'm going to get through all this and
+then
+uh I'm going to commit this actually
+first. Commit this. Commit slice one.
+Make this work. Okay, I'm gonna have to
+jump off sooner than later, but uh yeah,
+so this is this is it. And then I'm
+hoping uh you know, the end of the month
+is kind of like when um this uh Radical
+Speed Month kind of wraps up. So, we'll
+see where where we can end up. So,
+that's where we're building so quickly,
+getting things done as fast as we can.
+But, um I think I'm going to probably
+drop off now, but thanks so much for
+hanging out with me, Mr. Adam Silver.
+Thank you for hanging out with me. Uh if
+you haven't already, go and subscribe to
+his podcast which I'll drop in chat
+right here. Um and uh yeah, I'll talk to
+everybody
+uh not next week because I will be on a
+plane, but uh probably the week after.
+So, [music]
+thanks for joining me. It's always
+always a good time. And I will talk to
+you all later. Bye.

@@ -1,0 +1,14 @@
+.DS_Store
+**/__pycache__/
+*.pyc
+
+# skill evals: fixtures are media, results hold raw transcripts
+evals/**/fixtures/
+evals/**/results/**/*.jsonl
+evals/**/results/**/work/
+evals/**/results/**/plugins/
+
+# ste-voice eval: frozen plugin copies (rebuildable from git)
+evals/**/snapshots/
+# ste-voice fixtures are small text files; keep them so results are reproducible
+!evals/ste-voice/fixtures/

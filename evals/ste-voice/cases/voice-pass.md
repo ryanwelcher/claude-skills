@@ -1,0 +1,1 @@
+Use the sounds-like-me skill to do a voice pass on fixtures/meme-generator-hybrid.md so it sounds like me. It's a Block Developer Cookbook recipe (written, not a script). I pre-approve every finding: list the findings, then apply all of them in place without waiting for me. Do not ask me anything.

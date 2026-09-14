@@ -1,0 +1,23 @@
+{
+  "name": "devrel",
+  "version": "1.22.0",
+  "description": "Ryan's developer-advocacy work skills (workshop scaffolding, article drafting, social posts, YouTube scripts and stream descriptions, voice-consistency passes, session logging to Obsidian).",
+  "author": {
+    "name": "Ryan Welcher",
+    "email": "me@ryanwelcher.com"
+  },
+  "skills": [
+    "./skills/wp-workshop-scaffold",
+    "./skills/youtube-script",
+    "./skills/write-article",
+    "./skills/write-social-post",
+    "./skills/youtube-stream-description",
+    "./skills/done",
+    "./skills/wnd-script",
+    "./skills/sounds-like-me",
+    "./skills/analyze-stream-recording",
+    "./skills/ste-pass",
+  "./skills/ste-audit"
+  ],
+  "commands": []
+}

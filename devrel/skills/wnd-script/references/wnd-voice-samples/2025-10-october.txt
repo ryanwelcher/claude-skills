@@ -1,0 +1,257 @@
+Hey, everybody, I'm Ryan Welcher here.
+I'm a developer advocate for Automatic,
+and today I'm gonna take us through what's new
+for developers in October, 2025.
+If you're not familiar with what's new for developers,
+it's an article that comes out monthly on the developer
+block, so you can find it at developer.wordpress.org/news.
+And it outlines all of the work
+that's been done in the previous month, uh,
+across the WordPress project.
+So let's take a look at what's new for developers.
+October, 2025.
+In October, we had three significant releases to Gutenberg,
+21.6 0.7, and 0.8.
+These were all full of bug fixes and new features
+and all sorts of great stuff, and they will actually be
+included with WordPress 6.9 that releases in early December.
+Uh, let's take a look at some of the highlights here.
+We'll just skip past the table of contents.
+The first highlight is the command palette.
+So the command palette is now expanded across the admit.
+If you're not familiar with the, the Command Pal,
+it's amazing tool to be able to quickly jump
+around from various pages to insert blocks,
+to do all sorts of really cool things.
+Uh, but up until now, it was limited to the site editor
+or the post edit screens.
+Now, uh, with, with 6.9
+and the work done in October, it is going to, uh,
+be available across all the, the entire admin.
+We're getting a new experimental terms query block.
+So if you're not familiar with this block, its intention is
+to do for taxonomies
+and terms what the query loop block did propose.
+So this is really exciting. Like I said, it is experimental.
+So, um, you know, have a look at it
+and play around with it and see what you think.
+Content only editing protects design integrity.
+This is a pretty big deal for, uh, theme developers
+who hand off it, uh, site to a client,
+and they immediately change the layout
+even if they didn't mean to.
+Uh, there's a new content only mode for unsync patterns,
+which means that you can, uh, restrict editing
+to just the text and the media
+and preventing accidental layout, uh, changes.
+So this is really good. The feature includes, uh,
+an edit contents button when you do want to make changes
+to everything, but otherwise it keeps things in in sync.
+And this is a really, uh, great feature for those, um,
+theme developers among us.
+This one's a pretty big deal.
+Block Visibility Controls introduced conditional display.
+This is something people have been asking for
+for a very long time.
+And basically what it means is now we can hide blocks in the
+block editor and not have them shown the front end,
+but we don't have to take them out of the block editor.
+So let's take a little look at a little demo of that.
+You can see we're, uh, selecting a block.
+We're gonna come in here and choose Hide.
+And now we have a little hide I icon there.
+So if you look over in the list view, you can see
+that the blocks are indicated that they're hidden
+and you can turn 'em on and off and all that stuff.
+So this is great. This is a really, really cool feature.
+This is the first iteration of blocked visibility.
+Uh, this is a plugin that Nick Diego has.
+It has like a million installs
+and the, the, everyone loves it.
+And, uh, Nick has graciously donated it to WordPress.
+And, uh, so the team is CLO is slowly migrating pieces
+of it into core, uh,
+global styles now extend to form controls.
+This is great because now with our theme JSON, we can, uh,
+add some support for common form in inputs.
+Things like selector dropdown elements
+or text-based controls. It's
+Very cool. We, we can define
+colors, borders, type typography,
+perform elements, and all sorts
+of stuff directly in global styles.
+So this is gonna, uh, remove a lot of the need
+for custom CSS and it's really, really, really powerful.
+The node feature is, is coming a,
+this was called, uh, block Commenting.
+This is the first sort of part of collaborative editing
+and, uh, it's really neat, allows us to, to select the block
+and, and add notes, have,
+and have team discussions and everything.
+It's, uh, I believe it's, uh, still
+behind Experimental Flag, but it's very, very cool
+and it's the first sort of step for collaborative editing.
+Moving on to the plugin and tool section.
+Uh, data views and data forms. Big leap forward there.
+We have lots of new, um, improvements across
+through these three releases.
+We have new field types and controls,
+available number fields, color pickle fields, a whole list
+of them, some validation support now for, uh,
+radio controls, select controls and toggle group, uh, layout
+and composition, IM improvements.
+Lots of cool things going on here.
+There's a major interface cleanup for the grid view.
+Titles can be hidden. Actions are, are,
+are accessible on, on hover.
+There's all kinds of really great things on there.
+This is a whole lot of polish and it's really, really,
+really nice Block bin's.
+API has got a new filter.
+This is huge, a huge deal for block developers.
+And essentially what allows you
+to do is filter which block attributes can be bound.
+So you can actually enable blocks
+that are currently not enabled with block bindings to,
+to use them for the, for example, the other day, I, I, uh,
+I connected the details block to a piece of post meta.
+I've also played around with this
+with some custom blocks and it does work.
+It's very, very cool.
+So this is going to just gonna change everything
+that we know that we do with Block Bindings.
+This is gonna remove a lot of the need for custom blocks.
+This is super, super excited.
+So go and take a look at this filter, play around with it.
+And, uh, yeah,
+I just can't say enough nice things about this
+interactivity, API and commands the interactivity.
+API now supports, uh, fetch priority low for script modules,
+which gives us a bit more so, uh, control over when,
+when our scripts are are loading for commands.
+There's a new used commands hook that makes registering
+and managing commands a lot simpler.
+It's, uh, the commands package itself has been,
+has been abstracted out into its own package at WordPress
+forward slash core commands.
+So it's a great time to get in to, uh, working with,
+with commands, especially
+because now we have the command palate
+across the entire admin.
+So, uh, absolutely jump in and,
+and see what cool things that you can build with that.
+WordPress Scripts is looking ahead to version two.
+So there's a discussion in GitHub about what
+that looks like, what the next it iteration
+of the Scripts package looks like.
+If you don't know what the Scripts package is,
+it's basically the build process
+that we use when we're working with WordPress.
+Uh, for any JavaScript related things, Gutenberg uses it,
+block developers use it, theme developers use it.
+So, um, if you're any of those folks, you might want
+to go take a look at the discussion.
+Under themes, we've got, uh, the Table of Contents,
+block Gains, an Unordered List option.
+This is great. It's a nice quality of of life fix.
+There's been some accordion block improvements.
+Uh, it now has block app support, uh,
+improved accessibility in keyboard navigation.
+The blocks were renamed to be a bit more clear as to
+what they do and where they're supposed
+to live in the overall structure.
+Um, there's just a whole lot of IM improvements. Now.
+Keep in mind that this block is experimental,
+but you should go and check it out.
+The Time to Read Block also got some enhancements.
+Uh, specifically we got a range option to display a range
+of reading times a word count options
+to show the total word, word count alongside reading time.
+Uh, there's some MI migration support for older blocks.
+The block also uses block variations instead of, uh, toggles
+for some better UX When, um,
+setting the block up in the WordPress playground section,
+if you haven't played with with Playground yet, you have to.
+It is such a cool thing.
+Uh, it is just, uh, it's, it's voodoo magic.
+There's no other way to explain it.
+You can do some amazing, amazing things with it.
+Uh, like there is now a new IDE, like PHP playground.
+So if you want to, if you want
+to run PHP natively in the browser without having
+to set anything up, you can do that.
+This is very, very cool.
+It's in beta, but it introduces an IDE like interface
+with a file explorer built-in terminal.
+Whole bunch of really cool things
+and it's gonna make it really easy for us to test PHP code
+and interact with WordPress at the same time.
+If you've ever used services like JS Fiddle
+or PHP Fiddle to like test a little snip snippet of code,
+that's great, but that's it.
+It's in I isolation now.
+We sort of have that, but we also have the added layer
+of WordPress as well.
+Very cool stuff. The playground
+CLI has got some improvements.
+This is really great. If you've ever used a CLI
+for things like end-to-end testing
+or spinning up instances using JavaScript.
+This is really, really cool. Better content imports.
+This is great because blueprints now use the WordPress
+importer for the import WXR step, which is really great.
+Uh, there was some issues with importing, um,
+things like links and, and,
+and image URLs and stuff like that.
+But this, this should all be handled now.
+This is really, really great.
+So, AI powered documentation assistance, uh, work, uh,
+plugin documentation is using, uh, Kappa do AI until the end
+of October to, to test and see what that looks like.
+Moving to the performance section, uh, there's some cash,
+API improvements.
+The way that WordPress handles cache in
+validation HA has been changed.
+It's during the last change value directly in the cache key
+rather than using it as salt.
+This is gonna help for plugins
+that are using object caching.
+There's been some term count optimizations, a couple
+of fixes landed that reduce unnecessary term re recounting.
+This is gonna be really helpful for sites
+that have large amounts of taxonomies and terms.
+There's currently some work underway
+to introduce lazy loading for user meta
+and user capabilities.
+This could significantly improve performance for plugins
+that create user objects
+and sites that use a lot of user meta.
+Moving on to the resources and news section.
+WordPress 6.8 0.3 was released in September,
+bringing some important security fixes and bug patches.
+If you haven't updated, you absolutely should since the
+last, what's new for developers?
+There's been three new posts, um, on the developer blog.
+Highly recommend that, that you go and check them out.
+Justin Tadlock explores border border,
+radius size presets and 6.9.
+Uh, he also talks about building a light
+and dark toggle with the interactivity.
+A API. That's one that's, uh, near and dear to my heart.
+And, uh, Troy Chaplin talks about na name spaces and coding
+Standards in WordPress plugin development.
+Uh, the developer blog is always
+looking for new contributors.
+If you are someone that likes
+to share your WordPress knowledge, your experience,
+what you're building, you should absolutely consider joining
+the, uh, developer blog.
+Uh, it's uh, it's a great way of giving back
+to the community and maybe getting your name in
+lights a little, a little bit.
+Uh, well, that's it. That's the end of what's new
+for developers for October, 2025.
+I hope you enjoyed listening to me ramble on about it,
+and I look forward to seeing you all next month
+for November, 2025.
+Thanks a lot. Have a good one.

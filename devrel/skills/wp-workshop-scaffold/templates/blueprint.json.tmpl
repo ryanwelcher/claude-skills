@@ -1,0 +1,26 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "preferredVersions": {
+    "php": "8.2",
+    "wp": "{{WP_VERSION}}"
+  },
+  "features": {
+    "networking": true
+  },
+  "landingPage": "/wp-admin/",
+  "steps": [
+    {
+      "step": "login",
+      "username": "admin",
+      "password": "password"
+    },
+    {
+      "step": "installPlugin",
+      "pluginZipFile": {
+        "resource": "url",
+        "url": "{{REPO_URL}}/archive/refs/heads/main.zip"
+      },
+      "options": { "activate": true }
+    }{{BLUEPRINT_PLUGINS}}
+  ]
+}

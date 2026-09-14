@@ -1,0 +1,5 @@
+model=claude-opus-5
+reps=3
+clip=/Users/ryanwelcher/repositories/claude-skills/evals/youtube-stream-description/fixtures/full-22min.mp4
+scenario=local-recording
+claude=2.1.268 (Claude Code)

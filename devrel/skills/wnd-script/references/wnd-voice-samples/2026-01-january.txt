@@ -1,0 +1,142 @@
+Happy New Year! It's 2026 and I'm really excited to see what WordPress has in store
+for us over the next 12 months.
+Hey everybody, Ryan Welcher here again with another edition of What's New for Developers.
+If you're not familiar with What's New for Developers, it's an article that comes out
+monthly on the Developer Blog. It outlines all the work that's been done in the previous
+month across the WordPress and Gutenberg projects. You can find it at developer.wordpress.org/news.
+Now development typically slows down a bit over the holidays. Folks are taking time off,
+spending time with family, all that good stuff.
+But even so, we still got a lot of really great items
+in this month's release.
+This month, we had one Gutenberg release, version 22.3,
+and it was quite a bit packed into it.
+So let's take a look at what's new for developers,
+January, 2026.
+First up is the responsive grid block with set columns.
+So previously, when you were using the grid block,
+you had to pick one or the other.
+Either you could set a minimum column width
+for responsive stuff, or you could set a fixed column count.
+You couldn't do both at the same time.
+With Gutenberg 22.3, you can combine both controls.
+So you can have responsive columns
+and define exactly how many columns you want.
+The toggle between auto and manual modes is gone,
+which makes things a lot cleaner.
+This is really great for theme developers
+and anyone doing layout work.
+Next is the dedicated font library admin screen.
+If you've ever tried to manage fonts in WordPress,
+you know it's buried deep in the styles UI.
+Not exactly easy to find.
+Well, now there's an appearance font screen
+right in the admin.
+You can manage your installed fonts
+upload new ones from there. It's still a work in progress, the collections tab isn't there yet,
+but the foundation is solid. And here's the really cool part. Support for classic and hybrid
+themes has already emerged and should ship with Gutenberg 22.4. So this isn't just for
+block themes anymore, everyone gets to benefit. Build blocks with PHP. This one's pretty exciting
+for block developers. We now have experimental PHP-only block registration. This means you don't
+need any JavaScript to register blocks, you can do it in a PHP-only way. It's been in Gutenberg
+since 21.8 and it now fully supports all block metadata.
+So if this is something that appeals to you,
+I would highly recommend going and having a look.
+There's documentation and sample code in the article.
+This is a big deal for folks who prefer working in PHP.
+All right, moving on to the plugins and tools section.
+There's a new WordPress image cropper package
+that gives us a standardized image cropping component.
+It has aspect ratio cropping, rotation, zoom, flip controls,
+all that good stuff.
+And it's now implemented directly in the editor.
+If you're maintaining blocks that deal with images,
+definitely go and check this out. This is part of a larger effort to improve the media editor in 7.0.
+Next is the updated abilities package. Version 22.3 allows it to operate as a standalone capabilities
+layer beyond traditional WordPress context. There's also a separate WordPress core abilities
+package for server integration. This is all paving the way for the Abilities API JavaScript client to
+ship with WordPress 7.0. So if you're not familiar with the Abilities API, now's a good time to go
+and have a look. DataView has got some updates as well. We've got min/max validation for input
+fields, display formats for number types, standardized padding across components, updated
+operator labels, and media-specific fields for attachments.
+Just a whole lot of polish that makes building admin interfaces nicer.
+And then we have routing enhancements.
+This one's a bit in the weeds, but there's been some routing work that's pretty cool.
+We've got conditional inspector rendering via route.inspector, mobile-specific rendering
+support, native page title management, and smooth view transitions between navigations.
+This is all laying the groundwork for that single page application like behavior across
+the editors.
+Alright, under the theme section, the breadcrumbs block pushes forward.
+It's getting a lot closer to being stable.
+It now has support for block alignment, page comments, and improved homepage handling.
+It's looking like it's well on its way to shipping with WordPress 7.0, so now's a really
+good time to start testing it with your themes.
+Keep in mind it's still experimental, so you have to go into the Gutenberg experiment settings
+to enable it, but you should definitely go check it out and play around with it.
+There were some other block library updates as well.
+The button block migrated to use text-to-line block supports.
+Comment's pagination numbers got margin
+and padding spacing controls.
+And the accordion heading now has default styles
+for classic themes.
+This fixes the CSS specificity issues from WordPress 6.9
+and it should get backported to a minor release.
+Next is border style flipping and right to left.
+Quick note for anyone building themes
+for right to left languages.
+There was a bug where border styles
+were getting incorrectly flipped in the block library CSS.
+That's been fixed now.
+So if you're doing right to left work,
+go and test your stuff accordingly.
+This one's really neat,
+the navigation overlay experiment.
+There's an experimental feature where you can assign
+a template part for the navigation's block overlay.
+What's cool is that one of the earliest experiments
+around this came right here for on the developer block,
+the block based mega menus article.
+And now it's being explored as part of WordPress itself.
+It's flagged as experimental,
+so you'll need to enable it
+in the Gutenberg experiments screen.
+But definitely go and play around with it
+and see what you think.
+Then there's the question of the deprecated poll quote block.
+The poll quote block was deprecated in Gutenberg 22.2 in favor of the quote block, but the
+conversation is picked back up.
+Contributors raised concerns about accessibility, HTML semantics, and block style variations.
+The ticket is still open with ongoing discussions, so keep an eye on that one.
+Alright, the Playground section.
+Wordpress Playground is one of my favorite things in the whole world and it keeps getting
+better.
+There's a new dedicated management dashboard, an unsaved playground warning with a save
+button, and a quick access dropdown for common admin pages.
+There's also a new DevTools browser extension.
+You can inspect and edit Playground instances directly in Chrome.
+Very very cool for development workflows.
+And there's a standalone Playground block demo page with an interactive code editor
+and live preview.
+It supports multi-tab editing, JSX transpilation, file tabs and all kinds of really great things.
+If you haven't played with Playground yet, you have to.
+It is such a cool thing.
+It's Voodoo magic and there's no other way to explain it.
+And finally the resources section.
+On the developer blog we had two new posts published this month.
+One on how to add automated unit tests to your WordPress plugin, great for improving
+and code quality, and another one which shows how to extend core blocks with the Interactivity
+API, both are worth a read.
+The developer blog is always looking for new contributors.
+If you're someone that likes to share your WordPress knowledge, your experience, and
+what you're building, you should absolutely consider writing for the developer blog.
+It's a great way of giving back to the community and maybe getting your name in lights a little
+bit.
+Well, that's it.
+That's the end of what's new for developers for January 2026.
+Thanks again for hanging out with me.
+If you haven't already, please give this video a thumbs up and subscribe to the channel
+'cause we'll be doing more content like this
+on a regular basis.
+I can't wait to see what WordPress has in store
+for us this year and I'm looking forward
+to seeing you all next month for February, 2026.
+Thanks a lot and have a good one.

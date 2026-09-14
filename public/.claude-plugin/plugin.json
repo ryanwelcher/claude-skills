@@ -1,0 +1,12 @@
+{
+  "name": "public",
+  "version": "1.0.0",
+  "description": "General-purpose, shareable skills with no personal or company context. Safe to publish.",
+  "author": {
+    "name": "Ryan Welcher",
+    "email": "me@ryanwelcher.com"
+  },
+  "license": "GPL-2.0-only",
+  "skills": [],
+  "commands": []
+}

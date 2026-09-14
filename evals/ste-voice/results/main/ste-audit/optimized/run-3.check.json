@@ -1,0 +1,1 @@
+{"skills_invoked": [], "ref_files_read": 2, "ref_tokens_read": 2536, "full_transcript_read": false, "ste_card_read": true, "refs": ["ste-pass/references/ste-card.md", "ste-pass/scripts/ste-lint.py"], "fixture_unchanged": true, "findings": 29, "has_zone_map": true, "caught_choose": true, "caught_ui_path": true, "caught_fetch_loop": true}

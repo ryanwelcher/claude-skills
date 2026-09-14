@@ -1,0 +1,52 @@
+# {{TITLE}}
+
+**{{EVENT}}** · {{DATE}}
+
+## Presenters
+
+{{PRESENTERS_BLOCK}}
+
+---
+
+## What we're building
+
+{{NORTH_STAR}}
+
+---
+
+## Pre-workshop setup
+
+Before the day of the workshop, please have the following ready (to avoid wifi bottlenecks on the day):
+
+1. **WordPress Studio** installed — download at [developer.wordpress.com/studio](https://developer.wordpress.com/studio). Create a new site running WordPress `{{WP_VERSION}}` and have it ready.
+2. **Node.js** (LTS) installed — recommended via [NVM](https://github.com/nvm-sh/nvm).
+3. Clone this repo into your site's `wp-content/{{WP_TARGET}}s/` directory:
+   ```bash
+   git clone {{REPO_URL}} wp-content/{{WP_TARGET}}s/{{PLUGIN_SLUG}}
+   ```
+4. Install dependencies and build:
+   ```bash
+   cd wp-content/{{WP_TARGET}}s/{{PLUGIN_SLUG}}
+   npm install
+   npm run build
+   ```
+5. Activate via WP-CLI or the WordPress admin:
+   ```bash
+   studio wp {{WP_TARGET}} activate {{PLUGIN_SLUG}}
+   ```
+
+**Alternatively**, use the one-click `blueprint.json` with [WP Playground](https://playground.wordpress.net/) to skip local setup.
+
+---
+
+## Workshop structure
+
+Sections live in `workshop-outline/`, numbered in order. Each coding section ends with a runnable, demoable state — the `code-reference/section-N/` snapshot for that section is the **starting state of the next section**, so if you fall behind you can copy the snapshot and pick right back up.
+
+Start here → [Section 1](./workshop-outline/section-1.md)
+
+---
+
+## Documentation
+
+{{DOC_LINKS_BLOCK}}
