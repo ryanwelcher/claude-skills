@@ -18,13 +18,15 @@ Input: `$ARGUMENTS` is the path to a local video/audio file (mp4/mov/mkv/wav).
 
 ## Steps
 
-1. **Transcribe.** Run:
+1. **Transcribe.** Run this in the **foreground** with the Bash tool's `timeout` set to `600000`:
    ```bash
    bash ${CLAUDE_SKILL_DIR}/scripts/transcribe-file.sh "$ARGUMENTS"
    ```
+   - **Never** use `run_in_background`, Monitor, or anything else that waits for a later notification. This fork ends the moment you stop calling tools, and nothing can wake it again. A result that arrives after that is lost, and the parent gets nothing. Do not end your turn until you have the three sections below or an `ERROR:` line.
    - It prints only pointers: `CONDENSED: <path>`, `LINES`, `WORDS`, `SRT: <path>`. It never prints the transcript.
-   - If it prints an `ERROR:` line (missing `ffmpeg` or `mlx_whisper`, bad path), return that line verbatim as your entire response and stop. Do **not** attempt to install anything; the parent handles that.
-   - Transcription takes a few minutes for a 2-hour stream. Run it once. Never re-run it to "check" something.
+   - If it prints `PENDING: ...`, the transcription is still running in a detached job. Run the **exact same command** again right away, in the foreground. It picks up the same job and does not restart it. Repeat until you get pointers or an `ERROR:` line.
+   - If it prints an `ERROR:` line (missing `ffmpeg` or `mlx_whisper`, bad path, failed job), return that line verbatim as your entire response and stop. Do **not** attempt to install anything; the parent handles that.
+   - Results are cached per file, so a repeat run on the same recording returns in seconds. Apart from `PENDING`, never re-run it to "check" something.
    - For a very long stream (over ~3 hours) pass a second argument of `300` for 5-minute buckets.
    - The decoder is biased toward WordPress vocabulary. For an off-topic stream, set `WHISPER_PROMPT` to a comma-separated list of the names and terms that matter before running.
 
@@ -36,6 +38,7 @@ Input: `$ARGUMENTS` is the path to a local video/audio file (mp4/mov/mkv/wav).
    - Each at least 10 seconds long, listed in ascending order.
    - One per line, `MM:SS Label`, or `HH:MM:SS Label` once past an hour.
    - Aim for 6–12 chapters on a 2-hour stream.
+   - Never one chapter per bucket. Use at most one chapter per ~4 minutes of stream (a 44-minute stream gets 11 at most), and a chapter changes only when the work changes. If the stream returns to an earlier thread, fold that into the story instead of reopening it as its own chapter.
    - Labels describe what happens, not the clock: "Setting up theme.json" beats "Part 2".
 
 4. **Return exactly the three sections below and nothing else.** No preamble, no transcript excerpts, no quotes longer than a sentence, and no file paths.
