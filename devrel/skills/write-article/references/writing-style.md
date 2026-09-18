@@ -47,16 +47,21 @@ Example pattern: "Following 5.8 and 5.9, WordPress 6.0 now has a Source of Truth
 
 ## Article Closings
 
-**Do:**
-- End when the content ends — after the final code example or a brief summary
-- Add a forward-looking statement or call to action if needed ("Let's make a decision on which project before then.")
-- Credit collaborators: "Huge props to @teammate, @teammate, and the @team for their assistance"
-- On P2 posts: add tags as the final line (`#team-name`, `#snaps`)
+Every article ends with a closing. Never stop on a code block or a bullet list. After the last section, write one or two short paragraphs, with no header, made of:
 
-**Don't:**
-- Write a "Wrapping Up" section
-- Sign off with "I hope you found this useful"
-- Repeat what was already shown
+1. **The so-what.** Tell the reader what to do with this now, tied to the last thing shown. Its first sentence starts from that last thing, then looks forward. It does not open with a summary of the pieces the article covered ("That's the whole pattern: X, Y, and Z").
+   - If the user's notes, the conversation, or a command you ran give you a real result from Ryan's own use ("When I run that on my repo now, the only hits left are…"), include it.
+   - If they don't, write the so-what about the reader's code only. Any first-person claim about Ryan's habits or experience ("I've used this on…", "the reference I keep coming back to") needs one of those sources.
+2. **One pointer.** Where to go next: the full source or repo, the docs, a related post, or a decision prompt on P2 ("Let's make a decision on which project before then."). Link it descriptively.
+3. **P2 only:** credit collaborators ("Huge props to @teammate, @teammate, and the @team for their assistance"), then tags as the final line (`#team-name`, `#snaps`).
+
+Example (from one specific tutorial that ended on a grep command). It shows the shape only. Its wording and facts belong to that article, so write a new closing from the article in front of you:
+
+> Not every hit is a bug. When I run that on my repo now, the only things left are the cache check itself and the Obsidian path in `done`, and both of those are supposed to be there. Anything else is a path that only works on your machine, so swap it for `${CLAUDE_SKILL_DIR}` before you publish, not after someone opens an issue about it.
+>
+> If you want to see how it all fits together, `sounds-like-me` and its sibling skills are in [my claude-skills repo](https://github.com/ryanwelcher/claude-skills).
+
+The closing is not a recap. No "Wrapping Up" or "Conclusion" header, no "I hope you found this useful", and no section-by-section summary of what the article already showed.
 
 ---
 
@@ -67,7 +72,7 @@ Example pattern: "Following 5.8 and 5.9, WordPress 6.0 now has a Source of Truth
 2. Basic/simple case — the minimal working example
 3. Progressive elaboration — add loading state, error handling, or variants
 4. Edge cases / gotchas — explicitly call out traps developers will fall into
-5. End at the code — no lengthy conclusion
+5. Closing — one or two short paragraphs after the last code example (see Article Closings)
 
 ### For P2 discussion/proposal posts:
 1. Context paragraph (what prompted this, with links)
