@@ -9,7 +9,7 @@ const os = require("os");
 const REMOVE = [1, 4]; // Full Mix, Spotify
 const SHIFT = 2; // mic
 const FRAMES = 9; // pull the mic this many frames earlier
-const LEAD_IN = 1; // seconds kept before the first word when the intro is cut
+const LEAD_IN = 0.5; // seconds kept before the first word when the intro is cut
 const NAMES = ["Full Mix (removed)", "Mic", "Guest", "Music (removed)", "Theme Song", "Firebot"];
 
 const HOME = os.homedir();

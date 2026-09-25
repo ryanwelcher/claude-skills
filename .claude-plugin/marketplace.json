@@ -25,7 +25,7 @@
       "name": "devrel",
       "description": "Ryan's developer-advocacy work skills (workshop scaffolding, article drafting, social posts, YouTube scripts and stream descriptions, voice-consistency passes, session logging to Obsidian).",
       "source": "./devrel",
-      "version": "1.25.0",
+      "version": "1.25.1",
       "author": {
         "name": "Ryan Welcher",
         "email": "me@ryanwelcher.com"
