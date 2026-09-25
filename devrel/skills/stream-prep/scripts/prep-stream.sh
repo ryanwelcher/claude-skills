@@ -27,6 +27,20 @@ while [ $# -gt 0 ]; do
 done
 [ ${#files[@]} -gt 0 ] || usage
 
+# Turn ffmpeg's -progress output into one updating line: percent, elapsed, speed, time left.
+show_progress() {
+  awk -v dur="$1" -F= '
+    function hms(s) { s = int(s); return sprintf("%d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60) }
+    $1 == "out_time_us" && $2 ~ /^[0-9]+$/ { t = $2 / 1000000 }
+    $1 == "speed" { sp = $2 + 0 }
+    $1 == "progress" {
+      left = (sp > 0) ? hms((dur - t) / sp) : "?"
+      printf "\r    %3d%%  %s / %s  %.1fx  ~%s left   ", (dur > 0 ? 100 * t / dur : 0), hms(t), hms(dur), sp, left
+      fflush()
+      if ($2 == "end") print ""
+    }'
+}
+
 for bin in ffmpeg ffprobe; do
   command -v "$bin" >/dev/null || { echo "ERROR: $bin not found (brew install ffmpeg)" >&2; exit 1; }
 done
@@ -74,9 +88,18 @@ for in in "${files[@]}"; do
   # Write to a temp name so a failed or cancelled run never leaves a half-written -edit file.
   tmp="${out%.mp4}.partial.mp4"
   trap 'rm -f "$tmp"' EXIT
-  ffmpeg -nostdin -hide_banner -loglevel error -stats -i "$in" \
-    -filter_complex "[0:a:$((SHIFT - 1))]atrim=start=${offset},asetpts=PTS-STARTPTS[shifted]" \
-    "${maps[@]}" -c:v copy "${codecs[@]}" "$tmp"
+  run_ffmpeg() {
+    ffmpeg -nostdin -hide_banner -loglevel error -nostats "$@" -i "$in" \
+      -filter_complex "[0:a:$((SHIFT - 1))]atrim=start=${offset},asetpts=PTS-STARTPTS[shifted]" \
+      "${maps[@]}" -c:v copy "${codecs[@]}" "$tmp"
+  }
+  # Live progress only in a terminal; stay quiet when output is captured (skill, logs).
+  if [ -t 1 ]; then
+    dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$in")
+    run_ffmpeg -progress pipe:1 | show_progress "$dur"
+  else
+    run_ffmpeg
+  fi
   mv "$tmp" "$out"
   trap - EXIT
 
