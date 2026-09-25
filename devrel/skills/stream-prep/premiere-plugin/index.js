@@ -9,6 +9,7 @@ const os = require("os");
 const REMOVE = [1, 4]; // Full Mix, Spotify
 const SHIFT = 2; // mic
 const FRAMES = 9; // pull the mic this many frames earlier
+const LEAD_IN = 1; // seconds kept before the first word when the intro is cut
 const NAMES = ["Full Mix (removed)", "Mic", "Guest", "Music (removed)", "Theme Song", "Firebot"];
 
 const HOME = os.homedir();
@@ -29,7 +30,15 @@ async function log(msg) {
 async function runJob(job) {
   const project = await ppro.Project.createProject(job.prproj);
   if (!project) throw new Error(`could not create project ${job.prproj}`);
+  try {
+    await prep(project, job);
+  } finally {
+    // Save even on failure, so Premiere never sits on a "save changes?" prompt.
+    await project.save();
+  }
+}
 
+async function prep(project, job) {
   if (!(await project.importFiles([job.video], true))) throw new Error(`import failed: ${job.video}`);
   const root = await project.getRootItem();
   let clip = null;
@@ -67,24 +76,36 @@ async function runJob(job) {
     if (!ok) throw new Error(`${label} failed`);
   };
 
-  try {
-    tx("remove and name tracks", (ca) => {
-      ppro.TrackItemSelection.createEmptySelection((sel) => {
-        for (const n of REMOVE) for (const it of items[n - 1]) sel.addItem(it);
-        ca.addAction(editor.createRemoveItemsAction(sel, false, ppro.Constants.MediaType.AUDIO, false));
-      });
-      tracks.forEach((t, i) => ca.addAction(t.createSetNameAction(NAMES[i])));
+  tx("remove and name tracks", (ca) => {
+    ppro.TrackItemSelection.createEmptySelection((sel) => {
+      for (const n of REMOVE) for (const it of items[n - 1]) sel.addItem(it);
+      ca.addAction(editor.createRemoveItemsAction(sel, false, ppro.Constants.MediaType.AUDIO, false));
     });
-    // A clip at 0 can't move left, so push everything out 1s, resync the mic, then pull it all back.
-    tx("push out", (ca) => kept.forEach((it) => ca.addAction(it.createMoveAction(secs(1)))));
-    tx("resync mic", (ca) => {
-      ca.addAction(mic.createSetInPointAction(micIn));
-      ca.addAction(mic.createMoveAction(secs(-offset.seconds)));
-    });
-    tx("pull back", (ca) => kept.forEach((it) => ca.addAction(it.createMoveAction(secs(-1)))));
-  } finally {
-    await project.save();
+    tracks.forEach((t, i) => ca.addAction(t.createSetNameAction(NAMES[i])));
+  });
+  // A clip at 0 can't move left, so push everything out 1s, resync the mic, then pull it all back.
+  tx("push out", (ca) => kept.forEach((it) => ca.addAction(it.createMoveAction(secs(1)))));
+  tx("resync mic", (ca) => {
+    ca.addAction(mic.createSetInPointAction(micIn));
+    ca.addAction(mic.createMoveAction(secs(-offset.seconds)));
+  });
+  tx("pull back", (ca) => kept.forEach((it) => ca.addAction(it.createMoveAction(secs(-1)))));
+
+  // Cut the "starting soon" intro: trim every clip's head (each then starts at `trim`),
+  // then slide everything back to 0. voiceStart (seconds into the recording) comes from the
+  // Quick Action's silence detection; the mic now plays `offset` earlier, so account for it.
+  const trimStart = (Number(job.voiceStart) || 0) - offset.seconds - LEAD_IN;
+  if (trimStart > 0) {
+    const tpf = Number(await seq.getTimebase());
+    const trim = ppro.TickTime.createWithTicks(String(Math.round((trimStart * 254016000000) / tpf) * tpf));
+    const ins = await Promise.all(kept.map((it) => it.getInPoint()));
+    tx("trim intro", (ca) => kept.forEach((it, i) => ca.addAction(it.createSetInPointAction(ins[i].add(trim)))));
+    tx("close gap", (ca) => kept.forEach((it) => ca.addAction(it.createMoveAction(secs(-trim.seconds)))));
+    await log(`  trimmed ${trim.seconds.toFixed(3)}s intro`);
   }
+
+  const pos = async (it) => `start=${(await it.getStartTime()).seconds.toFixed(3)} in=${(await it.getInPoint()).seconds.toFixed(3)}`;
+  await log(`  result: V1 ${await pos(video[0])}, Mic ${await pos(mic)}`);
 }
 
 let busy = false;

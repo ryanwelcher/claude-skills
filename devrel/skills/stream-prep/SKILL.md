@@ -43,5 +43,6 @@ The original recording is never modified. Video and the untouched audio tracks a
 - Trigger it from Finder: right-click the recording, then **Quick Actions > Open in Premiere (stream)**. The Quick Action writes a job to `~/Library/Application Support/stream-prep/jobs/` and opens Premiere. The plugin picks the job up and a notification reports the result.
 - Install or update: `premiere-plugin/build.sh --install`, then restart Premiere. The plugin only loads at launch.
 - Log: `~/Library/Logs/stream-prep-ppro.log`.
+- Intro cut: the Quick Action runs ffmpeg `silencedetect` on OBS track 2 (the mic) and passes the first-sound time as `voiceStart`. If the mic is silent for at least 60 s from the start, the plugin trims every clip so your first word lands 1 s into the timeline (`LEAD_IN`). Otherwise nothing is trimmed. The source media is untouched, so the intro can be dragged back.
 - The track layout and offset are constants at the top of `premiere-plugin/index.js`.
 - Premiere checks every action in a transaction against the timeline as it was before the transaction, so a clip at 0 can't be moved left. The plugin pushes everything out 1 s, resyncs the mic, and pulls everything back, which takes four undo steps.
