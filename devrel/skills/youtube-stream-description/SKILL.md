@@ -41,11 +41,12 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
    yt-dlp --quiet --no-warnings --skip-download --print "%(title)s" --print "%(description)s" "<URL_OR_ID>" | awk '/^Connect:/{exit} {print}'
    ```
 
-5. **For a local recording file**, invoke the `analyze-stream-recording` skill with the file path. It runs in a fork, so the transcript never enters this conversation. It returns three sections:
+5. **For a local recording file**, invoke the `analyze-stream-recording` skill with the file path. It runs in a fork, so the transcript never enters this conversation. It returns four sections:
    - **Recap** → raw material for the hook. Write the hook from what was actually built, broke, and got solved; do not restate the filename or title.
    - **Chapters** → already validated against YouTube's rules. Use verbatim.
    - **Mentioned links** → all unverified. Show them to the user and include only the ones they confirm.
-   Draft from these three sections only. If the recap or chapters look thin or wrong, tell the user what's missing and ask them; do not go looking for the transcript files.
+   - **Transcript gaps** → if not "none", tell the user each range outside the code block, so they know which chapters to check by scrubbing the video. Do not fill a gap with guessed content.
+   Draft from these sections only. If the recap or chapters look thin or wrong, tell the user what's missing and ask them; do not go looking for the transcript files.
    If it returns an `ERROR:` line instead, go back to step 2.
 
 6. **Read the template** at `${CLAUDE_SKILL_DIR}/TEMPLATE.md` for the constant boilerplate (Connect / Projects / hashtags).
@@ -68,3 +69,11 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
 - **Don't invent links.** Only include URLs the user gave you, confirmed from the helper's "Mentioned links", or that already exist in TEMPLATE.md.
 - **Match voice from recent descriptions** — Ryan's tone is casual, first-person, energetic, often self-deprecating. Avoid corporate phrasing.
 - **Keep boilerplate verbatim** from TEMPLATE.md — do not rewrite the Connect/Projects sections per stream.
+
+## Headless
+
+To draft from a recording without a session, run this from a terminal (not from inside the skill):
+```bash
+bash scripts/describe-stream.sh <recording> [--title "..."] [--stream-together]
+```
+It writes `<recording>.description.md` next to the file. Mentioned links and transcript gaps are listed after the code block for you to check.

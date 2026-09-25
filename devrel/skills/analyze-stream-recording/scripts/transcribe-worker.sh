@@ -35,9 +35,15 @@ ffmpeg -nostdin -loglevel error -y -i "$FILE" \
   || fail "ffmpeg could not extract audio (see $DIR/log)"
 
 echo "Transcribing with $MODEL..." >> "$DIR/log"
+# Without --condition-on-previous-text False, one misheard window feeds the
+# next and Whisper can repeat a single phrase for half an hour. The silence
+# threshold skips quiet stretches where it would otherwise invent text.
 mlx_whisper "$DIR/audio.wav" \
   --model "$MODEL" \
   --initial-prompt "$PROMPT" \
+  --condition-on-previous-text False \
+  --word-timestamps True \
+  --hallucination-silence-threshold 2 \
   --output-format srt \
   --output-dir "$DIR" >> "$DIR/log" 2>&1 \
   || fail "mlx_whisper failed (see $DIR/log)"
