@@ -1,0 +1,19 @@
+{
+  "id": "com.ryanwelcher.streamprep",
+  "name": "Stream Prep",
+  "version": "1.0.0",
+  "main": "index.js",
+  "manifestVersion": 5,
+  "host": {
+    "app": "premierepro",
+    "minVersion": "26.3.0",
+    "data": {
+      "apiVersion": 2,
+      "loadEvent": "startup"
+    }
+  },
+  "requiredPermissions": {
+    "localFileSystem": "fullAccess"
+  },
+  "entrypoints": []
+}
