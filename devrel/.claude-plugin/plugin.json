@@ -1,6 +1,6 @@
 {
   "name": "devrel",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "description": "Ryan's developer-advocacy work skills (workshop scaffolding, article drafting, social posts, YouTube scripts and stream descriptions, voice-consistency passes, session logging to Obsidian).",
   "author": {
     "name": "Ryan Welcher",
@@ -17,7 +17,8 @@
     "./skills/sounds-like-me",
     "./skills/analyze-stream-recording",
     "./skills/ste-pass",
-  "./skills/ste-audit"
+    "./skills/ste-audit",
+    "./skills/stream-prep"
   ],
   "commands": []
 }
