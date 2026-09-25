@@ -50,6 +50,9 @@ mlx_whisper "$DIR/audio.wav" \
 
 [ -s "$DIR/audio.srt" ] || fail "transcription produced no SRT in $DIR"
 
+# If a range still looped, re-transcribe it once with different settings.
+bash "$(dirname "${BASH_SOURCE[0]}")/repair-transcript.sh" "$FILE" "$DIR" "$MODEL"
+
 # The WAV is roughly 115 MB per hour of stream. The SRT is all we need to keep.
 rm -f "$DIR/audio.wav" "$DIR/pid"
 touch "$DIR/done"

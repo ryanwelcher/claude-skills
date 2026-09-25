@@ -5,6 +5,11 @@
 #
 # Usage:
 #   describe-stream.sh <recording> [--title "Stream title"] [--stream-together]
+#   describe-stream.sh <folder> [--stream-together]
+#
+# With a folder, drafts every mp4/mov/mkv in it that has no .description.md
+# yet, one at a time (transcription shares the GPU). A failure on one
+# recording is reported and the rest still run.
 #
 # Output:
 #   <recording-dir>/<recording-basename>.description.md
@@ -14,21 +19,29 @@
 
 set -euo pipefail
 
-FILE=""; TITLE=""; TOGETHER="no"
+TARGET=""; TITLE=""; TOGETHER="no"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --title) TITLE="$2"; shift 2;;
     --stream-together) TOGETHER="yes"; shift;;
     -*) echo "unknown option: $1" >&2; exit 2;;
-    *) FILE="$1"; shift;;
+    *) TARGET="$1"; shift;;
   esac
 done
 
-[[ -f "$FILE" ]] || { echo "Usage: describe-stream.sh <recording> [--title \"...\"] [--stream-together]" >&2; exit 2; }
-FILE="$(cd "$(dirname "$FILE")" && pwd)/$(basename "$FILE")"
-OUT="${FILE%.*}.description.md"
+USAGE='Usage: describe-stream.sh <recording|folder> [--title "..."] [--stream-together]'
+[[ -e "$TARGET" ]] || { echo "$USAGE" >&2; exit 2; }
+if [[ -d "$TARGET" && -n "$TITLE" ]]; then
+  echo "--title only works with a single recording, not a folder" >&2
+  exit 2
+fi
 
-PROMPT="/youtube-stream-description Draft the description for this stream recording: $FILE
+describe() {
+  local file out prompt result
+  file="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+  out="${file%.*}.description.md"
+
+  prompt="/youtube-stream-description Draft the description for this stream recording: $file
 
 Answers to the intake questions, so do not ask me anything:
 - Scenario: local recording, not yet uploaded
@@ -40,18 +53,32 @@ Answers to the intake questions, so do not ask me anything:
 Install nothing. If a dependency is missing, stop and say which one.
 Output the final description as a single fenced code block. After it, list any transcript gaps the helper reported."
 
-echo "Drafting description for $(basename "$FILE")..." >&2
-RESULT="$(claude -p "$PROMPT" \
-  --output-format json \
-  --max-turns 40 \
-  --allowedTools "Bash(bash:*)" "Bash(yt-dlp:*)" "Bash(ffmpeg:*)" "Bash(mlx_whisper:*)" "Read" "Skill" "Agent" "Glob" \
-  --disallowedTools "AskUserQuestion" "Edit" "Write" \
-  | python3 -c 'import json,sys; print(json.load(sys.stdin).get("result") or "")')"
+  echo "Drafting description for $(basename "$file")..." >&2
+  result="$(claude -p "$prompt" \
+    --output-format json \
+    --max-turns 40 \
+    --allowedTools "Bash(bash:*)" "Bash(yt-dlp:*)" "Bash(ffmpeg:*)" "Bash(mlx_whisper:*)" "Read" "Skill" "Agent" "Glob" \
+    --disallowedTools "AskUserQuestion" "Edit" "Write" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("result") or "")')" || true
 
-if [[ -z "$RESULT" || "$RESULT" == ERROR:* ]]; then
-  echo "${RESULT:-ERROR: claude returned no result}" >&2
-  exit 1
+  if [[ -z "$result" || "$result" == ERROR:* ]]; then
+    echo "${result:-ERROR: claude returned no result} ($(basename "$file"))" >&2
+    return 1
+  fi
+
+  printf '%s\n' "$result" > "$out"
+  echo "$out"
+}
+
+if [[ -f "$TARGET" ]]; then
+  describe "$TARGET"
+  exit
 fi
 
-printf '%s\n' "$RESULT" > "$OUT"
-echo "$OUT"
+FAILED=0
+shopt -s nullglob nocaseglob
+for f in "$TARGET"/*.mp4 "$TARGET"/*.mov "$TARGET"/*.mkv; do
+  [[ -f "${f%.*}.description.md" ]] && continue
+  describe "$f" || FAILED=$((FAILED + 1))
+done
+[[ "$FAILED" -eq 0 ]] || { echo "$FAILED recording(s) failed" >&2; exit 1; }

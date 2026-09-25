@@ -28,37 +28,37 @@ printf 'model=%s\nreps=%s\nclip=%s\nscenario=%s\nclaude=%s\n' "$MODEL" "$REPS" "
 
 skill_for() { case "$1" in legacy) echo youtube-stream-description-legacy;; new|new-haiku|repo|repo-sonnet|repo-haiku) echo youtube-stream-description;; *) echo "bad version $1" >&2; exit 2;; esac; }
 
-# Variant arms load a patched copy of the installed devrel plugin instead of the installed one.
-INSTALLED_DEVREL="$(python3 -c "import json,os;print(json.load(open(os.path.expanduser('~/.claude/plugins/installed_plugins.json')))['plugins']['devrel@ryan-claude-skills'][0]['installPath'])")"
-extra_args_for() {
-  case "$1" in
-    new-haiku)
-      local pd="$OUT/plugins/new-haiku"
-      if [[ ! -d "$pd" ]]; then
-        mkdir -p "$OUT/plugins" && cp -R "$INSTALLED_DEVREL" "$pd"
-        # add model: haiku to the forked helper's frontmatter (after the context: fork line)
-        sed -i '' 's/^context: fork$/context: fork\
-model: haiku/' "$pd/skills/analyze-stream-recording/SKILL.md"
-        grep -q '^model: haiku$' "$pd/skills/analyze-stream-recording/SKILL.md" || { echo "haiku patch failed" >&2; exit 3; }
+# Every arm loads its own copy of the devrel plugin with --plugin-dir, and
+# --setting-sources project,local hides the user-level skills in ~/.claude/skills
+# (symlinks to this repo's working tree) so they cannot shadow that copy.
+#   new, new-haiku           committed HEAD (git archive)
+#   repo, repo-sonnet, ...   uncommitted working tree
+# A -<model> suffix pins the forked helper to that model in a patched copy.
+REPO_ROOT="$(cd "$HERE/../.." && pwd)"
+plugin_for() {
+  local v="$1" src m pd
+  case "$v" in
+    new|new-haiku)
+      src="$OUT/plugins/head/devrel"
+      if [[ ! -d "$src" ]]; then
+        mkdir -p "$OUT/plugins/head"
+        git -C "$REPO_ROOT" archive HEAD devrel | tar -x -C "$OUT/plugins/head"
       fi
-      printf '%s\n' --plugin-dir "$pd" --settings '{"enabledPlugins":{"devrel@ryan-claude-skills":false}}'
       ;;
-    repo-sonnet|repo-haiku)
-      # fixed working-tree plugin with the forked helper pinned to another model
-      local m="${1#repo-}" pd="$OUT/plugins/$1"
-      if [[ ! -d "$pd" ]]; then
-        mkdir -p "$OUT/plugins" && cp -R "$(cd "$HERE/../../devrel" && pwd)" "$pd"
-        sed -i '' "s/^context: fork\$/context: fork\\
-model: $m/" "$pd/skills/analyze-stream-recording/SKILL.md"
-        grep -q "^model: $m\$" "$pd/skills/analyze-stream-recording/SKILL.md" || { echo "model patch failed" >&2; exit 3; }
-      fi
-      printf '%s\n' --plugin-dir "$pd" --settings '{"enabledPlugins":{"devrel@ryan-claude-skills":false}}'
-      ;;
-    repo)
-      # uncommitted working-tree version of the devrel plugin, instead of the installed cache
-      printf '%s\n' --plugin-dir "$(cd "$HERE/../../devrel" && pwd)" --settings '{"enabledPlugins":{"devrel@ryan-claude-skills":false}}'
-      ;;
+    *) src="$REPO_ROOT/devrel";;
   esac
+  case "$v" in
+    *-haiku|*-sonnet) m="${v##*-}";;
+    *) echo "$src"; return;;
+  esac
+  pd="$OUT/plugins/$v"
+  if [[ ! -d "$pd" ]]; then
+    mkdir -p "$OUT/plugins" && cp -R "$src" "$pd"
+    # pin the forked helper's frontmatter model
+    sed -i '' "s/^model: .*/model: $m/" "$pd/skills/analyze-stream-recording/SKILL.md"
+    grep -q "^model: $m\$" "$pd/skills/analyze-stream-recording/SKILL.md" || { echo "model patch failed" >&2; exit 3; }
+  fi
+  echo "$pd"
 }
 
 IFS=',' read -ra VLIST <<< "$VERSIONS"
@@ -71,8 +71,9 @@ for rep in $(seq 1 "$REPS"); do
     work="$OUT/work/$v-$rep"; mkdir -p "$work"
     echo "== [$v] rep $rep  ($(date +%H:%M:%S))"
     start=$(date +%s)
-    extra=(); while IFS= read -r a; do [[ -n "$a" ]] && extra+=("$a"); done < <(extra_args_for "$v")
-    ( cd "$work" && claude -p "$prompt" ${extra[@]+"${extra[@]}"} \
+    plugin="$(plugin_for "$v")"
+    ( cd "$work" && claude -p "$prompt" \
+        --plugin-dir "$plugin" --setting-sources project,local \
         --model "$MODEL" \
         --output-format stream-json --verbose \
         --max-turns 40 \

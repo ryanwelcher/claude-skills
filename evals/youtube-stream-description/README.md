@@ -13,7 +13,15 @@ bash run.sh --clip fixtures/clip.mp4 --reps 1
 bash run.sh --clip fixtures/clip.mp4 --reps 3 --model opus
 ```
 
-Both versions are invoked by explicit slash command with the intake answers pre-supplied, so triggering and questions are not variables. Runs are sequential (mlx_whisper shares the GPU). Plugin is loaded from the installed cache: make sure `~/.claude/plugins/installed_plugins.json` `gitCommitSha` for `devrel@ryan-claude-skills` matches `git rev-parse HEAD`, or run `/plugin marketplace update ryan-claude-skills` first.
+Both versions are invoked by explicit slash command with the intake answers pre-supplied, so triggering and questions are not variables. Runs are sequential (mlx_whisper shares the GPU).
+
+Each arm loads its own copy of the devrel plugin with `--plugin-dir` and runs with `--setting-sources project,local`, which hides the user-level skill symlinks in `~/.claude/skills` so they can't shadow that copy. User settings and `~/.claude/CLAUDE.md` are left out too, the same for every arm.
+
+| version | plugin copy |
+|---|---|
+| `new` | committed `HEAD` (`git archive`) |
+| `repo` | uncommitted working tree |
+| `new-haiku`, `repo-sonnet`, `repo-haiku` | same, with the forked helper's `model:` swapped |
 
 ## Output
 
@@ -27,3 +35,4 @@ Both versions are invoked by explicit slash command with the intake answers pre-
 | total_in / total_out | whole-session totals from the result event, all threads |
 | cost_usd, turns, subagents, duration_s | from the result event |
 | words | transcript word count printed by `transcribe-file.sh`, to scale expectations |
+| coverage | `COVERAGE` printed by `transcribe-file.sh`: the share of the recording not lost to Whisper loops or silence |

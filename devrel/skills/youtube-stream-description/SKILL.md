@@ -75,5 +75,6 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
 To draft from a recording without a session, run this from a terminal (not from inside the skill):
 ```bash
 bash scripts/describe-stream.sh <recording> [--title "..."] [--stream-together]
+bash scripts/describe-stream.sh <folder> [--stream-together]
 ```
-It writes `<recording>.description.md` next to the file. Mentioned links and transcript gaps are listed after the code block for you to check.
+It writes `<recording>.description.md` next to each file. With a folder, it skips recordings that already have one. Mentioned links and transcript gaps are listed after the code block for you to check.

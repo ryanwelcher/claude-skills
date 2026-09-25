@@ -5,6 +5,7 @@ peak_main_ctx  = largest prompt the main thread ever sent (input + cache_read + 
 final_main_ctx = same measure on the main thread's last assistant message (what /context would show)
 fork_tokens    = input+output summed over messages that carry a parent_tool_use_id (subagent/fork)
 total_in/out   = result.usage, covers every thread
+coverage       = COVERAGE line printed by transcribe-file.sh (share of the recording not lost to Whisper loops or silence)
 """
 import json, os, re, statistics, sys
 from collections import defaultdict
@@ -19,11 +20,14 @@ if os.path.exists(mp):
 def ctx(u): return (u.get("input_tokens", 0) + u.get("cache_read_input_tokens", 0) + u.get("cache_creation_input_tokens", 0))
 
 def parse(path):
-    main_ctx, fork_in, fork_out, res, words, fork_msgs = [], 0, 0, None, None, 0
+    main_ctx, fork_in, fork_out, res, words, coverage, fork_msgs = [], 0, 0, None, None, None, 0
     for line in open(path):
         if words is None:
             mw = re.search(r"WORDS: (\d+)", line)
             if mw: words = int(mw.group(1))
+        if coverage is None:
+            mc = re.search(r"COVERAGE: (\d+)%", line)
+            if mc: coverage = int(mc.group(1))
         try: o = json.loads(line)
         except Exception: continue
         t = o.get("type")
@@ -49,6 +53,7 @@ def parse(path):
         subagents=1 if fork_msgs else (res.get("subagent_stats") or {}).get("spawned", 0),
         duration_s=res.get("duration_ms", 0) / 1000,
         transcript_words=words,
+        coverage=coverage,
         ok=(res.get("subtype") == "success" and not res.get("is_error")),
         models="+".join(sorted(m.replace("claude-", "").split("-2")[0] for m in (res.get("modelUsage") or {}))),
     )
@@ -72,10 +77,10 @@ def fmt(k, v):
     return f"{v:,.0f}" if isinstance(v, float) else f"{v:,}"
 
 out = [f"# Summary — {os.path.basename(root)}", "", " · ".join(f"{k}={v}" for k, v in meta.items()), ""]
-out += ["## Per run", "", "| scenario | version | run | ok | " + " | ".join(cols) + " | words | models |", "|" + "---|" * (len(cols) + 6)]
+out += ["## Per run", "", "| scenario | version | run | ok | " + " | ".join(cols) + " | words | coverage | models |", "|" + "---|" * (len(cols) + 7)]
 for (sc, ver), lst in sorted(runs.items()):
     for rep, m in lst:
-        out.append(f"| {sc} | {ver} | {rep} | {'y' if m['ok'] else 'N'} | " + " | ".join(fmt(c, m[c]) for c in cols) + f" | {m['transcript_words'] or '-'} | {m['models']} |")
+        out.append(f"| {sc} | {ver} | {rep} | {'y' if m['ok'] else 'N'} | " + " | ".join(fmt(c, m[c]) for c in cols) + f" | {m['transcript_words'] or '-'} | {str(m['coverage']) + '%' if m['coverage'] is not None else '-'} | {m['models']} |")
 
 out += ["", "## Mean (min–max) per version", "", "| scenario | version | n | " + " | ".join(cols) + " |", "|" + "---|" * (len(cols) + 3)]
 means = {}
