@@ -10,6 +10,8 @@ const REMOVE = [1, 4]; // Full Mix, Spotify
 const SHIFT = 2; // mic
 const FRAMES = 9; // pull the mic this many frames earlier
 const LEAD_IN = 0.5; // seconds kept before the first word when the intro is cut
+const TARGET_PEAK = -3; // dB: the mic's loudest peak is normalized to this (like Normalize Max Peak)
+const MAX_GAIN = 6; // dB: the most Premiere's Volume > Level allows
 const NAMES = ["Full Mix (removed)", "Mic", "Guest", "Music (removed)", "Theme Song", "Firebot"];
 
 const HOME = os.homedir();
@@ -104,8 +106,31 @@ async function prep(project, job) {
     await log(`  trimmed ${trim.seconds.toFixed(3)}s intro`);
   }
 
+  // Normalize the mic: micPeak (dB) is measured by the Quick Action. Volume > Level stores a
+  // linear value where 0 dB = 10^(-15/20), i.e. value = 10^((dB - 15) / 20).
+  if (typeof job.micPeak === "number" && isFinite(job.micPeak)) {
+    let gain = TARGET_PEAK - job.micPeak;
+    if (gain > MAX_GAIN) {
+      await log(`  mic needs +${gain.toFixed(1)} dB, capped at +${MAX_GAIN} dB`);
+      gain = MAX_GAIN;
+    }
+    const level = (await mic.getComponentChain()).getComponentAtIndex(0).getParam(1);
+    if (level.isTimeVarying()) tx("mic level keyframes off", (ca) => ca.addAction(level.createSetTimeVaryingAction(false)));
+    tx("normalize mic", (ca) => ca.addAction(level.createSetValueAction(level.createKeyframe(Math.pow(10, (gain - 15) / 20)), true)));
+    await log(`  mic peak ${job.micPeak.toFixed(1)} dB, gain ${gain >= 0 ? "+" : ""}${gain.toFixed(1)} dB`);
+  }
+
+  // Mark the whole edit: In at 0, Out at the end of the clips.
+  const end = (await Promise.all(kept.map((it) => it.getEndTime()))).reduce((a, b) => (b.ticksNumber > a.ticksNumber ? b : a));
+  tx("in/out", (ca) => {
+    ca.addAction(seq.createSetInPointAction(ppro.TickTime.TIME_ZERO));
+    ca.addAction(seq.createSetOutPointAction(end));
+  });
+
   const pos = async (it) => `start=${(await it.getStartTime()).seconds.toFixed(3)} in=${(await it.getInPoint()).seconds.toFixed(3)}`;
-  await log(`  result: V1 ${await pos(video[0])}, Mic ${await pos(mic)}`);
+  const lvl = (await (await mic.getComponentChain()).getComponentAtIndex(0).getParam(1).getStartValue()).value.value;
+  await log(`  result: V1 ${await pos(video[0])}, Mic ${await pos(mic)} level=${(20 * Math.log10(lvl) + 15).toFixed(2)}dB, ` +
+    `seq in=${(await seq.getInPoint()).seconds.toFixed(3)} out=${(await seq.getOutPoint()).seconds.toFixed(3)}`);
 }
 
 let busy = false;

@@ -44,5 +44,8 @@ The original recording is never modified. Video and the untouched audio tracks a
 - Install or update: `premiere-plugin/build.sh --install`, then restart Premiere. The plugin only loads at launch.
 - Log: `~/Library/Logs/stream-prep-ppro.log`.
 - Intro cut: the Quick Action runs ffmpeg `silencedetect` on OBS track 2 (the mic) and passes the first-sound time as `voiceStart`. If the mic is silent for at least 60 s from the start, the plugin trims every clip so your first word lands 0.5 s into the timeline (`LEAD_IN`). Otherwise nothing is trimmed. The source media is untouched, so the intro can be dragged back.
+- Mic gain: the same ffmpeg pass measures the mic's loudest peak (`micPeak`). The plugin sets the mic's Volume > Level so that peak lands at -3 dB (`TARGET_PEAK`), like Normalize Max Peak, capped at Premiere's +6 dB. Level stores a linear value: `10^((dB - 15) / 20)`.
+- In/Out: the sequence In is set to 0 and the Out to the end of the clips.
+- Podcast Voice (Essential Sound) is still applied by hand. The UXP API has no Essential Sound or preset call.
 - The track layout and offset are constants at the top of `premiere-plugin/index.js`.
 - Premiere checks every action in a transaction against the timeline as it was before the transaction, so a clip at 0 can't be moved left. The plugin pushes everything out 1 s, resyncs the mic, and pulls everything back, which takes four undo steps.
