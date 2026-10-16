@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{DECK_TITLE}}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  /* Brand tokens from animated-graphics/src/lib/theme.ts:
+     dark #2D2B55 · highlight #E76F51 · onDark #FFFFFF · onDarkMuted #C9C7E0
+     codeSurface #211F40 · codeStroke #4A4780 · fonts Jost + JetBrains Mono.
+     Green stays as a functional success color; code tokens are Shades of Purple. */
+  :root {
+    /* 1% of a 16:9 frame: font sizes are their 1920x1080 size times this, so any
+       16:9 screen shows the same layout scaled, and wider screens are limited by height. */
+    --u: min(1vw, 1.7778vh);
+    --ground: #2D2B55;
+    --ground-raise: #211F40;
+    --line: #7D79BE;
+    --ink: #FFFFFF;
+    --ink-dim: #C9C7E0;
+    --accent: #C9C7E0;
+    --amber: #F4917A;
+    --green: #A5FF90;
+    --pause-ground: #E76F51;
+    --pause-ink: #000000;
+    --display: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+    --body: "Jost", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  }
+  html, body { height: 100%; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    overflow: hidden;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 5vh 6vw;
+    background: var(--ground);
+  }
+  .slide.current { display: flex; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: clamp(11px, calc(var(--u) * 0.781), 15px);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2.2vh;
+  }
+  .eyebrow .clock { color: var(--ink-dim); opacity: 0.75; }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(40px, calc(var(--u) * 5.0), 96px);
+    line-height: 1.02;
+    margin: 0 0 3vh;
+    text-wrap: balance;
+  }
+  h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(28px, calc(var(--u) * 3.021), 58px);
+    line-height: 1.05;
+    margin: 0 0 3vh;
+    text-wrap: balance;
+  }
+  .slide p, .slide li { font-size: clamp(18px, calc(var(--u) * 1.458), 28px); line-height: 1.5; font-weight: 500; }
+  .slide p { margin: 0 0 1.6vh; }
+  .slide ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 1.4vh; }
+  .slide li::marker { color: var(--accent); }
+  .dim { color: var(--ink-dim); }
+  .amber { color: #F8A48F; }
+  a.repo-link { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
+  a.repo-link.amber { color: #F8A48F; }
+  .big-say {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(24px, calc(var(--u) * 2.135), 41px);
+    line-height: 1.28;
+    text-wrap: balance;
+  }
+  .big-say strong { color: var(--amber); font-weight: 800; }
+  /* No ligatures: show => and === as typed, not as single glyphs. */
+  pre.code, code { font-variant-ligatures: none; }
+  pre.code {
+    font-family: var(--mono);
+    tab-size: 4;
+    font-size: clamp(12px, calc(var(--u) * 1.198), 23px);
+    line-height: 1.55;
+    background: var(--ground-raise);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 2.2vh 1.6vw;
+    overflow-x: auto;
+    margin: 0;
+  }
+  /* Shades of Purple token colors */
+  /* Slightly smaller code for blocks whose source lines are long. */
+  pre.code.tight { font-size: clamp(12px, calc(var(--u) * 1.042), 20px); }
+  /* Highlighted code: a highlighter-pen box behind the text, normal syntax colors on top.
+     box-shadow pads the box without shifting the monospace columns. */
+  pre.code mark {
+    color: inherit; background: rgba(255, 157, 0, 0.2); border-radius: 3px;
+    box-shadow: 0 0 0 3px rgba(255, 157, 0, 0.2); -webkit-box-decoration-break: clone; box-decoration-break: clone;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  /* <mark data-step-mark="N"> lights up only while bullet N is the current one
+     (and on the final step, when the whole list is back at full strength). */
+  pre.code mark.mark-off { background: none; box-shadow: none; }
+  pre.code .c { color: #D7A9F5; }
+  pre.code .tok-k { color: #FAD000; }
+  pre.code .tok-s { color: #A5FF90; }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5vh 2vw; }
+  .card pre.code.mini { font-size: clamp(12px, calc(var(--u) * 0.938), 18px); line-height: 1.5; padding: 1.2vh 1vw; margin-top: 1vh; }
+  .file-tag { font-family: var(--mono); font-size: clamp(10px, calc(var(--u) * 0.677), 13px); letter-spacing: 0.08em; color: var(--ink-dim); display: block; margin-top: 0.7vh; }
+  /* two-column body: text lead left, evidence (code/cards) right */
+  .split { display: grid; grid-template-columns: 5fr 6fr; gap: 3.5vw; align-items: center; }
+  .split.even { grid-template-columns: 1fr 1fr; }
+  /* Side-by-side code: both blocks share one height, captions line up. */
+  .split.code-pair { align-items: stretch; }
+  .code-pair > div { display: flex; flex-direction: column; }
+  .code-pair > div > pre.code { flex: 1; }
+  .split > .lead { display: flex; flex-direction: column; gap: 1.8vh; }
+  .cols { display: flex; gap: 2vw; align-items: stretch; }
+  .cols > * { flex: 1; min-width: 0; }
+  .card {
+    background: var(--ground-raise);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 2.2vh 1.6vw;
+  }
+  .card h3 {
+    font-family: var(--mono);
+    font-size: clamp(12px, calc(var(--u) * 0.885), 17px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1.2vh;
+  }
+  .card p, .card li { font-size: clamp(16px, calc(var(--u) * 1.198), 23px); font-weight: 500; }
+  .pair-link {
+    align-self: center;
+    flex: 0 0 auto;
+    font-family: var(--mono);
+    font-size: clamp(24px, calc(var(--u) * 2.292), 44px);
+    color: var(--amber);
+  }
+  /* cycle diagram */
+  .cycle { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5vw; align-items: stretch; margin: 2vh 0; }
+  .cycle .node {
+    background: var(--ground-raise); border: 1px solid var(--line); border-radius: 10px;
+    padding: 2vh 1.2vw; text-align: center; position: relative;
+  }
+  .cycle .node b { display: block; font-family: var(--mono); font-size: clamp(14px, calc(var(--u) * 1.094), 21px); color: var(--amber); margin-bottom: 0.8vh; }
+  .cycle .node span { font-size: clamp(14px, calc(var(--u) * 1.094), 21px); color: var(--ink-dim); }
+  .cycle .node:not(:last-child)::after {
+    content: "→"; position: absolute; right: calc(-1.1vw - 8px); top: 50%; transform: translateY(-50%);
+    color: var(--amber); font-size: clamp(16px, calc(var(--u) * 1.458), 28px);
+  }
+  .cycle-back {
+    text-align: center; font-family: var(--mono); color: var(--amber);
+    font-size: clamp(14px, calc(var(--u) * 1.094), 21px); margin-top: 1vh;
+  }
+  /* stepper */
+  .steps { display: flex; flex-direction: column; gap: 1.2vh; counter-reset: step; }
+  .steps .step {
+    display: flex; gap: 1.2vw; align-items: baseline;
+    background: var(--ground-raise); border: 1px solid var(--line); border-radius: 8px; padding: 1.4vh 1.4vw;
+  }
+  .steps .step::before {
+    counter-increment: step; content: counter(step);
+    font-family: var(--mono); font-weight: 600; color: var(--amber);
+    font-size: clamp(15px, calc(var(--u) * 1.25), 24px); min-width: 1.4em;
+  }
+  .steps .step div { font-size: clamp(17px, calc(var(--u) * 1.302), 25px); font-weight: 500; }
+  .steps code { font-family: var(--mono); color: var(--amber); font-size: 0.92em; }
+  p code, li code, .big-say code, .card code { font-family: var(--mono); color: #F8A48F; font-size: 0.95em; }
+  /* directive rows: name+role left, live example right */
+  .dir-rows { display: flex; flex-direction: column; gap: 1.4vh; }
+  .dir-rows .dir {
+    display: grid; grid-template-columns: 5fr 6fr; gap: 2vw; align-items: center;
+    background: var(--ground-raise); border: 1px solid var(--line); border-radius: 8px; padding: 1.5vh 1.5vw;
+  }
+  .dir-rows .dir .name { font-family: var(--mono); color: var(--amber); font-weight: 600; font-size: clamp(14px, calc(var(--u) * 1.146), 22px); }
+  .dir-rows .dir .what { font-size: clamp(15px, calc(var(--u) * 1.146), 22px); color: var(--ink-dim); margin-top: 0.5vh; }
+  .dir-rows .dir .ex {
+    font-family: var(--mono); font-size: clamp(13px, calc(var(--u) * 1.094), 21px); color: var(--ink);
+    overflow-x: auto; white-space: nowrap;
+  }
+  .dir-rows .dir .ex b { color: var(--amber); font-weight: 600; }
+  /* pause slides */
+  .slide[data-type="p"] { background: var(--pause-ground); color: var(--pause-ink); }
+  .slide[data-type="p"] .eyebrow { color: var(--pause-ink); opacity: 0.75; }
+  .slide[data-type="p"] .eyebrow .clock { color: var(--pause-ink); opacity: 0.75; }
+  .slide[data-type="p"] li::marker { color: var(--pause-ink); }
+  .lab-grid { display: grid; grid-template-columns: auto 1fr; gap: 1.3vh 2.5vw; max-width: 50em; }
+  .lab-grid dt {
+    font-family: var(--mono); font-size: clamp(12px, calc(var(--u) * 0.938), 18px);
+    letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; padding-top: 0.3vh;
+    white-space: nowrap;
+  }
+  .lab-grid dd { margin: 0; font-size: clamp(16px, calc(var(--u) * 1.354), 26px); font-weight: 500; }
+  .lab-grid code { font-family: var(--mono); color: inherit; background: rgba(0,0,0,0.12); padding: 0.05em 0.35em; border-radius: 5px; font-size: 0.9em; }
+  .lab-warn {
+    margin-top: 2.5vh; max-width: 44em;
+    border: 2px solid var(--pause-ink); border-radius: 8px; padding: 1.3vh 1.4vw;
+    font-size: clamp(15px, calc(var(--u) * 1.25), 24px); font-weight: 600;
+  }
+  /* live-demo chip: any slide with data-demo shows a badge naming where the demo runs */
+  .slide[data-demo]::after {
+    content: attr(data-demo);
+    position: absolute; top: 3.5vh; right: 3vw;
+    font-family: var(--mono); font-size: clamp(11px, calc(var(--u) * 0.781), 15px);
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;
+    color: var(--green); border: 1.5px solid var(--green);
+    border-radius: 999px; padding: 0.7vh 1.1vw;
+  }
+  /* Playground launcher + overlay */
+  .pg-launch { display: flex; align-items: center; gap: 1.2vw; flex-wrap: wrap; margin-top: 1.5vh; }
+  .pg-launch button {
+    font-family: var(--mono); font-size: clamp(13px, calc(var(--u) * 0.99), 19px); font-weight: 600;
+    color: var(--pause-ink); background: var(--amber); border: none; border-radius: 8px;
+    padding: 1.2vh 1.4vw; cursor: pointer;
+  }
+  .pg-launch a { font-family: var(--mono); font-size: clamp(12px, calc(var(--u) * 0.885), 17px); color: var(--accent); }
+  .pg-launch .pg-hint { font-size: clamp(11px, calc(var(--u) * 0.781), 15px); color: var(--ink-dim); }
+  #pg-overlay {
+    position: fixed; inset: 3vh 3vw; z-index: 9; display: none;
+    background: var(--ground); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); overflow: hidden;
+  }
+  #pg-overlay.on { display: block; }
+  #pg-overlay iframe { width: 100%; height: 100%; border: 0; }
+  #pg-close {
+    position: absolute; top: 10px; right: 12px; z-index: 10;
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    color: var(--ink); background: var(--ground-raise); border: 1px solid var(--line);
+    border-radius: 6px; padding: 6px 12px; cursor: pointer;
+  }
+  /* checkpoint slides */
+  .slide[data-type="c"] { border-left: 14px solid var(--green); }
+  .slide[data-type="c"] .eyebrow { color: var(--green); }
+  .slide[data-type="c"] .big-say { max-width: 30em; }
+  /* chrome */
+  #progress { position: fixed; top: 0; left: 0; height: 4px; background: var(--amber); width: 0; z-index: 5; transition: width 0.2s; }
+  #counter {
+    position: fixed; bottom: 14px; right: 18px; z-index: 5;
+    font-family: var(--mono); font-size: 13px; color: var(--ink-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  #timer {
+    position: fixed; bottom: 14px; left: 18px; z-index: 5; display: none;
+    font-family: var(--mono); font-size: 15px; color: var(--amber);
+    font-variant-numeric: tabular-nums;
+  }
+  #timer.on { display: block; }
+  #notes {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: none;
+    background: rgba(33, 31, 64, 0.96); border-top: 2px solid var(--accent);
+    padding: 14px 24px 18px; font-size: 16px; line-height: 1.5; color: var(--ink);
+  }
+  #notes.on { display: block; }
+  /* Slide outline: O (or click the counter) to open, click a slide to jump. */
+  #outline {
+    position: fixed; inset: 3vh 3vw; z-index: 9; display: none; overflow-y: auto;
+    background: var(--ground); border: 2px solid var(--accent); border-radius: 12px;
+    padding: 18px 26px; columns: 3 17em; column-gap: 28px; font-size: 15px; color: var(--ink);
+  }
+  #outline.on { display: block; }
+  #outline .tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 6px; column-span: all; }
+  #outline .group { break-inside: avoid; margin-bottom: 14px; }
+  #outline h4 { margin: 0 0 4px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+  #outline button {
+    display: flex; gap: 8px; width: 100%; text-align: left; background: none; border: 0; border-radius: 6px;
+    color: inherit; font: inherit; line-height: 1.35; padding: 3px 6px; cursor: pointer;
+  }
+  #outline button:hover, #outline button:focus-visible { background: var(--ground-raise); outline: none; }
+  #outline button.current { color: var(--amber); font-weight: 600; }
+  #outline .num { font-family: var(--mono); color: var(--ink-dim); min-width: 2em; }
+  #outline .kind { color: var(--ink-dim); font-weight: 400; }
+  #counter { cursor: pointer; }
+  /* Controls panel: ? to open. */
+  #keys {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9; display: none;
+    width: min(640px, 92vw); max-height: 92vh; overflow-y: auto;
+    background: var(--ground); border: 2px solid var(--accent); border-radius: 12px;
+    padding: 18px 26px 20px; font-size: 15px; color: var(--ink);
+  }
+  #keys.on { display: block; }
+  #keys .tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 10px; }
+  #keys table { width: 100%; border-collapse: collapse; }
+  #keys th, #keys td { text-align: left; vertical-align: top; padding: 6px 0; border-top: 1px solid var(--line); line-height: 1.4; }
+  #keys th { font-family: var(--mono); font-weight: 600; color: var(--amber); white-space: nowrap; padding-right: 20px; font-size: 14px; }
+  #keys td { color: var(--ink-dim); }
+  #notes .tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+  /* Presenter view (P opens it in a second window, ?presenter) and the slide
+     previews inside it (?embed). */
+  body.embed #progress, body.embed #counter, body.embed #timer, body.embed #help,
+  body.embed #notes, body.embed .pg-launch { display: none !important; }
+  body.presenter #deck, body.presenter #progress, body.presenter #counter,
+  body.presenter #timer, body.presenter #help, body.presenter #notes { display: none !important; }
+  #presenter {
+    position: fixed; inset: 0; display: grid; gap: 14px 18px; padding: 14px 18px;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); grid-template-rows: auto minmax(0, 1fr);
+    background: var(--ground); color: var(--ink); font-family: var(--body);
+  }
+  #p-bar { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 22px; font-family: var(--mono); color: var(--ink-dim); font-size: 15px; }
+  #p-bar .p-count { color: var(--ink); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #p-bar .p-section { flex: 1; letter-spacing: 0.08em; text-transform: uppercase; font-size: 13px; }
+  #p-bar .p-timer { color: var(--amber); font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #p-bar .p-clock { font-variant-numeric: tabular-nums; }
+  #p-bar .p-link { color: var(--accent); }
+  .p-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .p-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .p-label .dim { letter-spacing: 0; text-transform: none; }
+  .p-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #000; flex: none; }
+  #p-now { max-width: calc((100vh - 110px) * 16 / 9); }
+  .p-frame iframe { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; border: 0; transform-origin: 0 0; pointer-events: none; }
+  .p-frame .p-end { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--mono); color: var(--ink-dim); }
+  .p-frame .p-end[hidden] { display: none; }
+  #p-notes { flex: 1; min-height: 0; overflow-y: auto; font-size: 22px; line-height: 1.5; background: var(--ground-raise); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; }
+  #help {
+    position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5;
+    font-family: var(--mono); font-size: 12px; color: var(--ink-dim); opacity: 0.7;
+  }
+  #jump {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 8;
+    display: none; font-family: var(--mono); font-size: 64px; font-weight: 600;
+    color: var(--ink); background: rgba(33, 31, 64, 0.95);
+    border: 2px solid var(--accent); border-radius: 14px; padding: 20px 44px;
+    font-variant-numeric: tabular-nums;
+  }
+  #jump.on { display: block; }
+  #jump small { display: block; font-size: 14px; color: var(--ink-dim); text-align: center; margin-top: 6px; }
+  /* step-build fragments: data-frag="N" reveals in numeric order on → */
+  [data-frag] { opacity: 0; transition: opacity 0.35s ease, transform 0.35s ease; }
+  div[data-frag], p[data-frag], ul[data-frag], pre[data-frag] { transform: translateY(10px); }
+  [data-frag].frag-on { opacity: 1; transform: none; }
+  /* Bullet lists step one item per press: unreached items are hidden (their
+     space is kept so nothing jumps), the current one is full strength, earlier
+     ones fade, and a final press brings the whole list back to full. */
+  .step-li { transition: opacity 0.3s ease; }
+  .step-li.li-hidden { opacity: 0; visibility: hidden; }
+  .step-li.li-faded { opacity: 0.35; }
+  @media (prefers-reduced-motion: reduce) { #progress { transition: none; } [data-frag], .step-li { transition: none; } }
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- {{SLIDES}}: one <section class="slide"> per slide, built from references/slide-patterns.html -->
+
+</div>
+
+<div id="progress"></div>
+<div id="counter"></div>
+<div id="timer">00:00</div>
+<div id="pg-overlay"><button id="pg-close" onclick="closePG()">✕ close</button></div>
+<div id="notes"><span class="tag">Speaker notes · N to hide</span><span id="notes-body"></span></div>
+<div id="outline" role="dialog" aria-label="Slide outline"></div>
+<div id="keys" role="dialog" aria-label="Controls"><span class="tag">Controls · ? or Esc to close</span><table>
+  <tr><th>→ · Space · Page Down</th><td>Next step or slide</td></tr>
+  <tr><th>← · Page Up</th><td>Previous step or slide</td></tr>
+  <tr><th>Home · End</th><td>First or last slide</td></tr>
+  <tr><th>Number, then Enter</th><td>Jump to that slide. Backspace fixes a typo, Esc cancels</td></tr>
+  <tr><th>O · click the counter</th><td>Slide outline. Click a slide to jump to it</td></tr>
+  <tr><th>N</th><td>Show or hide speaker notes (they show on the projector too)</td></tr>
+  <tr><th>T</th><td>Start or stop the timer</td></tr>
+  <tr><th>P</th><td>Presenter view in a second window: current and next slide, notes, timer. Drive the deck from either window</td></tr>
+  <tr><th>?</th><td>This panel</td></tr>
+  <tr><th>#28 in the URL</th><td>Open the deck at that slide</td></tr>
+</table></div>
+<div id="help">← → navigate · type a number + Enter to jump · O outline · N notes · T timer · P presenter view · ? all controls</div>
+<div id="jump"><span id="jump-num"></span><small>Enter to jump · Esc to cancel</small></div>
+
+<script>
+  // Lightweight syntax coloring for the code blocks: strings green,
+  // keywords blue. Comments (.c) are already hand-marked, so we only touch
+  // plain text nodes (including the text inside <mark> highlights).
+  (function highlightCode() {
+    const KEYWORDS = /\b(import|from|const|let|var|function|return|get|if|else|for|while|yield|new|true|false|null|array|echo|add_action|add_filter)\b/;
+    const TOKEN = new RegExp("('[^']*'|\"[^\"]*\"|`[^`]*`)|" + KEYWORDS.source, 'g');
+    function processText(node) {
+      const text = node.nodeValue;
+      TOKEN.lastIndex = 0;
+      if (!TOKEN.test(text)) return;
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      TOKEN.lastIndex = 0;
+      for (let m; (m = TOKEN.exec(text)); ) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        const span = document.createElement('span');
+        span.className = m[1] ? 'tok-s' : 'tok-k';
+        span.textContent = m[0];
+        frag.appendChild(span);
+        last = m.index + m[0].length;
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    }
+    document.querySelectorAll('pre.code').forEach(function walk(el) {
+      Array.from(el.childNodes).forEach(node => {
+        if (node.nodeType === 3) processText(node);
+        else if (node.nodeType === 1 && !node.matches('.c, .tok-s, .tok-k')) walk(node);
+      });
+    });
+  })();
+
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const progress = document.getElementById('progress');
+  const counter = document.getElementById('counter');
+  const notes = document.getElementById('notes');
+  const notesBody = document.getElementById('notes-body');
+  const help = document.getElementById('help');
+  let idx = 0;
+
+  // Build steps. [data-frag="N"] elements reveal in numeric order first,
+  // then each bullet list steps one item at a time, then one last step shows
+  // the whole list at full strength. Forward reveals the next step before
+  // leaving the slide; backward un-reveals; arriving from the right (or by
+  // hash or the outline) shows everything.
+  function fragNums(slide) {
+    return [...new Set(Array.from(slide.querySelectorAll('[data-frag]'))
+      .map(el => parseInt(el.dataset.frag, 10)))].sort((a, b) => a - b);
+  }
+  // Bullet lists with 2+ items step through, except small lists inside cards
+  // and lists marked data-no-steps (shown all at once).
+  slides.forEach(slide => {
+    slide.stepItems = [];
+    slide.querySelectorAll('ul').forEach(ul => {
+      if (ul.closest('.card, [data-no-steps]')) return;
+      const items = ul.querySelectorAll(':scope > li');
+      if (items.length < 2) return;
+      items.forEach(li => { li.classList.add('step-li'); slide.stepItems.push(li); });
+    });
+  });
+  // One entry per build step; only the length matters to callers.
+  function fragSteps(slide) {
+    const bullets = slide.stepItems.length;
+    return fragNums(slide).concat(Array(bullets ? bullets + 1 : 0).fill('li'));
+  }
+  function applyFrags(slide, revealed) {
+    const nums = fragNums(slide);
+    const visible = new Set(nums.slice(0, revealed));
+    slide.querySelectorAll('[data-frag]').forEach(el => {
+      el.classList.toggle('frag-on', visible.has(parseInt(el.dataset.frag, 10)));
+    });
+    const current = revealed - nums.length;  // 1-based bullet; past the end = all full
+    const all = current > slide.stepItems.length;
+    slide.stepItems.forEach((li, k) => {
+      li.classList.toggle('li-hidden', !all && k + 1 > current);
+      li.classList.toggle('li-faded', !all && k + 1 < current);
+    });
+    slide.querySelectorAll('mark[data-step-mark]').forEach(mk => {
+      mk.classList.toggle('mark-off', !all && +mk.dataset.stepMark !== current);
+    });
+  }
+  const revealedBySlide = new Map();
+
+  function show(i, mode) {
+    const n = Math.max(0, Math.min(slides.length - 1, i));
+    setState(n, mode === 'fwd' ? 0 : fragSteps(slides[n]).length, true);
+  }
+  // Render slide i with `revealed` build steps showing. `send` passes the
+  // change to the other window (audience <-> presenter view).
+  function setState(i, revealed, send) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    const slide = slides[idx];
+    revealedBySlide.set(idx, revealed);
+    applyFrags(slide, revealed);
+    slides.forEach((s, n) => s.classList.toggle('current', n === idx));
+    progress.style.width = ((idx + 1) / slides.length * 100) + '%';
+    counter.textContent = (idx + 1) + ' / ' + slides.length;
+    notesBody.textContent = slide.dataset.notes || '(no notes)';
+    const onPause = slide.dataset.type === 'p';
+    counter.style.color = onPause ? 'var(--pause-ink)' : 'var(--ink-dim)';
+    help.style.color = onPause ? 'var(--pause-ink)' : 'var(--ink-dim)';
+    try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {}
+    if (MODE === 'presenter') renderPresenter();
+    if (send) sendToPeer({ type: 'state', idx, revealed });
+  }
+
+  function forward() {
+    const steps = fragSteps(slides[idx]);
+    const revealed = revealedBySlide.get(idx) || 0;
+    if (revealed < steps.length) {
+      setState(idx, revealed + 1, true);
+    } else {
+      show(idx + 1, 'fwd');
+    }
+  }
+  function backward() {
+    const revealed = revealedBySlide.get(idx) || 0;
+    if (revealed > 0) {
+      setState(idx, revealed - 1, true);
+    } else {
+      show(idx - 1, 'back');
+    }
+  }
+
+  // WordPress Playground demo overlay. The iframe boots only on demand and
+  // is torn down on close so it never eats memory in the background.
+  const pgOverlay = document.getElementById('pg-overlay');
+  // The finished project in WordPress Playground. Set to the workshop's demo blueprint,
+  // or leave it and don't use the .pg-launch button pattern.
+  const PG_URL = 'https://playground.wordpress.net/?blueprint-url={{DEMO_BLUEPRINT_URL}}';
+  window.openPG = function (e) {
+    e.stopPropagation();
+    if (!pgOverlay.querySelector('iframe')) {
+      const f = document.createElement('iframe');
+      f.src = PG_URL;
+      pgOverlay.appendChild(f);
+    }
+    pgOverlay.classList.add('on');
+  };
+  window.closePG = function () {
+    pgOverlay.classList.remove('on');
+    const f = pgOverlay.querySelector('iframe');
+    if (f) f.remove();
+  };
+
+  // Type a slide number, press Enter to jump (Esc cancels). Jumped-to
+  // slides arrive fully revealed so a mid-talk jump never lands on a
+  // half-built diagram.
+  const jumpEl = document.getElementById('jump');
+  const jumpNum = document.getElementById('jump-num');
+  let jumpBuffer = '';
+  function updateJump() {
+    jumpNum.textContent = jumpBuffer;
+    jumpEl.classList.toggle('on', jumpBuffer.length > 0);
+  }
+
+  // Slide outline, grouped by the section in each slide's eyebrow.
+  const outlineEl = document.getElementById('outline');
+  (function buildOutline() {
+    const KIND = { p: 'lab', c: 'checkpoint' };
+    let html = '<span class="tag">Slides · click to jump · O or Esc to close</span>';
+    let group = null;
+    slides.forEach((slide, i) => {
+      const eyebrow = slide.querySelector('.eyebrow');
+      const parts = eyebrow ? eyebrow.textContent.split('·').map(t => t.trim()) : [];
+      let label = 'Opening';
+      if (/^Section \d+/.test(parts[0] || '')) label = parts[0] + ' · ' + parts[1];
+      else if (/^(Wrap-up|Thanks)/.test(parts[0] || '')) label = 'Wrap-up';
+      const key = label.replace(/ · .*/, '');
+      if (key !== group) {
+        html += (group ? '</div>' : '') + '<div class="group"><h4>' + label + '</h4>';
+        group = key;
+      }
+      const heading = slide.querySelector('h1, h2');
+      let title = 'Slide ' + (i + 1);
+      if (heading) {
+        const copy = heading.cloneNode(true);
+        copy.querySelectorAll('br').forEach(br => br.replaceWith(' '));
+        title = copy.textContent.replace(/\s+/g, ' ').trim();
+      }
+      const kind = KIND[slide.dataset.type] ? ' <span class="kind">· ' + KIND[slide.dataset.type] + '</span>' : '';
+      html += '<button type="button" data-i="' + i + '"><span class="num">' + (i + 1) + '</span><span>' + title.replace(/</g, '&lt;') + kind + '</span></button>';
+    });
+    outlineEl.innerHTML = html + '</div>';
+  })();
+  function toggleOutline(force) {
+    const on = force !== undefined ? force : !outlineEl.classList.contains('on');
+    outlineEl.classList.toggle('on', on);
+    if (!on) return;
+    outlineEl.querySelectorAll('button').forEach(b => b.classList.toggle('current', +b.dataset.i === idx));
+    const cur = outlineEl.querySelector('button.current');
+    if (cur) { cur.scrollIntoView({ block: 'nearest' }); cur.focus({ preventScroll: true }); }
+  }
+  outlineEl.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-i]');
+    if (!b) return;
+    show(+b.dataset.i, 'back');
+    toggleOutline(false);
+  });
+  counter.addEventListener('click', () => toggleOutline());
+
+  const keysEl = document.getElementById('keys');
+
+  document.addEventListener('keydown', (e) => {
+    if (MODE === 'embed') return;
+    if (keysEl.classList.contains('on')) {
+      if (e.key === 'Escape' || e.key === '?') keysEl.classList.remove('on');
+      return;
+    }
+    if (outlineEl.classList.contains('on')) {
+      if (e.key === 'Escape' || e.key === 'o' || e.key === 'O') toggleOutline(false);
+      return;
+    }
+    if (pgOverlay.classList.contains('on')) {
+      if (e.key === 'Escape') closePG();
+      return;
+    }
+    if (e.key >= '0' && e.key <= '9') {
+      jumpBuffer = (jumpBuffer + e.key).slice(0, 3);
+      updateJump();
+      return;
+    }
+    if (jumpBuffer) {
+      if (e.key === 'Enter') {
+        const n = parseInt(jumpBuffer, 10);
+        if (n >= 1 && n <= slides.length) show(n - 1, 'back');
+      } else if (e.key === 'Backspace') {
+        jumpBuffer = jumpBuffer.slice(0, -1);
+        updateJump();
+        return;
+      }
+      jumpBuffer = '';
+      updateJump();
+      if (e.key === 'Enter' || e.key === 'Escape') return;
+    }
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); forward(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); backward(); }
+    else if (e.key === 'Home') { show(0, 'fwd'); }
+    else if (e.key === 'End') { show(slides.length - 1, 'back'); }
+    else if (e.key === 'n' || e.key === 'N') { notes.classList.toggle('on'); }
+    else if (e.key === 't' || e.key === 'T') { toggleTimer(); }
+    else if (e.key === 'o' || e.key === 'O') { toggleOutline(true); }
+    else if (e.key === '?') { keysEl.classList.add('on'); }
+    else if ((e.key === 'p' || e.key === 'P') && MODE === 'audience') { openPresenter(); }
+  });
+
+  // Elapsed timer: press T at 0:00 of the session. The run sheet's
+  // minute-50 gate is checked against this, not wall clock.
+  const timerEl = document.getElementById('timer');
+  let timerStart = null, timerTick = null;
+  function toggleTimer() {
+    setTimer(timerStart !== null ? null : Date.now(), true);
+  }
+  // Both windows share one start time, so the presenter view and the
+  // projector always show the same elapsed time.
+  function setTimer(start, send) {
+    clearInterval(timerTick); timerTick = null; timerStart = start;
+    timerEl.classList.toggle('on', start !== null);
+    const tick = () => {
+      let text = '';
+      if (timerStart !== null) {
+        const s = Math.floor((Date.now() - timerStart) / 1000);
+        text = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+        timerEl.textContent = text;
+      }
+      if (MODE === 'presenter') {
+        pTimer.textContent = text || 'T to start timer';
+        pClock.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      }
+    };
+    tick();
+    if (start !== null || MODE === 'presenter') timerTick = setInterval(tick, 1000);
+    if (send) sendToPeer({ type: 'timer', start });
+  }
+
+  // ---- Presenter view -------------------------------------------------
+  // P opens this same file with ?presenter in a second window. Each slide
+  // preview in it is this file again with ?embed, scaled from 1920x1080.
+  // The windows talk with postMessage, which also works from file://.
+  const params = new URLSearchParams(location.search);
+  const MODE = params.has('presenter') ? 'presenter' : params.has('embed') ? 'embed' : 'audience';
+  const MSG = 'iapi-deck';
+  let peer = MODE === 'presenter' ? window.opener : null;
+  const LOAD_ID = Math.random().toString(36).slice(2);
+  let linkedId = null;
+  function sendToPeer(data) {
+    if (peer && !peer.closed) peer.postMessage(Object.assign({ deck: MSG }, data), '*');
+  }
+  function openPresenter() {
+    const url = location.href.split('#')[0].split('?')[0] + '?presenter#' + (idx + 1);
+    peer = window.open(url, 'iapi-presenter', 'popup,width=1280,height=800');
+  }
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || d.deck !== MSG) return;
+    if (d.type === 'state') setState(d.idx, d.revealed, false);
+    else if (d.type === 'timer') setTimer(d.start, false);
+    else if (d.type === 'hello' && MODE === 'audience' && d.id !== linkedId) {
+      // A presenter window opened or reloaded: hand it the current slide and timer.
+      peer = e.source; linkedId = d.id;
+      sendToPeer({ type: 'sync', idx, revealed: revealedBySlide.get(idx) || 0, start: timerStart });
+    }
+    else if (d.type === 'sync') {
+      // Follow the slide window's position. Keep whichever timer is running,
+      // so reloading either window never resets it.
+      setState(d.idx, d.revealed, false);
+      if (d.start !== null) setTimer(d.start, false);
+      else if (timerStart !== null) sendToPeer({ type: 'timer', start: timerStart });
+    }
+  });
+
+  let pFrames, pTimer, pClock, pCount, pSection, pNotes, pStep;
+  if (MODE === 'embed') document.body.classList.add('embed');
+  if (MODE === 'presenter') {
+    document.body.classList.add('presenter');
+    document.title = 'Presenter · ' + document.title;
+    const base = location.href.split('#')[0].split('?')[0] + '?embed';
+    const wrap = document.createElement('div');
+    wrap.id = 'presenter';
+    wrap.innerHTML =
+      '<div id="p-bar"><span class="p-count"></span><span class="p-section"></span>' +
+      (peer ? '' : '<span class="p-link">Not linked to a slide window. Press P in the deck to open this view.</span>') +
+      '<span class="p-clock"></span><span class="p-timer"></span></div>' +
+      '<div class="p-col"><div class="p-label">Now <span class="dim p-step"></span></div>' +
+      '<div class="p-frame" id="p-now"><iframe tabindex="-1" src="' + base + '#1"></iframe></div></div>' +
+      '<div class="p-col"><div class="p-label">Next</div>' +
+      '<div class="p-frame" id="p-next"><iframe tabindex="-1" src="' + base + '#2"></iframe><div class="p-end" hidden>End of deck</div></div>' +
+      '<div class="p-label">Notes</div><div id="p-notes"></div></div>';
+    document.body.appendChild(wrap);
+    pFrames = { now: wrap.querySelector('#p-now'), next: wrap.querySelector('#p-next') };
+    pTimer = wrap.querySelector('.p-timer'); pClock = wrap.querySelector('.p-clock');
+    pCount = wrap.querySelector('.p-count'); pSection = wrap.querySelector('.p-section');
+    pNotes = wrap.querySelector('#p-notes'); pStep = wrap.querySelector('.p-step');
+    const fit = () => Object.values(pFrames).forEach(f => {
+      f.querySelector('iframe').style.transform = 'scale(' + (f.clientWidth / 1920) + ')';
+    });
+    new ResizeObserver(fit).observe(wrap);
+    Object.values(pFrames).forEach(f => f.querySelector('iframe').addEventListener('load', renderPresenter));
+    sendToPeer({ type: 'hello', id: LOAD_ID });
+    setInterval(() => sendToPeer({ type: 'hello', id: LOAD_ID }), 2000);
+    setTimer(null, false);
+  }
+  function previewShow(frame, i, revealed) {
+    const win = frame.querySelector('iframe').contentWindow;
+    if (win) win.postMessage({ deck: MSG, type: 'state', idx: i, revealed }, '*');
+  }
+  function renderPresenter() {
+    if (!pFrames) return;
+    const slide = slides[idx];
+    const steps = fragSteps(slide).length;
+    const revealed = revealedBySlide.get(idx) || 0;
+    pCount.textContent = (idx + 1) + ' / ' + slides.length;
+    const eyebrow = slide.querySelector('.eyebrow');
+    pSection.textContent = eyebrow ? eyebrow.textContent.replace(/\s+/g, ' ').trim() : '';
+    pStep.textContent = steps ? '· build step ' + revealed + ' of ' + steps : '';
+    pNotes.textContent = slide.dataset.notes || '(no notes)';
+    previewShow(pFrames.now, idx, revealed);
+    const last = idx >= slides.length - 1;
+    pFrames.next.querySelector('.p-end').hidden = !last;
+    pFrames.next.querySelector('iframe').style.visibility = last ? 'hidden' : '';
+    if (!last) previewShow(pFrames.next, idx + 1, fragSteps(slides[idx + 1]).length);
+  }
+
+  const fromHash = parseInt(location.hash.slice(1), 10);
+  show(isNaN(fromHash) ? 0 : fromHash - 1, isNaN(fromHash) ? 'fwd' : 'back');
+
+  setTimeout(() => { help.style.display = 'none'; }, 8000);
+</script>
+</body>
+</html>

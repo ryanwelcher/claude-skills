@@ -18,7 +18,7 @@ runtime, and cache edits are lost on `/plugin update` — so never hand-edit the
 | Plugin | Version | Visibility | Skills |
 |---|---|---|---|
 | `public` | 1.0.0 | Safe to share with anyone | _(empty — placeholder for future shareable skills)_ |
-| `devrel` | 1.22.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit` |
+| `devrel` | 1.29.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit` |
 
 ### `public` skills
 
@@ -29,6 +29,7 @@ _None yet — placeholder for future shareable skills._
 | Skill | What it does |
 |---|---|
 | `wp-workshop-scaffold` | Scaffold a new WordPress workshop repo (or reformat / audit an existing one) to the canonical WCPT-style structure with a north-star artifact arc. |
+| `wp-workshop-deck` | Build a workshop's slide deck (`slideshows/<length>/index.html`) from its `slides-outline.md`, using a bundled deck template with build steps, presenter view, slide outline, and 16:9 scaling, then check layout, code accuracy, and voice. |
 | `youtube-script` | Write or audit/rework a YouTube video script in Ryan's voice (conversational, dev-to-dev, not AI-sounding). |
 | `write-article` | Write long-form articles, blog posts, or P2 updates in Ryan's voice. |
 | `write-social-post` | Draft promotional LinkedIn / X / Facebook posts with the WP-DevRel persona, platform-specific formatting, and hashtags. |

@@ -1,0 +1,406 @@
+<!--
+  Slide patterns for templates/deck.html. One working example of each slide type, taken
+  from a deck that was checked on projectors. Copy the structure; replace every word,
+  code line, link, and speaker note with the new workshop's content.
+
+  Section attributes:
+    data-type="t" talk (purple) · "p" lab, the room is coding (orange) · "c" checkpoint (green edge)
+    data-notes="..."  speaker notes (N toggles them; the presenter view shows them)
+    data-demo="..."   green corner chip marking a switch to the live site
+  Build steps: data-frag="N" reveals in order; bullet lists step automatically (earlier ones
+  fade, a last press shows the whole list); <ul data-no-steps> shows a list at once;
+  <mark data-step-mark="N"> in code lights up only while bullet N is current.
+-->
+
+<!-- ===== Title slide. h1, one line of who and where. No section eyebrow. ===== -->
+<section class="slide" data-type="t" data-notes="Welcome people in as they settle. Watcher check happens on slide 4, not now.">
+  <div class="eyebrow">Hands-on workshop <span class="clock">· 90 min</span></div>
+  <h1>Building Interactive Blocks<br>with the Interactivity&nbsp;API</h1>
+  <p class="dim" style="font-size: clamp(18px, calc(var(--u) * 1.562), 30px);">Ryan Welcher · Automattic · @ryanwelcher</p>
+</section>
+
+<!-- ===== Who am I. Short list shown all at once (data-no-steps), photo on the right. ===== -->
+<section class="slide" data-type="t" data-notes="30 seconds max. They came for the API, not the bio.">
+  <div class="eyebrow">Hello</div>
+  <h2>Who am I?</h2>
+  <div class="split" style="align-items: center;">
+    <ul data-no-steps>
+      <li>Developer Advocate at Automattic</li>
+      <li>YouTube &amp; Twitch: <span class="amber">@ryanwelchercodes</span></li>
+      <li>Most of what I do is build blocks in public, on streams, in tutorials, and at workshops like this one</li>
+    </ul>
+    <img src="{{PRESENTER_PHOTO}}" alt="Ryan Welcher speaking at a podium at WordCamp Europe" style="width: min(24vw, 44vh); height: auto; border-radius: 14px; border: 3px solid var(--amber); justify-self: center;">
+  </div>
+</section>
+
+<!-- ===== Opening demo. data-demo chip (top-right), Playground launch button, and cards listing what to watch for. ===== -->
+<section class="slide" data-type="t" data-demo="demo · Studio or Playground" data-notes="npm run checkpoint 9 before the session starts, so the opening demo is the finished slider. LIVE demo. Studio window is primary (slide, hit the ends, toggle autoplay, add a 4th image, show the count adapt). The Playground button is the embedded fallback: boots the finished slider on a populated post; needs network. This is the contract for the next 90 minutes.">
+  <div class="eyebrow">The goal</div>
+  <h2>What are we building?</h2>
+  <div class="split">
+    <div class="lead">
+      <p class="big-say">A gallery slider that renders <strong>on the server</strong> and is fully interactive. <strong>No front-end framework.</strong></p>
+      <p class="dim">Watch for these four behaviors in the live demo. We build them in order.</p>
+      <div class="pg-launch">
+        <button onclick="openPG(event)">▶ Boot it in Playground</button>
+        <a href="https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/ryanwelcher/iapi-gallery-slider/demo/demo-blueprint.json" target="_blank" rel="noopener">open in new tab ↗</a>
+        <span class="pg-hint">finished slider, real WordPress, needs network</span>
+      </div>
+    </div>
+    <div class="cols" style="flex-direction: column; gap: 1.4vh;">
+      <div class="card"><h3>Slides + bounds</h3><p>Prev/next move the track; buttons disable at the ends</p></div>
+      <div class="card"><h3>Adaptive</h3><p>Counter reads "1/4" because the server counted 4 blocks</p></div>
+      <div class="card"><h3>Autoplay</h3><p>Editor-chosen speed, cleans up after itself</p></div>
+      <div class="card"><h3>No flash</h3><p>First paint is already correct, so the counter doesn't flicker when the JS loads</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Setup checklist with a terminal block. Bullets step one at a time; data-step-mark ties a highlight to its bullet. ===== -->
+<section class="slide" data-type="t" data-notes="Some people won't have heard of Studio. It's a free WordPress.com desktop app for local sites, and the README pre-work walks through installing it. Don't hold the room for stragglers. Pair them with a neighbor or hand them the Playground link and keep moving.">
+  <div class="eyebrow">Section 1 · Welcome &amp; Setup <span class="clock">· 0:00–0:08</span></div>
+  <h2>Setup check</h2>
+  <div class="split even">
+    <ul>
+      <li>A <strong>WordPress Studio</strong> site created from <code>blueprint.json</code>. Studio is a free desktop app that runs WordPress sites on your laptop</li>
+      <li><strong>IAPI Gallery Slider</strong> plugin active</li>
+      <li><strong>Node 20 via NVM</strong> (recommended): <code>nvm use</code> reads the repo's <code>.nvmrc</code>. No NVM? <code>node -v</code> should show v20 or newer</li>
+      <li><strong>Editor open on the plugin folder</strong>. Everything today lives in it, including the <code>workshop-outline/</code> section files and the <code>code-reference/</code> snapshots</li>
+      <li class="dim">Stuck? <a class="amber repo-link" href="https://github.com/ryanwelcher/iapi-gallery-slider" target="_blank" rel="noopener">github.com/ryanwelcher/iapi-gallery-slider</a> has a Playground fallback in the README</li>
+    </ul>
+    <pre class="code"><mark data-step-mark="4">cd wp-content/plugins/iapi-gallery-slider</mark>
+<mark data-step-mark="3">nvm use</mark>          <span class="c"># reads .nvmrc (Node 20)</span>
+npm install      <span class="c"># safe to re-run</span>
+<mark>npm run start</mark>    <span class="c"># leave running ALL session</span></pre>
+  </div>
+</section>
+
+<!-- ===== The arc. dir-rows, revealed one per keypress (data-frag); names match the section eyebrows exactly. ===== -->
+<section class="slide" data-type="t" data-notes="Step through one section per keypress, one sentence each on why it exists in the build order. Then the take-home. This is the map they'll recognize at every eyebrow.">
+  <div class="eyebrow">Section 1 · Welcome &amp; Setup</div>
+  <h2>The arc</h2>
+  <p class="dim">These are the sections where you write code. Everything else is setup, a quick tour, or me talking about the API.</p>
+  <div class="dir-rows">
+    <div class="dir" data-frag="1">
+      <div><div class="name">Section 3 · Editor Controls</div></div>
+      <div class="ex" style="white-space: normal; font-family: var(--body);">The Inspector panel and the three attributes every later section reads from</div>
+    </div>
+    <div class="dir" data-frag="2">
+      <div><div class="name">Section 5 · Hello, Store</div></div>
+      <div class="ex" style="white-space: normal; font-family: var(--body);">A button, an action, and a counter. This is the round-trip everything else sits on</div>
+    </div>
+    <div class="dir" data-frag="3">
+      <div><div class="name">Section 6 · Sliding + Bounds</div></div>
+      <div class="ex" style="white-space: normal; font-family: var(--body);">Derived state makes it actually move, and stop at the ends</div>
+    </div>
+    <div class="dir" data-frag="4">
+      <div><div class="name">Section 7 · Server-Side Injection</div></div>
+      <div class="ex" style="white-space: normal; font-family: var(--body);">PHP counts the real slides and paints a correct first frame with no flash</div>
+    </div>
+    <div class="dir" data-frag="5">
+      <div><div class="name">Section 8 · Autoplay</div></div>
+      <div class="ex" style="white-space: normal; font-family: var(--body);">Lifecycle callbacks drive it hands-free and clean up after themselves</div>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 2vh;" data-frag="6">Section 9 (focus a11y, touch, continuous) is your take-home. By then you'll have everything it needs.</p>
+</section>
+
+<!-- ===== File map. split with a wider code column (4fr 7fr) for long tree lines. ===== -->
+<section class="slide" data-type="t" data-notes="Tour, not a read-along. The point: every later change lands in a file they recognize. edit.js and view.js are near-empty stubs that Sections 3 and 5 build; the tree says so, no need to open them.">
+  <div class="eyebrow">Section 2 · Anatomy of the Starter <span class="clock">· 0:08–0:16</span></div>
+  <h2>The file map</h2>
+  <div class="split" style="grid-template-columns: 4fr 7fr;">
+    <div class="lead">
+      <p class="big-say">We tour the starter now so every later change lands in a file you <strong>recognize</strong>.</p>
+      <p class="dim">Five files matter today, split across two sides. PHP renders the markup and JS reacts to it.</p>
+      <p class="dim">The PHP file just calls <code>register_block_type</code>, which reads <code>build/block.json</code> and loads every asset for you. Section 7 adds a render filter to it, and that's its only change today.</p>
+    </div>
+    <pre class="code">iapi-gallery-slider/
+├── <mark>iapi-gallery-slider.php</mark>  <span class="c">← registers the block</span>
+└── src/
+    ├── <mark>block.json</mark>           <span class="c">← metadata + the opt-in</span>
+    ├── <mark>edit.js</mark>              <span class="c">← editor side; Section 3 builds it</span>
+    ├── <mark>render.php</mark>           <span class="c">← server-rendered markup</span>
+    └── <mark>view.js</mark>              <span class="c">← the store; Section 5 creates it</span>
+    <span class="c">(index.js and the .scss files left out)</span></pre>
+  </div>
+</section>
+
+<!-- ===== Code walkthrough. Bullets on the left; each <mark data-step-mark="N"> lights up with bullet N. ===== -->
+<section class="slide" data-type="t" data-notes="Flag the string speed NOW. We'll have to convert it to a number before doing math with it in Section 8. viewScriptModule = front-end only, loaded as an ES module.">
+  <div class="eyebrow">Section 2 · Anatomy</div>
+  <h2><code style="font-size: 0.85em;">src/block.json</code></h2>
+  <div class="split" style="grid-template-columns: 4fr 7fr;">
+    <div class="lead">
+      <ul>
+        <li><code>"interactivity": true</code> in <code>supports</code> turns on the Interactivity API for this block. It's one half of a pair, and the next slide shows the other half</li>
+        <li><code>viewScriptModule</code> is front-end only, loaded as an ES module</li>
+        <li>Three attributes drive the Inspector controls we build in Section 3</li>
+        <li><span class="amber">⚑</span> <code>speed</code> is a <strong>string</strong>, since that's what <code>NumberControl</code> hands back. Remember that, because we have to convert it to a number before doing math with it in Section 8</li>
+      </ul>
+    </div>
+    <pre class="code">{
+    …
+    "supports": {
+        <mark data-step-mark="1">"interactivity": true</mark>,
+        …
+    },
+    "attributes": {
+        <mark data-step-mark="3">"continuous"</mark>: { "type": "boolean", "default": false },
+        <mark data-step-mark="3">"autoplay"</mark>: { "type": "boolean", "default": false },
+        <mark data-step-mark="3">"speed"</mark>: { <mark data-step-mark="4">"type": "string"</mark>, "default": "3" }
+    },
+    …
+    <mark data-step-mark="2">"viewScriptModule": "file:./view.js"</mark>
+}</pre>
+  </div>
+</section>
+
+<!-- ===== Recurring motif. Two cards revealed in turn with a link glyph, closing big-say line. ===== -->
+<section class="slide" data-type="t" data-notes="★ RECURRING MOTIF. You will flash back to this slide during debugging moments all day. Miss the flag → runtime never loads. Miss the directive → runtime has nothing to bind to.">
+  <div class="eyebrow">Section 2 · Anatomy <span class="clock">· ★ remember this slide</span></div>
+  <h2>The opt-in pair</h2>
+  <div class="cols">
+    <div class="card" style="border-color: var(--amber);" data-frag="1">
+      <h3 style="color: var(--amber);">block.json</h3>
+      <p><code>"supports": { "interactivity": true }</code></p>
+      <p class="dim">Loads the engine. It enqueues the <code>@wordpress/interactivity</code> runtime and makes <code>view.js</code> an ES module.</p>
+    </div>
+    <div class="pair-link" data-frag="2">⇄</div>
+    <div class="card" style="border-color: var(--amber);" data-frag="2">
+      <h3 style="color: var(--amber);">render.php</h3>
+      <p><code>data-wp-interactive="iapi-gallery"</code></p>
+      <p class="dim">Gives the engine a place to bind. It marks where the Interactivity API takes over, and it ties every directive underneath it to the <code>iapi-gallery</code> namespace.</p>
+    </div>
+  </div>
+  <p class="big-say" style="margin-top: 3vh;" data-frag="3">If you miss the flag, the runtime never loads. If you miss the directive, it has nothing to bind to. <strong>You need both.</strong></p>
+</section>
+
+<!-- ===== Talk slide with a credibility card. lead + card in a split. ===== -->
+<section class="slide" data-type="t" data-notes="Laptops closed. The primer is a talk. Core already trusts this API: Search, Query Loop, Navigation, File, Image lightbox all use it.">
+  <div class="eyebrow">Section 4 · IAPI Primer <span class="clock">· 0:31–0:39</span></div>
+  <h2>What is the Interactivity API?</h2>
+  <div class="split">
+    <div class="lead">
+      <p class="big-say">It's the <strong>standard</strong> way to add front-end interactivity to blocks, and it ships with Core.</p>
+      <ul>
+        <li>Instead of every plugin bringing its own JS (and loading duplicates of it), everyone uses one pattern</li>
+        <li>It works for a toggle button, and it works for live search, carts, and instant navigation</li>
+        <li>Blocks can share state, so "add to cart" in one block updates a separate cart block automatically</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color: var(--amber); height: 100%;">
+      <h3 style="color: var(--amber);">Already running in Core</h3>
+      <ul style="padding-left: 1.1em;">
+        <li>Search</li>
+        <li>Query Loop</li>
+        <li>Navigation</li>
+        <li>File</li>
+        <li>Image lightbox</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Three cards revealed one per keypress (cols + data-frag). ===== -->
+<section class="slide" data-type="t" data-notes="One beat per card. The directives being legible to BOTH sides is what makes the server-seeding story in section 7 possible.">
+  <div class="eyebrow">Section 4 · IAPI Primer</div>
+  <h2>Under the hood</h2>
+  <div class="cols">
+    <div class="card" data-frag="1"><h3>Preact + Signals</h3><p>Hydration (taking over the server's HTML in the browser), client logic, and client-side navigation. It's tiny, and you never touch it directly.</p></div>
+    <div class="card" data-frag="2"><h3>HTML directives</h3><p><code>data-wp-*</code> attributes that <strong>both the client and the server</strong> understand.</p></div>
+    <div class="card" data-frag="3"><h3>HTML Tag Processor</h3><p>Server-side logic in plain PHP. There's no Node.js SSR anywhere in the stack.</p></div>
+  </div>
+  <p class="big-say" style="margin-top: 3vh;" data-frag="4">The trick is that both the client <strong>and</strong> the server can read the directives, and that's what makes Section 7's no-flash first paint possible.</p>
+</section>
+
+<!-- ===== Side-by-side code (split even code-pair: both blocks share one height). ===== -->
+<section class="slide" data-type="t" data-notes="The mindset shift. Imperative is micromanaging every move; declarative describes the result. The right side is exactly what they write in Section 5, so don't explain the directives yet. Just let them see how much code disappears.">
+  <div class="eyebrow">Section 4 · IAPI Primer</div>
+  <h2>Declarative, not imperative</h2>
+  <div class="split even code-pair">
+    <div data-frag="1">
+      <pre class="code"><span class="c">// imperative: the HOW (plain JS, for comparison)</span>
+let current = 1;
+nextButton.addEventListener( 'click', () =&gt; {
+    current++;
+    counter.textContent = current;
+} );</pre>
+      <p class="dim" style="margin-top: 1.2vh;">You change the value, then you update the DOM yourself.</p>
+    </div>
+    <div data-frag="2">
+      <pre class="code"><span class="c">&lt;!-- declarative: the WHAT (trimmed) --&gt;</span>
+&lt;button data-wp-on--click="actions.nextImage"&gt;
+&lt;p data-wp-text="context.currentSlide"&gt;&lt;/p&gt;
+
+<span class="c">// view.js</span>
+nextImage: () =&gt; {
+    const ctx = getContext();
+    ctx.currentSlide++;
+},</pre>
+      <p class="dim" style="margin-top: 1.2vh;">You change the value. The directives keep the DOM in sync.</p>
+    </div>
+  </div>
+  <div data-frag="3" style="margin-top: 2.5vh;">
+    <p class="big-say">Directives work the same way: you describe <strong>what the UI should be for a given state</strong>, never how to update the DOM step by step.</p>
+    <p class="dim">That right-hand side is what you'll build in Section 5.</p>
+  </div>
+</section>
+
+<!-- ===== Loop diagram (cycle of four nodes, revealed in order). ===== -->
+<section class="slide" data-type="t" data-notes="★ REUSED in Section 5. Every section from here is this loop with more parts. Draw it with your hands too.">
+  <div class="eyebrow">Section 4 · IAPI Primer <span class="clock">· ★ the loop</span></div>
+  <h2>The round-trip loop</h2>
+  <div class="cycle">
+    <div class="node" data-frag="1"><b>directive</b><span>reads the store</span></div>
+    <div class="node" data-frag="2"><b>event</b><span>fires an action</span></div>
+    <div class="node" data-frag="3"><b>action</b><span>mutates context</span></div>
+    <div class="node" data-frag="4"><b>re-render</b><span>directives update</span></div>
+  </div>
+  <div class="cycle-back" data-frag="4">⟲ …and the directives read again</div>
+  <div class="split" style="margin-top: 2.5vh; align-items: start;" data-frag="5">
+    <p class="big-say">Every section from here is <strong>this loop with more parts</strong>.</p>
+    <p class="dim">You do the mutation and the runtime handles every re-render. That's the deal.</p>
+  </div>
+</section>
+
+<!-- ===== 2x2 grid of small code cards (grid2, pre.code.mini, file-tag under each). ===== -->
+<section class="slide" data-type="t" data-notes="★ REUSED in Sections 6 and 7. Config (REST URLs, nonces) is the fourth kind; it waits for the Beyond today slide. Say it out loud: two sliders on one page each carry their own context; one store serves them both. Read from the wrong branch and the value is undefined, or it's the other slider's. THE sentence: context is per-instance; state is shared and derived.">
+  <div class="eyebrow">Section 4 · IAPI Primer <span class="clock">· ★ the distinction</span></div>
+  <h2>Three kinds of data</h2>
+  <div class="grid2">
+    <div class="card" data-frag="1">
+      <h3>Global state <span class="dim" style="text-transform: none; letter-spacing: 0;">· when blocks share data, or the server seeds a value</span></h3>
+      <pre class="code mini">wp_interactivity_state(
+    'iapi-gallery',
+    array(
+        'noPrevSlide' =&gt; true,
+        'imageIndex'  =&gt; …,
+    )
+);</pre>
+      <span class="file-tag">iapi-gallery-slider.php · Section 7</span>
+    </div>
+    <div class="card" data-frag="2">
+      <h3>Local context <span class="dim" style="text-transform: none; letter-spacing: 0;">· when each instance is independent</span></h3>
+      <pre class="code mini">$context = array(
+    'currentSlide' =&gt; 1,
+    'totalSlides'  =&gt; 3,
+);
+…
+&lt;?php echo wp_interactivity_data_wp_context( $context ); ?&gt;
+<span class="c">&lt;!-- outputs:</span>
+<span class="c">  data-wp-context='{"currentSlide":1,"totalSlides":3}' --&gt;</span></pre>
+      <span class="file-tag">render.php</span>
+    </div>
+    <div class="card" style="border-color: var(--amber); grid-column: 1 / -1;" data-frag="3">
+      <h3 style="color: var(--amber);">Derived state <span class="dim" style="text-transform: none; letter-spacing: 0;">· when a value can be calculated</span></h3>
+      <pre class="code mini">state: {
+    get imageIndex() {
+        const ctx = getContext();
+        return `${ ctx.currentSlide }/${ ctx.totalSlides }`;
+    },
+},</pre>
+      <span class="file-tag">view.js</span>
+    </div>
+  </div>
+  <p class="big-say" style="margin-top: 2.5vh;" data-frag="5"><strong>Context belongs to each instance. State is shared, and it can be derived.</strong></p>
+</section>
+
+<!-- ===== Numbered steps on the left (steps), code on the right. ===== -->
+<section class="slide" data-type="t" data-notes="The bookmark/seek walk is the star. Exact hook name on screen. And the inheritance point. We do NOT set data-wp-interactive on inner blocks; flash back to the opt-in pair slide.">
+  <div class="eyebrow">Section 7 · Server-Side Injection <span class="clock">· 0:59–1:12</span></div>
+  <h2>The render filter walk</h2>
+  <p class="dim" style="margin-top: -1vh;">The count is still hardcoded to 3. On the server, the filter sees the real inner blocks, so it can count them.</p>
+  <div class="split even">
+    <div class="steps">
+      <div class="step"><div>Land on the wrapper with <code>next_tag()</code></div></div>
+      <div class="step"><div><code>set_bookmark( 'main' )</code></div></div>
+      <div class="step"><div>Scan forward, counting slide classes</div></div>
+      <div class="step"><div><code>seek( 'main' )</code> to jump back</div></div>
+      <div class="step"><div><code>set_attribute( 'data-wp-context', … )</code> with the real count</div></div>
+    </div>
+    <div class="lead">
+      <pre class="code">add_filter(
+  '<mark>render_block_iapi/gallery-slider</mark>',
+  'iapi_gallery_slider_inject_context',
+  10, 2
+);</pre>
+      <p style="margin-top: 1.5vh;">The filter counts the slides inside the slider. Because the hook name includes our block name, it never runs for any other block.</p>
+      <p class="dim">We do <strong>not</strong> set <code>data-wp-interactive</code> on inner blocks. Descendants inherit the wrapper's namespace. ★</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== LAB slide (data-type="p", orange). lab-grid rows; Where and Rescue link to GitHub in a new tab; lab-warn for the one trap. ===== -->
+<section class="slide" data-type="p" data-notes="While they work: npm run checkpoint 5, so it's built before the checkpoint slide. Walk the room. Silent failure = namespace typo. Console error = watcher not running, stale build. Counter blank = they wrote state.currentSlide instead of context.currentSlide.">
+  <div class="eyebrow">Section 5 · Lab <span class="clock">· ⏱ 7 min</span></div>
+  <h2>First round-trip</h2>
+  <dl class="lab-grid">
+    <dt>Mission</dt><dd>The next button bumps a counter on the page</dd>
+    <dt>Where</dt><dd><a class="repo-link" href="https://github.com/ryanwelcher/iapi-gallery-slider/blob/trunk/workshop-outline/section-5.md" target="_blank" rel="noopener"><code>workshop-outline/section-5.md</code></a>, steps 1–5</dd>
+    <dt>Files</dt><dd><code>src/render.php</code> · <code>src/view.js</code></dd>
+    <dt>Done when</dt><dd>Counter renders "1" · next bumps it 2 · 3 · 4 <strong>and keeps going past the last slide (3). That's expected!</strong> · prev is inert · no console errors</dd>
+    <dt>Rescue</dt><dd><a class="repo-link" href="https://github.com/ryanwelcher/iapi-gallery-slider/tree/trunk/code-reference/section-5" target="_blank" rel="noopener"><code>code-reference/section-5/</code></a></dd>
+    <dt>Done early?</dt><dd>Wire up the prev button yourself. You're starting Section 6 early</dd>
+  </dl>
+</section>
+
+<!-- ===== CHECKPOINT slide (data-type="c"). Expected result in one big-say line, data-demo chip for the switch to the live site. ===== -->
+<section class="slide" data-type="c" data-demo="demo · switch to Studio" data-notes="Checkpoint 5 is already live from the lab: Ctrl+Tab to the site and reload. RUN-SHEET GATE: if this slide isn't on screen by 0:50, engage the cut lines in facilitator-notes.md. Demo includes running PAST 3: 'that bug is Section 6's job.'">
+  <div class="eyebrow">Section 5 · Checkpoint <span class="clock">· ◆ minute-50 gate</span></div>
+  <h2>You should now have…</h2>
+  <p class="big-say">Click next → <strong>1, 2, 3, 4, 5…</strong> right past the end.</p>
+  <p class="big-say">That bug is <strong>Section 6's job</strong>. The loop itself (directive → action → context → re-render) is <em>done</em>.</p>
+</section>
+
+<!-- ===== Bookend: the arc again with every row checked off (same five names as the opening arc). ===== -->
+<section class="slide" data-type="t" data-notes="The arc slide from the opening, everything checked off. Name each concept as you sweep across.">
+  <div class="eyebrow">Wrap-up <span class="clock">· 1:25–1:30</span></div>
+  <h2>The arc, revisited</h2>
+  <div class="cycle" style="grid-template-columns: repeat(5, 1fr);">
+    <div class="node"><b>✓ editor controls</b><span>the attributes</span></div>
+    <div class="node"><b>✓ round-trip</b><span>the loop</span></div>
+    <div class="node"><b>✓ derived state</b><span>getters</span></div>
+    <div class="node"><b>✓ server-side</b><span>no flash</span></div>
+    <div class="node"><b>✓ lifecycle</b><span>callbacks</span></div>
+  </div>
+  <p class="big-say" style="margin-top: 3vh;">Five sections, and you've touched most of the API you'll reach for.</p>
+</section>
+
+<!-- ===== Take-home slide with linked section file and snapshot, plus the Playground button. ===== -->
+<section class="slide" data-type="t" data-notes="Zero new IAPI primitives in section 9. They already know everything it needs. The section file + snapshot are the answer key.">
+  <div class="eyebrow">Wrap-up</div>
+  <h2>Your take-home: Section 9</h2>
+  <div class="split">
+    <ul>
+      <li><strong>Focus a11y</strong> using the APG carousel pattern (label the region, pause on focus)</li>
+      <li><strong>Touch</strong> support for swiping between slides</li>
+      <li><strong>Continuous</strong> mode so the prev/next buttons wrap around the ends. Autoplay already loops on its own</li>
+    </ul>
+    <div class="lead">
+      <p class="big-say"><strong>There are no new IAPI primitives in it.</strong> You already know everything it needs.</p>
+      <p class="dim"><a class="repo-link" href="https://github.com/ryanwelcher/iapi-gallery-slider/blob/trunk/workshop-outline/section-9.md" target="_blank" rel="noopener"><code>workshop-outline/section-9.md</code></a> · answer key in <a class="repo-link" href="https://github.com/ryanwelcher/iapi-gallery-slider/tree/trunk/code-reference/section-9" target="_blank" rel="noopener"><code>code-reference/section-9/</code></a></p>
+      <div class="pg-launch">
+        <button onclick="openPG(event)">▶ The finished slider, in Playground</button>
+        <a href="https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/ryanwelcher/iapi-gallery-slider/demo/demo-blueprint.json" target="_blank" rel="noopener">open in new tab ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Thanks slide. Repo link, feedback QR (per-event swap point), handles. ===== -->
+<section class="slide" data-type="t" data-notes="Q&A. Likely questions are pre-gamed in facilitator-notes.md: why not React on the front end; context vs state one more time; namespace vs block name; can blocks talk to each other.">
+  <div class="eyebrow">Thanks</div>
+  <div class="split" style="align-items: center;">
+    <div class="lead">
+      <h1 style="font-size: clamp(36px, calc(var(--u) * 3.958), 76px); margin-bottom: 2vh;">Thank you 🎉</h1>
+      <p class="big-say">Repo: <a class="repo-link" href="https://github.com/ryanwelcher/iapi-gallery-slider" target="_blank" rel="noopener"><strong>github.com/ryanwelcher/iapi-gallery-slider</strong></a></p>
+      <p class="big-say">Scan the QR and let me know how this went. It helps me make the next one better.</p>
+      <p class="dim" style="font-size: clamp(17px, calc(var(--u) * 1.354), 26px);">@ryanwelcher · @ryanwelchercodes · Questions?</p>
+    </div>
+    <!-- FEEDBACK QR: to swap for a different event, replace the entire src="data:..."
+         value below with a new data URI (or any image path when serving from the repo).
+         Generate one with: base64 -i your-qr.png -->
+    <img src="{{FEEDBACK_QR}}" alt="QR code linking to the feedback form for this workshop" style="width: min(26vw, 48vh); height: auto; border-radius: 14px; justify-self: center;">
+  </div>
+</section>
