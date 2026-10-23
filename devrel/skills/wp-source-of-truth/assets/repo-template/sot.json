@@ -1,0 +1,22 @@
+{
+	"version": "X.Y",
+	"releaseDate": "Month Day, YYYY",
+	"gutenbergRange": "AA.B – CC.D",
+	"author": {
+		"name": "",
+		"url": ""
+	},
+	"published": "",
+	"canonicalUrl": "",
+	"milestones": {
+		"beta1": "YYYY-MM-DD",
+		"rc1": "YYYY-MM-DD",
+		"final": "YYYY-MM-DD"
+	},
+	"spacefast": {
+		"space": "",
+		"liveUrl": "",
+		"shareLink": "",
+		"draftLink": ""
+	}
+}

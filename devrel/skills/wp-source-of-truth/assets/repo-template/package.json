@@ -1,0 +1,16 @@
+{
+	"name": "wp-source-of-truth",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "node scripts/build.mjs",
+		"build:strict": "node scripts/build.mjs --strict",
+		"status": "node scripts/check-status.mjs"
+	},
+	"dependencies": {
+		"marked": "18.0.14"
+	},
+	"engines": {
+		"node": ">=20"
+	}
+}

@@ -18,7 +18,7 @@ runtime, and cache edits are lost on `/plugin update` — so never hand-edit the
 | Plugin | Version | Visibility | Skills |
 |---|---|---|---|
 | `public` | 1.0.0 | Safe to share with anyone | _(empty — placeholder for future shareable skills)_ |
-| `devrel` | 1.29.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit` |
+| `devrel` | 1.30.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `wp-source-of-truth` |
 
 ### `public` skills
 
@@ -40,6 +40,7 @@ _None yet — placeholder for future shareable skills._
 | `sounds-like-me` | Audit an existing script/teleprompter/draft for Ryan's voice: check every line against the style card (+ series cards), surface findings for approval, then fix in place and log new rules to the right refinement log. |
 | `ste-pass` | Audit/rewrite existing tutorials, recipes, and workshop steps against Simplified Technical English (STE). Hybrid by default: STE in action zones, Ryan's voice everywhere else. Owns `references/ste-card.md`, which `write-article`, `wp-workshop-scaffold`, and `sounds-like-me` read live. |
 | `ste-audit` | Internal forked helper for `ste-pass`, pinned to Sonnet: maps zones, runs `ste-lint.py`, and returns findings with full rewrites. Not user-invocable. |
+| `wp-source-of-truth` | Create and maintain the WordPress X.Y Source of Truth as a GitHub repo of Markdown that Spacefast builds into a standalone site, with a clean post and a `/draft/` review copy. Imports a Google Doc draft, sweeps PR, Trac and dev-note status (fact fixes go straight to `trunk`, editorial changes go out as proposal PRs), and sets up scheduled sweeps. |
 
 ## Context patterns
 

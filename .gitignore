@@ -12,3 +12,6 @@ evals/**/results/**/plugins/
 evals/**/snapshots/
 # ste-voice fixtures are small text files; keep them so results are reproducible
 !evals/ste-voice/fixtures/
+
+# wp-source-of-truth eval inputs hold an unpublished SoT draft; keep them local.
+evals/wp-source-of-truth/*/files/

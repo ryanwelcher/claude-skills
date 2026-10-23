@@ -1,0 +1,9 @@
+{
+	"$schema": "https://spacefast.com/schemas/sf.json",
+	// Spacefast builds this repo on every push to the production branch.
+	"build": {
+		"installCommand": "npm ci",
+		"buildCommand": "npm run build",
+		"outputDirectory": "dist"
+	}
+}

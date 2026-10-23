@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: add-missed-item
+expected_outcome: |
+  The GIF variations removal is added to the 7.2 post in the right place (the block quality-of-life list or a Video entry) in house style, with a correctly formatted link to #82696 and audience tags, after confirming the PR's merge status and milestone; the build passes and the change is committed on trunk with a changelog-free commit (the post has no published date yet).
+context:
+  scaffold_script: place-files.sh

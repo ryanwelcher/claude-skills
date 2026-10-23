@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: sweep-after-beta1
+expected_outcome: |
+  Status is re-checked against live GitHub and the wordpress-develop mirror; status-level changes (e.g. Secrets API and AI embeddings tickets now have Fixes commits, post-24.2 merges carry the Gutenberg 24.3 milestone, Description List PR still unmerged) are applied directly to item notes/flags; a dated sweep entry is added at the top of notes/sweep-log.md; answered open questions are removed; the build passes; changes are committed on trunk; any new items or prose rewrites are on separate proposal branches rather than trunk.
+context:
+  scaffold_script: place-files.sh
