@@ -177,3 +177,4 @@ Match the published 7.1 post:
 | `notes/punted.md` | Items confirmed out of the release, with the reason and a source link |
 | `notes/backlog.md` | Items carried over from the previous release, to re-check |
 | `notes/status.json` | Written by `npm run status`. Don't edit it by hand. |
+| `notes/doc-updates.md` | Doc changes waiting to be pasted in while the Doc write path isn't set up (`google-doc.md`, section 4) |

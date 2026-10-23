@@ -8,6 +8,10 @@
 	},
 	"published": "",
 	"canonicalUrl": "",
+	"googleDoc": {
+		"id": "",
+		"url": ""
+	},
 	"milestones": {
 		"beta1": "YYYY-MM-DD",
 		"rc1": "YYYY-MM-DD",

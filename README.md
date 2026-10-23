@@ -18,7 +18,7 @@ runtime, and cache edits are lost on `/plugin update` — so never hand-edit the
 | Plugin | Version | Visibility | Skills |
 |---|---|---|---|
 | `public` | 1.0.0 | Safe to share with anyone | _(empty — placeholder for future shareable skills)_ |
-| `devrel` | 1.31.5 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `wp-source-of-truth` |
+| `devrel` | 1.32.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `wp-source-of-truth` |
 
 ### `public` skills
 

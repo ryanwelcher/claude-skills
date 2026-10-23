@@ -23,8 +23,10 @@ Replace `X-Y` with the release slug (for example `7-3`):
    mirror instead: commits in `WordPress/wordpress-develop` whose message says `Fixes #N` or
    `See #N`, and PRs there that reference the ticket. `scripts/check-status.mjs` already does
    this.
-5. **The previous release's punted list and backlog.** Items carried over from the last release
-   are the most likely to slip again, so check each one.
+5. **The previous release's punted list, now this release's Backlog tab.** Items carried over
+   from the last release are the most likely to slip again, so check each one. For items
+   punting from this release, also check the release's GitHub project board, which has a column
+   for items moved to the next release.
 
 The What's new for developers posts on developer.wordpress.org/news and Gutenberg Times are good
 for finding items, but confirm each item against sources 1–4 before you rely on it.

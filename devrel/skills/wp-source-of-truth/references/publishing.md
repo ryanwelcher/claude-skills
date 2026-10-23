@@ -1,5 +1,11 @@
 # Publishing and scheduling
 
+The Spacefast site is a later phase. The Google Doc is the working draft, and Gutenberg Times
+publishes the text version, which stays the permanent home. The Spacefast site is the
+interactive version. It goes public at the final release and is linked from the top of the
+Gutenberg Times post. Whether Spacefast stays the long-term home isn't decided, so set it up
+only when the user asks.
+
 ## How deploys work
 
 Spacefast is Automattic's host for agent-built sites (https://spacefast.com/docs). Each release
@@ -123,10 +129,13 @@ Two parts, both optional:
    > Run a Source of Truth sweep on the X.Y release in this repo. Work in the X.Y/ directory.
    > Follow X.Y/CLAUDE.md, or the wp-source-of-truth skill's sweep procedure if that skill is
    > available. Use today's X.Y/notes/status-report.md.
-   > Commit status-level changes to trunk and open proposal PRs for anything editorial. Don't
+   > Re-import the Google Doc first, then update its Notes, Punted and Backlog tabs and put
+   > anything editorial under "Proposed for the draft". Commit the mirror to trunk. Don't
    > ask questions: record anything that needs a decision in notes/open-questions.md.
 
-   The routine needs push access to the repo and must be able to open PRs. The release's
+   The routine needs push access to the repo, plus write access to the Google Doc
+   (`references/google-doc.md`, section 4). Without the Doc write path, it writes
+   `notes/doc-updates.md` and someone has to paste the updates in. The release's
    `CLAUDE.md` carries the rules, so the routine works even if the skill isn't installed where
    it runs.
 

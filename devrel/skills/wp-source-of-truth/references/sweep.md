@@ -14,6 +14,14 @@ Run everything from the release directory (for example `~/repositories/source-of
 ```bash
 git checkout trunk && git pull --ff-only
 npm install --silent
+```
+
+Then bring the mirror up to date with the Doc (`sot.json` → `googleDoc`), because people edit
+the Doc between sweeps. Export it and run the importer (`references/google-doc.md`, section 3),
+then read the Doc's comments with the Drive connector. `git diff` shows what people changed in
+the Doc since the last sweep. Keep those changes: they're the author's, not something to undo.
+
+```bash
 npm run status            # writes notes/status.json and prints what changed
 ```
 
@@ -36,8 +44,10 @@ Also look at the things the script doesn't cover:
   blessed and punted items.
 - The new dev notes in the script output. Each one is a `Read more:` link for an item, and
   sometimes a new item.
-- The open questions in `notes/open-questions.md`. Try to answer each one with what you
-  collected.
+- The open questions in `notes/open-questions.md` and the open comments in the Doc. Try to
+  answer each one with what you collected.
+- The Backlog tab. Check each item carried over from the previous release: did it land, or did
+  it punt again?
 
 If lookups fail (rate limits, network), say so in the sweep log and don't treat a failed lookup
 as a state change.
@@ -63,7 +73,12 @@ the release"), then do the matching action:
 Removing or hiding an item changes what readers see, so it also needs a changelog line once the
 post is published.
 
-These need judgment, so they go in a proposal PR (step 4) instead of `trunk`:
+Every candidate in the Notes tab gets its status updated too, merged or not (✅ 🚧 🔍 🙏 🏈). A
+new PR or Make post that belongs to the release gets a new Notes entry directly. Notes are the
+sweep's to write. Only the Draft is the author's.
+
+These need judgment, so they go in the Notes tab's "Proposed for the draft" section (step 4)
+instead of the Draft:
 
 - A merged PR or a dev note that no item covers yet. Draft the new item.
 - An item whose description is now wrong, beyond a single fact. For example, the feature
@@ -89,13 +104,20 @@ Add an entry at the top of `notes/sweep-log.md`:
 
 **Resolved questions:** #3 (Secrets API: 7.2, committed Oct 14).
 
-**Proposed (PR #12):** new item for `@wordpress/core-actions`; rewrite of the Notes item now that reactions landed.
+**Proposed for the draft:** new item for `@wordpress/core-actions`; rewrite of the Notes item now that reactions landed.
+
+**Doc:** updated Notes, Punted. Skipped 1 correction with an open comment (Secrets API, see proposals).
 
 **Merged but not added:** [#84856](…) List View nesting (internal).
 ```
 
 If readers will see the changes and `sot.json` has a `published` date, add a changelog bullet
 under today's date in `00-intro.md`.
+
+Apply the same changes to the Doc: the Notes tab (statuses, new entries, proposals, the sweep log
+entry), Punted, Backlog, and factual corrections in the Draft. Follow the comment rules in
+`references/google-doc.md`, section 5. While the write path isn't set up, write them to
+`notes/doc-updates.md` instead (section 4), and say "Doc not updated" in the commit message.
 
 Then run:
 
@@ -111,28 +133,18 @@ the log shows the routine ran. You don't need a changelog line for that.
 
 ### 4. Proposals
 
-Put each proposal on its own branch from the updated `trunk`, so the user can merge them one at
-a time:
-
-```bash
-git checkout -b proposal/7.2/2026-10-27-core-actions
-# write or edit the item file(s)
-npm run build
-git add -A . && git commit -m "Propose: Core actions registered on the server"
-git push -u origin HEAD
-gh pr create --title "Propose: Core actions registered on the server" --body "<why it belongs: what merged, milestone, who it affects, sources>"
-git checkout trunk
-```
-
-Before you open a PR, check `gh pr list` for an open proposal that covers the same item. If one
-exists, add a comment there with the new facts instead of opening a duplicate.
+Add each proposal to the Notes tab under "Proposed for the draft", dated, with the full text of
+the new item or rewrite and why it belongs (what merged, milestone, who it affects, sources).
+The author moves accepted ones into the Draft. Before you add one, check that section for a
+proposal on the same item. If there is one, add the new facts to it instead of adding a
+duplicate.
 
 ### 5. Report
 
-**Interactive sweep:** tell the user what changed in the post, what you proposed (with PR links),
-which open questions remain, and the live URL from `sot.json`. Keep it short. The sweep log has
-the detail.
+**Interactive sweep:** tell the user what changed in the Notes and Draft, what you proposed,
+which open questions remain, whether the Doc was updated, and the Doc URL from `sot.json`. Keep
+it short. The sweep log has the detail.
 
-**Scheduled sweep:** the commit message, sweep log entry and PRs are the report. There's no one
+**Scheduled sweep:** the commit message, sweep log entry and Doc are the report. There's no one
 to ask, so don't stop to ask questions. When a decision needs a person, record it as an open
 question, and the next interactive session will surface it.

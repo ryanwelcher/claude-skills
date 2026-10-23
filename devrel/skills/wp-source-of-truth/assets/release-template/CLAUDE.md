@@ -7,6 +7,11 @@ into `dist/index.html` (the clean post) and `dist/draft/index.html` (a review co
 flags and hidden items). Spacefast rebuilds the site on every push to `trunk` that changes this
 directory. `notes/` and `proposals/` never reach the clean post.
 
+The release's Google Doc (`sot.json` → `googleDoc`) is the working draft and wins over this
+directory. Re-import it before you change anything. Never clear and rewrite a tab, and never
+edit text that has an open comment. If you can't write to the Doc, put the changes in
+`notes/doc-updates.md` and say so in the commit message.
+
 If the `wp-source-of-truth` skill is available, use it for any work here. Its references hold
 the full content format and sweep procedure. If it isn't, follow the rules below.
 
@@ -38,11 +43,12 @@ the full content format and sweep procedure. If it isn't, follow the rules below
    - resolving the question;
    - factual corrections: swapping a now-wrong fact (version, date, "proposed" → committed)
      inside an existing sentence, with the source cited in the sweep log.
-3. New items, rewritten sentences or paragraphs, and priority or Overview changes go on a
-   `proposal/X.Y/<date>-<slug>` branch as a PR. Never commit those straight to `trunk`. Check
-   `gh pr list` first so you don't open a duplicate.
+3. New items, rewritten sentences or paragraphs, and priority or Overview changes go in the
+   Doc's Notes tab under "Proposed for the draft". Never put them straight into the Draft.
+   Check that section first so you don't add a duplicate.
 4. Add a dated entry at the top of `notes/sweep-log.md` (what was checked, what changed, what
-   was proposed, which questions were resolved), build, commit, and push.
+   was proposed, which questions were resolved), update the Doc's Notes, Punted and Backlog
+   tabs, build, commit, and push.
 5. The wordpress-develop commit that pins Gutenberg for each Beta or RC lists every PR it
    includes. That's the most direct proof a PR is in. Otherwise, a merged PR's milestone (`Gutenberg NN.N`) is the plugin version it ships in. If that version
    is after the release's range (see `sot.json`), the PR needs a backport or a Beta/RC post that
