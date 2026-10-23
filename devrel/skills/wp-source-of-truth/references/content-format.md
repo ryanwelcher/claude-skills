@@ -127,7 +127,7 @@ browser searches both match on the exact string:
 
 `end user` · `theme builder` · `plugin author` · `developer` · `site admin` · `enterprise` · `all`
 
-Put the most affected audience first. An item tagged `all` stays visible under every filter. In
+Put the most affected audience first. The page's audience buttons are strict: with **developer** on, readers see only items tagged `developer` (or whose section is tagged `developer`), and the intro is hidden. So tag every audience an item really affects. `all` is a button of its own, not a wildcard. In
 the old Google Doc format, tags were a `==[end user] [site admin]==` line under the heading; the
 importer converts that line to frontmatter.
 

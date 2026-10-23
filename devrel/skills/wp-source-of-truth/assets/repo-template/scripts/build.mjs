@@ -69,11 +69,11 @@ function render( draft ) {
 	}
 
 	// Gives h2–h4 headings ids and records them for the table of contents.
-	function anchorHeadings( html, levels, prefix = '' ) {
+	function anchorHeadings( html, levels, prefix = '', intro = false ) {
 		return html.replace( /<h([2-4])>(.*?)<\/h\1>/g, ( match, level, text ) => {
 			if ( ! levels.includes( +level ) ) return match;
 			const id = uniqueId( prefix + slugify( text ) );
-			toc.push( { level: +level, title: text, id } );
+			toc.push( { level: +level, title: text, id, intro } );
 			return `<h${ level } id="${ id }">${ text }</h${ level }>`;
 		} );
 	}
@@ -96,7 +96,7 @@ function render( draft ) {
 		const path = join( POST, entry );
 		if ( statSync( path ).isFile() && entry.endsWith( '.md' ) ) {
 			const { body } = parseFrontmatter( readFileSync( path, 'utf8' ) );
-			parts.push( anchorHeadings( marked.parse( prepare( body, entry ) ), [ 2, 3 ] ) );
+			parts.push( `<div class="sot-intro">${ anchorHeadings( marked.parse( prepare( body, entry ) ), [ 2, 3 ], '', true ) }</div>` );
 			continue;
 		}
 		if ( ! statSync( path ).isDirectory() ) continue;
@@ -125,9 +125,8 @@ function render( draft ) {
 
 		for ( const { where, data, body } of items ) {
 			const tags = Array.isArray( data.tags ) ? data.tags : [];
-			// Untagged items (e.g. under Developer Goodies) filter by their section's tags; with
-			// none there either, they stay visible under every filter rather than vanishing.
-			const filterTags = tags.length ? tags : section.data.tags?.length ? section.data.tags : [ 'all' ];
+			// Untagged items (e.g. under Developer Goodies) filter by their section's tags.
+			const filterTags = tags.length ? tags : section.data.tags || [];
 			filterTags.forEach( ( t ) => allTags.add( t ) );
 			const id = uniqueId( data.slug || slugify( data.title ) );
 			const title = marked.parseInline( draft ? data.title : prepare( data.title, where ).trim() );
@@ -147,7 +146,7 @@ function render( draft ) {
 
 	if ( draft && existsSync( join( ROOT, 'notes', 'open-questions.md' ) ) ) {
 		const md = readFileSync( join( ROOT, 'notes', 'open-questions.md' ), 'utf8' ).replace( /^# .*$/m, '## Open questions (draft only)' );
-		parts.push( `<section class="sot-section draft-only">${ anchorHeadings( marked.parse( md ), [ 2 ] ) }</section>` );
+		parts.push( `<div class="sot-intro draft-only">${ anchorHeadings( marked.parse( md ), [ 2 ], '', true ) }</div>` );
 	}
 
 	return { toc, parts, allTags, warnings };
@@ -160,14 +159,13 @@ function tocList( items ) {
 		const t = items[ i ];
 		const children = [];
 		while ( items[ i + 1 ] && items[ i + 1 ].level > t.level ) children.push( items[ ++i ] );
-		out += `<li><a href="#${ t.id }">${ t.title.replace( /<[^>]+>/g, '' ) }</a>${ children.length ? tocList( children ) : '' }</li>`;
+		out += `<li${ t.intro ? ' class="toc-intro"' : '' }><a href="#${ t.id }">${ t.title.replace( /<[^>]+>/g, '' ) }</a>${ children.length ? tocList( children ) : '' }</li>`;
 	}
 	return out + '</ol>';
 }
 
 function page( { toc, parts, allTags }, draft ) {
 	const filterHtml = [ ...allTags ]
-		.filter( ( t ) => t !== 'all' )
 		.map( ( t ) => `<button type="button" data-filter="${ slugify( t ) }" aria-pressed="false">${ t }</button>` )
 		.join( '' );
 	const title = `WordPress ${ release.version } Source of Truth`;
@@ -214,7 +212,7 @@ header p{color:var(--muted);margin:0 0 24px}
 .filters{display:flex;flex-wrap:wrap;gap:6px}
 .filter-status{margin:6px 0 0;font-size:14px;color:var(--muted)}
 .filter-status .clear{font:inherit;font-size:13px;background:none;border:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
-nav li.hidden,.sot-section.hidden{display:none}
+nav li.hidden,.sot-section.hidden,body.filtering .sot-intro,body.filtering nav li.toc-intro{display:none}
 h2,h3{scroll-margin-top:110px}
 .filters button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:4px 12px;cursor:pointer}
 .filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
@@ -250,8 +248,8 @@ ${ body }
 </main>
 </div>
 <script>
-// Audience filter: hides non-matching items, their table of contents entries, and sections left
-// empty, then reports what's showing and jumps to the first match so the change is visible.
+// Audience filter: with any audience on, the page shows only items carrying one of those tags.
+// The intro, other items, their table of contents entries and empty sections are hidden.
 const buttons=[...document.querySelectorAll('.filters button')];
 const items=[...document.querySelectorAll('.sot-item')];
 const status=document.querySelector('.filter-status');
@@ -261,7 +259,7 @@ function apply(){
 	let shown=0;
 	items.forEach(a=>{
 		const tags=a.dataset.tags.split(' ');
-		const hide=on.length>0&&!on.some(t=>tags.includes(t)||tags.includes('all'));
+		const hide=on.length>0&&!on.some(t=>tags.includes(t));
 		a.classList.toggle('hidden',hide);
 		tocEntry(a.id)?.classList.toggle('hidden',hide);
 		if(!hide)shown++;
@@ -275,8 +273,8 @@ function apply(){
 	document.body.classList.toggle('filtering',on.length>0);
 	status.innerHTML=on.length?'Showing '+shown+' of '+items.length+' items for '+on.map(t=>'<strong>'+buttons.find(b=>b.dataset.filter===t).textContent+'</strong>').join(' or ')+'. <button type="button" class="clear">Show all</button>':'Filter by audience: pick one or more.';
 	status.querySelector('.clear')?.addEventListener('click',()=>{buttons.forEach(b=>b.setAttribute('aria-pressed','false'));apply();});
-	const first=document.querySelector('.sot-item:not(.hidden)');
-	if(on.length&&first&&first.getBoundingClientRect().top>window.innerHeight)first.closest('.sot-section').scrollIntoView({behavior:'smooth'});
+	const bar=document.querySelector('.filterbar');
+	if(bar.getBoundingClientRect().top<0||on.length)window.scrollTo({top:bar.offsetTop,behavior:'smooth'});
 }
 buttons.forEach(b=>b.addEventListener('click',()=>{
 	b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');
