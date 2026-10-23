@@ -132,4 +132,5 @@ Questions that need a person (blessed or punted? which tracking issue?) go in
 | An item doesn't appear under an audience filter | It isn't tagged for that audience. The filter is strict, so add the tag to the item's frontmatter. |
 | An item is missing from the page entirely | Check for `published: false` in its frontmatter. The draft page shows hidden items with a label. |
 | `gh workflow run "Status X.Y"` says "could not find any workflows" | GitHub sometimes skips registering a workflow that arrived in the first push to an empty repo, or before Actions noticed the file. Push any change to the workflow file itself, then check `gh workflow list`. |
+| A proposal's preview build failed with "The source repository must finish syncing" | Several branches were pushed seconds apart, and Spacefast was still syncing. Retry the build (`npx spacefast builds retry <build>`), or push proposals a few seconds apart. |
 | Site didn't update after a push | A push that doesn't touch the release directory skips its build. Otherwise run `npx spacefast versions --space <space>` to see whether a build ran, then check the build log in the Spacefast dashboard. |
