@@ -179,10 +179,9 @@ One-time setup (already done on Ryan's primary machine — July 2026):
 # 1. Clone the repo to your normal dev location
 git clone https://github.com/ryanwelcher/claude-skills.git ~/repositories/claude-skills
 
-# 2. Symlink each plugin folder (each has a .claude-plugin/plugin.json) into your skills dir.
-#    Claude loads any such folder as "<name>@skills-dir" — discovered in place, NOT cached.
-ln -s ~/repositories/claude-skills/devrel     ~/.claude/skills/devrel
-ln -s ~/repositories/claude-skills/public     ~/.claude/skills/public
+# 2. Symlink each skill into your skills dir. Each skill needs its own link, so re-run
+#    this after adding a new skill (local post-merge/post-commit hooks remind you).
+bin/link-skills
 
 # 3. Disable the marketplace-installed copies so you don't run duplicates.
 #    In ~/.claude/settings.json, under "enabledPlugins", set each to false:
