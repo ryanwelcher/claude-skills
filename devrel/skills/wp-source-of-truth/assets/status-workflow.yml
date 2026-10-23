@@ -1,5 +1,6 @@
 # Collects PR, Trac and dev-note status every morning with the repo's own token, so a scheduled
 # Claude sweep can read X.Y/notes/status-report.md instead of needing GitHub credentials of its own.
+# Copied from the wp-source-of-truth skill (assets/status-workflow.yml).
 name: Status X.Y
 on:
   schedule:
