@@ -3,8 +3,8 @@
 The source for the WordPress X.Y Source of Truth. Every push to `trunk` that changes this
 directory rebuilds the site on Spacefast.
 
-- Live post: `sot.json` → `spacefast.liveUrl` (reader link: `spacefast.shareLink`)
-- Draft review copy, with working notes and hidden items: `/draft/` (reviewer link: `spacefast.draftLink`)
+- Live post: `sot.json` → `spacefast.liveUrl` (reader link: in Spacefast, ID in `spacefast.shareLinkId`)
+- Draft review copy, with working notes and hidden items: `/draft/` (reviewer link: ID in `spacefast.draftLinkId`)
 
 ## Working on it
 

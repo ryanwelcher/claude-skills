@@ -67,8 +67,9 @@ other people.
    If the post uses images, give the reader link access to `/assets/**` too. Spacefast's path
    matching decides exactly what each link reaches, so after you create the links, open the
    reader link in a private window and confirm that `/draft/` is refused. Don't hand out a link
-   until that check passes. Save both links in `sot.json` → `spacefast.shareLink` and
-   `spacefast.draftLink`. Ask before you make the space fully
+   until that check passes. Save the link IDs (`lnk_…`) in `sot.json` →
+   `spacefast.shareLinkId` and `spacefast.draftLinkId`. Never commit the link URLs: the URL is
+   the access key, and the repo is visible to the whole org. Give the URLs to the user only. Ask before you make the space fully
    public (`npx spacefast share grant --to public --role viewer --path '/' --target live --space <space>`).
    That's a separate decision, usually made once the post is published. A public grant on `/**`
    would also expose `/draft/`, so scope it to `/` and `/assets/**`.

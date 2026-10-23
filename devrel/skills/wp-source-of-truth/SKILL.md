@@ -165,7 +165,7 @@ updating?"), check the real state of that release and report it against README s
 | Pushed | `git log origin/trunk -1 -- <version>/` shows the release directory |
 | Spacefast site | `sot.json` → `spacefast.space` / `liveUrl`, then `npx spacefast versions --space <space>` |
 | Autodeploy | Is the latest version newer than the last push that changed `<version>/`? |
-| Share links | `sot.json` → `spacefast.shareLink` / `draftLink` |
+| Share links | `sot.json` → `spacefast.shareLinkId` / `draftLinkId`, then list the space's share links and check both are active |
 | Status workflow | `gh workflow list` and `gh run list --workflow "Status <version>" --limit 3` |
 | Scheduled sweep | Is there a recent sweep entry in `notes/sweep-log.md`? Is a routine listed under `/schedule`? |
 

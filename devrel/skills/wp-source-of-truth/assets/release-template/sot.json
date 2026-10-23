@@ -16,7 +16,7 @@
 	"spacefast": {
 		"space": "",
 		"liveUrl": "",
-		"shareLink": "",
-		"draftLink": ""
+		"shareLinkId": "",
+		"draftLinkId": ""
 	}
 }
