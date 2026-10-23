@@ -60,7 +60,8 @@ not sure the clone is current, `git pull` first, because a scheduled sweep may h
 
 1. Copy `assets/repo-template/` into a new directory named `wp-<major>-<minor>-source-of-truth`
    (for example `wp-7-3-source-of-truth`). Run `git init -b trunk` and fill in `sot.json`.
-2. Replace `X.Y` / `X-Y` placeholders in `content/post/00-intro.md` and the notes files.
+2. Replace `X.Y` / `X-Y` placeholders in `README.md`, `content/post/00-intro.md`, the priority
+   section's `_section.md`, and the notes files.
 3. Research the release with `references/research.md`. Write candidates into `notes/research.md`
    first. A candidate goes into `content/post/` only once there's merged or committed work, or a
    "blessed" feature (mark those 🙏). That keeps the post honest from the first draft.

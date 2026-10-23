@@ -58,7 +58,26 @@ const sot = existsSync( join( repo, 'sot.json' ) ) ? JSON.parse( readFileSync( j
 sot.version = version;
 sot.releaseDate = postText.match( /scheduled for release on ([^.]+?)\./i )?.[ 1 ] ?? sot.releaseDate;
 sot.gutenbergRange = postText.match( /Gutenberg plugin versions ([\d.]+\s*[–-]\s*[\d.]+)/ )?.[ 1 ] ?? sot.gutenbergRange;
+// Milestones come from the notes' schedule table, e.g. "| Beta 1 | October 20, 15:00 UTC |".
+const year = sot.releaseDate?.match( /\d{4}/ )?.[ 0 ];
+const milestone = ( label ) => {
+	const m = src.match( new RegExp( `^\\|\\s*${ label }\\b[^|]*\\|\\s*([A-Z][a-z]+ \\d{1,2})\\b`, 'm' ) );
+	const d = m && year ? new Date( `${ m[ 1 ] }, ${ year } 12:00 UTC` ) : null;
+	return d && ! isNaN( d ) ? d.toISOString().slice( 0, 10 ) : undefined;
+};
+sot.milestones = {
+	...sot.milestones,
+	beta1: milestone( 'Beta 1' ) ?? sot.milestones?.beta1,
+	rc1: milestone( 'RC 1' ) ?? sot.milestones?.rc1,
+	final: milestone( 'Final' ) ?? sot.milestones?.final,
+};
 write( 'sot.json', JSON.stringify( sot, null, '\t' ) );
+
+// Template files the import doesn't overwrite still name the release as X.Y.
+for ( const rel of [ 'README.md', 'notes/punted.md' ] ) {
+	const p = join( repo, rel );
+	if ( existsSync( p ) ) writeFileSync( p, readFileSync( p, 'utf8' ).replace( /X\.Y/g, version ).replace( /X-Y/g, version.replace( '.', '-' ) ) );
+}
 
 // Sections start at the first H2 whose block contains a ==[tag]== line.
 const h2s = post.map( ( l, i ) => ( /^## /.test( l ) ? i : -1 ) ).filter( ( i ) => i !== -1 );
