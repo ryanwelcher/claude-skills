@@ -43,6 +43,19 @@ other people.
    wptrainingteam org may need to approve it. Check the first build's log to confirm it ran in
    the release directory. After that, push a trivial
    commit and confirm that `npx spacefast versions --space <space>` shows a new version.
+
+   **If the space was created and connected in the Spacefast dashboard**, its build settings
+   are blank. Spacefast then builds from the repo root, finds no build, and publishes the raw
+   repo, including `notes/`, to the live URL. The `sf.jsonc` inside the release directory isn't
+   read in that case. Set the settings on the existing connection, rebuild, and promote:
+   ```bash
+   npx spacefast git update --space <space> --root-directory X.Y --install-command 'npm ci' \
+     --build-command 'npm run build' --output-directory dist \
+     --ignored-build-command 'git diff --quiet HEAD^ HEAD -- .'
+   ```
+   A good build log shows `npm ci`, `npm run build`, and "Collected 2 publishable file(s)"
+   (`index.html` and `draft/index.html`). A manual build may not promote itself, so promote
+   the version if the live URL still serves the old one.
 5. **Access:** the site has two audiences. Readers get the clean post at `/`. Reviewers get the
    draft at `/draft/`, which shows working notes, so readers' links must not reach it.
    ```bash
