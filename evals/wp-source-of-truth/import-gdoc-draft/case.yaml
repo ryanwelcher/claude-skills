@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: import-gdoc-draft
 expected_outcome: |
-  A local git repo in wp-7-2-source-of-truth with one Markdown file per item under content/post, the Notes/sweep/open-questions/punted content split into notes/, sot.json filled in for 7.2, a successful npm run build producing dist/index.html without working markers or HTML comments, and a local commit. Nothing is pushed or created remotely.
+  The source-of-truth repo gains a self-contained 7.2/ directory with one Markdown file per item under 7.2/content/post, a root .github/workflows/status-7-2.yml, the Notes/sweep/open-questions/punted content split into notes/, sot.json filled in for 7.2, a successful npm run build producing dist/index.html without working markers or HTML comments, and a local commit. Nothing is pushed or created remotely.
 context:
   scaffold_script: place-files.sh

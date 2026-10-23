@@ -1,6 +1,6 @@
 # Sweep procedure
 
-A sweep brings the repo up to date with what has happened since the last sweep. It runs the same
+A sweep brings one release directory up to date with what has happened since the last sweep. It runs the same
 way whether the user asks for it or a scheduled routine starts it. The only difference is the
 last step: an interactive sweep reports to the user, and a scheduled one reports in its commit
 and PR.
@@ -9,13 +9,15 @@ and PR.
 
 ### 1. Sync and collect
 
+Run everything from the release directory (for example `~/repositories/source-of-truth/7.2`).
+
 ```bash
 git checkout trunk && git pull --ff-only
 npm install --silent
 npm run status            # writes notes/status.json and prints what changed
 ```
 
-If the repo's Status workflow already ran today, skip `npm run status` and read
+If the release's `Status X.Y` workflow already ran today, skip `npm run status` and read
 `notes/status-report.md` instead. That's the normal case for scheduled sweeps. Running the
 script again would compare against the workflow's results, so the "changes" would come back
 empty.
@@ -99,8 +101,9 @@ Then run:
 
 ```bash
 npm run build             # must succeed; read the warnings
-git add -A && git commit -m "Sweep Oct 27: <the two or three biggest changes>"
-git push                  # Spacefast rebuilds and republishes from trunk
+git add -A . && git commit -m "Sweep Oct 27: <the two or three biggest changes>"
+git pull --rebase         # another release's sweep or Status run may have pushed
+git push                  # Spacefast rebuilds and republishes this release from trunk
 ```
 
 If the sweep found nothing, still add a short log entry ("No changes. Checked 194 refs."), so
@@ -112,10 +115,10 @@ Put each proposal on its own branch from the updated `trunk`, so the user can me
 a time:
 
 ```bash
-git checkout -b proposal/2026-10-27-core-actions
+git checkout -b proposal/7.2/2026-10-27-core-actions
 # write or edit the item file(s)
 npm run build
-git commit -am "Propose: Core actions registered on the server"
+git add -A . && git commit -m "Propose: Core actions registered on the server"
 git push -u origin HEAD
 gh pr create --title "Propose: Core actions registered on the server" --body "<why it belongs: what merged, milestone, who it affects, sources>"
 git checkout trunk

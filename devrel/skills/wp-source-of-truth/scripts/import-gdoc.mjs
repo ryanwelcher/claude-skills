@@ -74,7 +74,7 @@ sot.milestones = {
 write( 'sot.json', JSON.stringify( sot, null, '\t' ) );
 
 // Template files the import doesn't overwrite still name the release as X.Y.
-for ( const rel of [ 'README.md', 'notes/punted.md' ] ) {
+for ( const rel of [ 'README.md', 'CLAUDE.md', 'notes/punted.md' ] ) {
 	const p = join( repo, rel );
 	if ( existsSync( p ) ) writeFileSync( p, readFileSync( p, 'utf8' ).replace( /X\.Y/g, version ).replace( /X-Y/g, version.replace( '.', '-' ) ) );
 }

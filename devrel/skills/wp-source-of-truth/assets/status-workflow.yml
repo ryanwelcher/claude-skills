@@ -1,6 +1,6 @@
 # Collects PR, Trac and dev-note status every morning with the repo's own token, so a scheduled
-# Claude sweep can read notes/status-report.md instead of needing GitHub credentials of its own.
-name: Status
+# Claude sweep can read X.Y/notes/status-report.md instead of needing GitHub credentials of its own.
+name: Status X.Y
 on:
   schedule:
     - cron: '0 11 * * *'
@@ -9,9 +9,15 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: status-commits
+
 jobs:
   status:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'X.Y'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,5 +31,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
           git add notes/status.json notes/status-report.md
-          git diff --cached --quiet || git commit -m "Status: $(date -u +%Y-%m-%d)"
+          git diff --cached --quiet && exit 0
+          git commit -m "Status X.Y: $(date -u +%Y-%m-%d)"
+          git pull --rebase
           git push

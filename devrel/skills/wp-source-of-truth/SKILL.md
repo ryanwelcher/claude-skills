@@ -2,8 +2,8 @@
 name: wp-source-of-truth
 description: |
   Create and maintain the "WordPress X.Y Source of Truth" post (the big per-release roundup of
-  every feature, tagged by audience) as a GitHub repo of Markdown that builds a standalone site on
-  Spacefast. Use to start a new release's Source of Truth (from research or by importing a Google
+  every feature, tagged by audience) as Markdown in the wptrainingteam/source-of-truth repo, one
+  directory per release, each building a standalone site on Spacefast. Use to start a new release's Source of Truth (from research or by importing a Google
   Doc draft), to sweep or refresh it (re-check PRs, Trac tickets, dev notes, Beta/RC inclusion and
   update status), to add or propose items, to publish or redeploy the site, or to schedule
   automatic sweeps, or to explain how it works and check which setup steps are done. Trigger on
@@ -19,12 +19,17 @@ every notable change with a short description, audience tags, and links to learn
 WordPress 7.1 edition on Gutenberg Times is the reference for what the finished post looks like:
 https://gutenbergtimes.com/wordpress-7-1-source-of-truth/
 
-This skill keeps the SoT in a **GitHub repo**, one Markdown file per item. A build script turns
-the repo into two pages: the clean post at `/` for readers, and a draft review copy at `/draft/`
-that shows the working notes, flags, hidden items and open questions. Spacefast rebuilds and
-republishes both on every push. So
-"updating the site" always means changing files in the repo and pushing. Nothing is uploaded by
-hand.
+This skill keeps every SoT in one GitHub repo, `wptrainingteam/source-of-truth` (local clone:
+`~/repositories/source-of-truth`). Each release has its own self-contained directory named for
+the version (`7.2/`, `7.3/`), with one Markdown file per item. A build script turns a release
+directory into two pages: the clean post at `/` for readers, and a draft review copy at `/draft/`
+that shows the working notes, flags, hidden items and open questions. Each release is its own
+Spacefast site, which rebuilds and republishes both pages on every push that changes its
+directory. So "updating the site" always means changing files in the repo and pushing. Nothing
+is uploaded by hand.
+
+Run every command from inside the release directory, and don't touch another release's directory
+unless the user asks. A release directory holds:
 
 ```
 content/post/     what readers see: 00-intro.md, NN-section/ folders of NNN-item.md, 99-outro.md
@@ -52,25 +57,31 @@ Work out which of these the user wants. Most requests are a sweep.
 | "Publish it", "set up Spacefast", "share link", "run it every day" | **4. Publish and schedule** |
 | "Help", "how does this work", "what's set up?", "where does it get its info?" | **5. Help and setup status** |
 
-Before any job except 1, find the content repo. Look in the current directory, then
-`~/repositories/wp-*-source-of-truth`. If there's more than one, ask which release. If you're
-not sure the clone is current, `git pull` first, because a scheduled sweep may have pushed since.
+Before any job, find the clone: the current directory or one of its parents, then
+`~/repositories/source-of-truth`. If there's no clone, run
+`gh repo clone wptrainingteam/source-of-truth ~/repositories/source-of-truth`. Then pick the
+release directory. If the user didn't name a version and more than one release is still in
+progress (no `published` date in its `sot.json`), ask which one. `git pull` first, because a
+scheduled sweep or the Status workflow may have pushed since.
 
 ### 1. Start a release
 
-1. Copy `assets/repo-template/` into a new directory named `wp-<major>-<minor>-source-of-truth`
-   (for example `wp-7-3-source-of-truth`). Run `git init -b trunk` and fill in `sot.json`.
-2. Replace `X.Y` / `X-Y` placeholders in `README.md`, `content/post/00-intro.md`, the priority
-   section's `_section.md`, and the notes files.
+1. Copy `assets/release-template/` into the clone as a directory named for the version (for
+   example `7.3/`), and fill in `sot.json`. Copy `assets/status-workflow.yml` to
+   `.github/workflows/status-<major>-<minor>.yml` at the repo root (GitHub only runs workflows
+   from there). Add the release to the table in the root `README.md`.
+2. Replace `X.Y` / `X-Y` placeholders in the workflow file, and in the release directory's
+   `README.md`, `CLAUDE.md`, `content/post/00-intro.md`, the priority section's `_section.md`,
+   and the notes files.
 3. Research the release with `references/research.md`. Write candidates into `notes/research.md`
    first. A candidate goes into `content/post/` only once there's merged or committed work, or a
    "blessed" feature (mark those 🙏). That keeps the post honest from the first draft.
 4. Create the section folders in the usual order (see `references/content-format.md`) and write
    the items.
 5. Run `npm install && npm run build` and fix every warning you can.
-6. Create the GitHub repo (`gh repo create <owner>/<name> --private --source . --push`). Ask the
-   user which owner and visibility before you run this, because it publishes their content. Then
-   continue with job 4.
+6. Commit the release directory, the workflow and the root README together, and push to `trunk`.
+   The repo is visible to the whole wptrainingteam org, so confirm with the user before the first
+   push of a new release. Then continue with job 4.
 
 ### 1b. Import a Google Doc draft
 
@@ -81,12 +92,14 @@ The usual case: a draft already exists in Google Docs in the SoT layout (post fi
    `curl -sL -o draft.md "https://docs.google.com/document/d/<DOC_ID>/export?format=md"`.
    This works when the doc is shared as "anyone with the link". If the result is an HTML sign-in
    page, ask the user to export it with **File > Download > Markdown** and give you the path.
-2. Copy the template into a new repo directory (job 1, step 1), then run
-   `node <skill-dir>/scripts/import-gdoc.mjs draft.md <repo-dir>`.
+2. Set up the release directory and workflow (job 1, steps 1 and 2 for the workflow and root
+   README), then run `node <skill-dir>/scripts/import-gdoc.mjs draft.md <release-dir>`. The
+   importer fills `sot.json` and the release directory's placeholders.
 3. Read the summary it prints, and open a few item files. Items under Developer Goodies often
    have no tags of their own, which is normal: they filter by the section's tags. Check that H4
    groups (like "Global Styles and theme.json") stayed together in one file.
 4. Build, then commit with a message like `Import 7.2 draft from Google Docs (Oct 19 sweep)`.
+   Push as in job 1, step 6.
 5. Tell the user the Google Doc is now a snapshot. From here on, edits go in the repo.
 
 ### 2. Sweep
@@ -127,14 +140,14 @@ that leaves "1.4.0" wrong for a week is just as bad.
    right section folder with an order number between its neighbours (`025-…` fits between `020`
    and `030`).
 3. If the user asked for it in this session, commit it to `trunk`. If a sweep or another
-   automated run found it, put it on a `proposal/<date>-<slug>` branch and open a PR with
+   automated run found it, put it on a `proposal/<version>/<date>-<slug>` branch and open a PR with
    `gh pr create`. Write the PR body as the reason it belongs: what merged, which milestone, and
    who it affects. Merging the PR deploys it.
 
 ### 4. Publish and schedule
 
-Read `references/publishing.md`. It covers connecting the repo to Spacefast (`sf.jsonc` plus
-`sf git connect`), creating the share link, the GitHub Actions fallback, and setting up a
+Read `references/publishing.md`. It covers connecting a release directory to its own Spacefast
+site (`sf git connect` with a root directory), creating the share links, the GitHub Actions fallback, and setting up a
 scheduled sweep. Creating a Spacefast space, connecting a repo, and sharing a link are visible to
 other people, so confirm with the user before each one, unless they've already asked for that
 exact step.
@@ -145,15 +158,15 @@ The user-facing guide is this skill's `README.md`. Answer "how does it work" que
 quoting the part that fits instead of the whole file.
 
 When the question is about a particular release ("what's set up for 7.3?", "why isn't it
-updating?"), check the real state of that repo and report it against README section 5:
+updating?"), check the real state of that release and report it against README section 5:
 
 | Step | How to check |
 |---|---|
-| GitHub repo | `git remote -v` and `gh repo view --json nameWithOwner,visibility` |
+| Pushed | `git log origin/trunk -1 -- <version>/` shows the release directory |
 | Spacefast site | `sot.json` → `spacefast.space` / `liveUrl`, then `npx spacefast versions --space <space>` |
-| Autodeploy | Is the latest version newer than the last push to `trunk`? |
+| Autodeploy | Is the latest version newer than the last push that changed `<version>/`? |
 | Share links | `sot.json` → `spacefast.shareLink` / `draftLink` |
-| Status workflow | `gh workflow list` and `gh run list --workflow Status --limit 3` |
+| Status workflow | `gh workflow list` and `gh run list --workflow "Status <version>" --limit 3` |
 | Scheduled sweep | Is there a recent sweep entry in `notes/sweep-log.md`? Is a routine listed under `/schedule`? |
 
 Give a short checklist (done, not done, couldn't check), then offer to do the next step that
