@@ -31,9 +31,11 @@ for finding items, but confirm each item against sources 1–4 before you rely o
 
 ## Deciding the Gutenberg range
 
-A release normally contains the Gutenberg plugin versions released since the previous Core
-release's cutoff, up to the last plugin release before Beta 1. The Beta 1 post confirms the
-range, so until then mark it 🔍 in the intro.
+A release contains the Gutenberg plugin versions released since the previous Core release's
+cutoff, up to whatever the Beta 1 pin points at. Don't assume that's the last plugin release
+before Beta 1: 7.2 Beta 1 pinned the tip of `wp/7.2`, which was the next version's RC1 plus
+cherry-picks, so 24.3 was in the range even though 24.2 was the last final release. Read the
+pin commit (next section) and the Beta 1 post, and until then mark the range 🔍 in the intro.
 
 Expect one version to straddle two releases. For example, 23.8 shipped during the 7.1 cycle:
 some of its PRs were backported to 7.1, and the rest wait for 7.2. For any PR in a straddling
@@ -47,16 +49,24 @@ wordpress-develop commit that updates that pin, and the commit message lists eve
 included since the previous pin. Find it with:
 
 ```bash
-gh api -X GET search/commits -f q='repo:WordPress/wordpress-develop "Gutenberg" "wp/X.Y"' --jq '.items[] | .commit.committer.date[:10] + " " + .sha[:10] + " " + (.commit.message | split("\n")[0])'
+gh api -X GET search/commits -f q='repo:WordPress/wordpress-develop Gutenberg wp/X.Y' -f sort=committer-date --jq '.items[] | .commit.committer.date[:10] + " " + .sha[:10] + " " + (.commit.message | split("\n")[0])'
 ```
+
+The commit subject reads "General: Bump the pinned hash for Gutenberg to <hash>", and its body
+says which Gutenberg version or branch tip it pins. The one just before the "WordPress X.Y Beta
+1." commit is the Beta 1 pin.
 
 Then read the full message with `gh api repos/WordPress/wordpress-develop/commits/<sha> --jq .commit.message`.
 If a PR number is in a pin commit, the PR is in that Beta or RC. Nothing else gives as direct an
 answer, so check it before the milestone heuristics below.
 
-The same method answers "did this already ship in the previous release?". Look at the previous
-release's branch in Gutenberg (`wp/X.Y-1`) to see what was backported:
-`gh api repos/WordPress/gutenberg/commits?sha=wp/7.1&since=<date> --paginate --jq '.[].commit.message' | grep '#NNNNN'`.
+The same method answers "did this already ship in the previous release?". Search the commit
+subjects on the previous release's branch in Gutenberg (`wp/X.Y-1`) for the PR number:
+`gh api 'repos/WordPress/gutenberg/commits?sha=wp/7.1&since=<date>&per_page=100' --paginate --jq '.[].commit.message | split("\n")[0]' | grep '(#NNNNN)'`.
+If that finds nothing, search for the PR's title too, because a cherry-pick sometimes carries a
+different PR number (7.2's shareable revision URLs, #79934, reached `wp/7.1` as #81205). Don't
+use a compare or ancestry check (`compare/wp/7.1...<sha>`): cherry-picks are new commits, so a
+PR that did ship still shows as "diverged".
 
 ## Deciding whether a PR is in the release
 
@@ -71,7 +81,19 @@ first ships in:
 | open or draft | Not in the release yet. It's only a candidate before Beta 1. After Beta 1, it gets in only as a blessed feature 🙏 or a bug fix. |
 | closed, not merged | Not happening in this form. Look for a replacement PR. |
 
-For Trac tickets, a `Fixes #N` commit to `trunk` before the branch point means it's in. After
+For Trac tickets, a `Fixes #N` commit to `trunk` before the branch point means it's in. GitHub's
+commit search doesn't match `#NNNNN` reliably, so search a local partial clone instead:
+
+```bash
+git clone --filter=blob:none --no-checkout --shallow-since=<cycle start> https://github.com/WordPress/wordpress-develop.git wpdev
+git -C wpdev log origin/trunk --format='%cd %h %s' --date=short -E --grep='#NNNNN([^0-9]|$)'
+```
+
+Git's `-E` has no `\b`, so end the pattern with `([^0-9]|$)`. The same clone answers "is it on
+the previous release's branch?" (`git fetch --filter=blob:none origin X.Y-1`, then
+`git show FETCH_HEAD:<file> | grep <function>`), and lets you read merged code with
+`git show origin/trunk:<file>`. Check for reverts too: a ticket can have a commit and a later
+"Revert" commit. After
 the branch point, the fix also needs a commit to the `X.Y` branch. When the `fixed` status comes
 from the GitHub mirror, read the commit subject to make sure it's the main change and not a test
 or a follow-up.
