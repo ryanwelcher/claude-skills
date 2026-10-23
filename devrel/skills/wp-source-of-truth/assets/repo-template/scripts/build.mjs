@@ -210,7 +210,12 @@ figcaption,img+em{display:block;color:var(--muted);font-size:14px}
 main{max-width:760px;min-width:0}
 header h1{font-size:2.2rem;line-height:1.2;margin:0 0 4px}
 header p{color:var(--muted);margin:0 0 24px}
-.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 32px}
+.filterbar{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0 8px;margin:0 0 24px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filter-status{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.filter-status .clear{font:inherit;font-size:13px;background:none;border:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
+nav li.hidden,.sot-section.hidden{display:none}
+h2,h3{scroll-margin-top:110px}
 .filters button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:4px 12px;cursor:pointer}
 .filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 h2{margin-top:56px;padding-top:16px;border-top:1px solid var(--line)}
@@ -239,20 +244,43 @@ footer{color:var(--muted);font-size:14px;margin-top:64px}
 <main>
 <header><h1>${ title }</h1><p>${ byline }</p></header>
 ${ draft ? '<p class="banner"><strong>Draft review copy.</strong> Working notes, markers and hidden items are shown. Readers see <a href="../">the clean post</a>.</p>' : '' }
-<div class="filters" role="group" aria-label="Filter by audience">${ filterHtml }</div>
+<div class="filterbar"><div class="filters" role="group" aria-label="Filter by audience">${ filterHtml }</div><p class="filter-status" aria-live="polite">Filter by audience: pick one or more.</p></div>
 ${ body }
 <footer>${ release.canonicalUrl ? `Also published at <a href="${ release.canonicalUrl }">${ release.canonicalUrl }</a>.` : '' }</footer>
 </main>
 </div>
 <script>
+// Audience filter: hides non-matching items, their table of contents entries, and sections left
+// empty, then reports what's showing and jumps to the first match so the change is visible.
 const buttons=[...document.querySelectorAll('.filters button')];
+const items=[...document.querySelectorAll('.sot-item')];
+const status=document.querySelector('.filter-status');
+const tocEntry=(id)=>document.querySelector('nav a[href="#'+CSS.escape(id)+'"]')?.parentElement;
+function apply(){
+	const on=buttons.filter(x=>x.getAttribute('aria-pressed')==='true').map(x=>x.dataset.filter);
+	let shown=0;
+	items.forEach(a=>{
+		const tags=a.dataset.tags.split(' ');
+		const hide=on.length>0&&!on.some(t=>tags.includes(t)||tags.includes('all'));
+		a.classList.toggle('hidden',hide);
+		tocEntry(a.id)?.classList.toggle('hidden',hide);
+		if(!hide)shown++;
+	});
+	document.querySelectorAll('.sot-section').forEach(s=>{
+		if(!s.querySelector('.sot-item'))return;
+		const empty=!s.querySelector('.sot-item:not(.hidden)');
+		s.classList.toggle('hidden',empty);
+		tocEntry(s.id)?.classList.toggle('hidden',empty);
+	});
+	document.body.classList.toggle('filtering',on.length>0);
+	status.innerHTML=on.length?'Showing '+shown+' of '+items.length+' items for '+on.map(t=>'<strong>'+buttons.find(b=>b.dataset.filter===t).textContent+'</strong>').join(' or ')+'. <button type="button" class="clear">Show all</button>':'Filter by audience: pick one or more.';
+	status.querySelector('.clear')?.addEventListener('click',()=>{buttons.forEach(b=>b.setAttribute('aria-pressed','false'));apply();});
+	const first=document.querySelector('.sot-item:not(.hidden)');
+	if(on.length&&first&&first.getBoundingClientRect().top>window.innerHeight)first.closest('.sot-section').scrollIntoView({behavior:'smooth'});
+}
 buttons.forEach(b=>b.addEventListener('click',()=>{
 	b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');
-	const on=buttons.filter(x=>x.getAttribute('aria-pressed')==='true').map(x=>x.dataset.filter);
-	document.querySelectorAll('.sot-item').forEach(a=>{
-		const tags=a.dataset.tags.split(' ');
-		a.classList.toggle('hidden',on.length>0&&!on.some(t=>tags.includes(t)||tags.includes('all')));
-	});
+	apply();
 }));
 </script>
 </body>
