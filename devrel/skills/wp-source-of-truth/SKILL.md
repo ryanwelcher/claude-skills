@@ -6,9 +6,10 @@ description: |
   Spacefast. Use to start a new release's Source of Truth (from research or by importing a Google
   Doc draft), to sweep or refresh it (re-check PRs, Trac tickets, dev notes, Beta/RC inclusion and
   update status), to add or propose items, to publish or redeploy the site, or to schedule
-  automatic sweeps. Trigger on "source of truth", "SoT", "refresh/sweep the 7.x draft", "what
-  changed for 7.x since last week", or any request to track what's landing in a WordPress release,
-  even if the user doesn't name the skill.
+  automatic sweeps, or to explain how it works and check which setup steps are done. Trigger on
+  "source of truth", "SoT", "refresh/sweep the 7.x draft", "what changed for 7.x since last week",
+  "SoT help", or any request to track what's landing in a WordPress release, even if the user
+  doesn't name the skill.
 ---
 
 # WordPress Source of Truth
@@ -49,6 +50,7 @@ Work out which of these the user wants. Most requests are a sweep.
 | "Sweep", "refresh", "what changed", "update the statuses", a scheduled run | **2. Sweep** |
 | "Add X", "we missed Y", "rewrite the Notes item" | **3. Add or propose items** |
 | "Publish it", "set up Spacefast", "share link", "run it every day" | **4. Publish and schedule** |
+| "Help", "how does this work", "what's set up?", "where does it get its info?" | **5. Help and setup status** |
 
 Before any job except 1, find the content repo. Look in the current directory, then
 `~/repositories/wp-*-source-of-truth`. If there's more than one, ask which release. If you're
@@ -135,6 +137,26 @@ Read `references/publishing.md`. It covers connecting the repo to Spacefast (`sf
 scheduled sweep. Creating a Spacefast space, connecting a repo, and sharing a link are visible to
 other people, so confirm with the user before each one, unless they've already asked for that
 exact step.
+
+### 5. Help and setup status
+
+The user-facing guide is this skill's `README.md`. Answer "how does it work" questions from it,
+quoting the part that fits instead of the whole file.
+
+When the question is about a particular release ("what's set up for 7.3?", "why isn't it
+updating?"), check the real state of that repo and report it against README section 5:
+
+| Step | How to check |
+|---|---|
+| GitHub repo | `git remote -v` and `gh repo view --json nameWithOwner,visibility` |
+| Spacefast site | `sot.json` → `spacefast.space` / `liveUrl`, then `npx spacefast versions --space <space>` |
+| Autodeploy | Is the latest version newer than the last push to `trunk`? |
+| Share links | `sot.json` → `spacefast.shareLink` / `draftLink` |
+| Status workflow | `gh workflow list` and `gh run list --workflow Status --limit 3` |
+| Scheduled sweep | Is there a recent sweep entry in `notes/sweep-log.md`? Is a routine listed under `/schedule`? |
+
+Give a short checklist (done, not done, couldn't check), then offer to do the next step that
+isn't done. If a check needs a sign-in you don't have, such as Spacefast, say so and don't guess.
 
 ## Ground rules
 
