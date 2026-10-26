@@ -3,7 +3,8 @@ name: wp-workshop-deck
 description: |
   Use when a WordPress workshop repo needs its presentation slides built, rebuilt, or extended
   from slides-outline.md, including adding a deck for a new workshop length
-  (slideshows/<length>/index.html). Pairs with wp-workshop-scaffold, which writes the outline.
+  (slideshows/<length>/index.html), or when a deck needs publishing to Spacefast as its own
+  auto-deploying site. Pairs with wp-workshop-scaffold, which writes the outline.
 metadata:
   type: skill
 ---
@@ -62,10 +63,50 @@ starter `src/`, and the GitHub repo URL.
 - **Numbering:** after adding or cutting slides, update the slide numbers and section ranges in
   `slides-outline.md` and the run sheet in `facilitator-notes.md`.
 
-## Publishing
+## Publishing to Spacefast
 
-Not part of this skill. When asked, each deck folder can be its own Spacefast Space connected
-to the repo. Set the Space's root directory to the deck folder before its first build.
+Only when Ryan asks. Each deck folder is its own Space, connected to the GitHub repo, so a push
+to `trunk` that changes `slideshows/<length>/` redeploys that deck and other pushes are skipped.
+Use the `spacefast:spacefast` skill for sign-in and team lookup. Use the `sf` CLI. If it is not
+installed, ask before running it through `npx -y spacefast`.
+
+1. **Name it.** The title is the workshop title from the README's first heading. The slug is
+   that title in kebab-case. If another length of this workshop already has a Space, propose a
+   title and slug that include the length. Confirm the title, slug, team, and access with Ryan.
+2. **Publish once** from the deck folder. Do a dry run first. It must list only `index.html`
+   and any files the deck loads. `<team>` is the team ID from the team lookup.
+   ```
+   sf publish . --team <team> -n "<title>" --slug <slug> --access public --dry-run
+   sf publish . --team <team> -n "<title>" --slug <slug> --access public --json -y
+   ```
+3. **Fix the link file.** The CLI writes `.spacefast/space.json` with `"space"` set to the
+   slug. Change it to the Space ID (`spc_…`, in the publish JSON or from `getSpace`). The ID
+   stays the same if the Space is renamed later, but the slug doesn't. Commit `space.json` but
+   don't push it yet. If
+   `slideshows/.gitignore` doesn't exist, create it so it covers every deck folder:
+   ```
+   **/.spacefast/state.json
+   **/.spacefast-*
+   **/.spacefast/.space-link-*.tmp
+   ```
+   Delete any `.gitignore` the CLI wrote inside the deck folder.
+4. **Connect the repo.** Ask Ryan to connect the GitHub repo to the Space in the Spacefast
+   dashboard. The plugin's sign-in can't read GitHub app installations. When Ryan confirms, run
+   this immediately. Spacefast builds the repo root as soon as the repo connects, which deploys
+   the plugin's build output instead of the deck.
+   ```
+   sf git update --space <spc_id> --root-directory slideshows/<length> \
+     --auto-deploy-production --no-auto-deploy-previews \
+     --ignored-build-command 'git diff --quiet HEAD^ HEAD -- "$(git rev-parse --show-toplevel)/slideshows/<length>"' \
+     --json -y
+   ```
+   Then push. The `space.json` commit changes the deck folder, so it builds the deck and
+   replaces the repo-root build.
+5. **Record it.** Add the folder and its live URL to the Publishing table in
+   `slideshows/README.md` (create the table if it's missing), and push.
+
+Check: the live URL returns 200 with the deck's `<title>`, and `show_space_deployments` shows
+the live version built from the latest deck commit, not from the repo-root build.
 
 ## Common mistakes
 
@@ -76,4 +117,6 @@ to the repo. Set the Space's root directory to the deck folder before its first 
 | `…` in code with no label | First comment line says `trimmed` |
 | Code typed from memory or from the outline | Copy from `code-reference/section-N/` |
 | Lab paths as plain text | Link them to GitHub, opening in a new tab |
+| Publishing without `-n` and `--slug` | The Space is named after the folder (`90-minutes`); set both on the first publish |
+| Trusting the first build after connecting the repo | It built the repo root; set the root directory, then push a deck change |
 | Fixing overflow by lowering font sizes in the theme | Widen the code column (`grid-template-columns` or `flex` on that slide), cut words, split the slide, or use `pre.code.tight` |
