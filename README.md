@@ -18,7 +18,7 @@ runtime, and cache edits are lost on `/plugin update` — so never hand-edit the
 | Plugin | Version | Visibility | Skills |
 |---|---|---|---|
 | `public` | 1.0.0 | Safe to share with anyone | _(empty — placeholder for future shareable skills)_ |
-| `devrel` | 1.33.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `wp-source-of-truth` |
+| `devrel` | 1.34.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `wp-source-of-truth`, `stream-prep` |
 
 ### `public` skills
 
@@ -29,7 +29,7 @@ _None yet — placeholder for future shareable skills._
 | Skill | What it does |
 |---|---|
 | `wp-workshop-scaffold` | Scaffold a new WordPress workshop repo (or reformat / audit an existing one) to the canonical WCPT-style structure with a north-star artifact arc. |
-| `wp-workshop-deck` | Build a workshop's slide deck (`slideshows/<length>/index.html`) from its `slides-outline.md`, using a bundled deck template with build steps, presenter view, slide outline, and 16:9 scaling, then check layout, code accuracy, and voice. |
+| `wp-workshop-deck` | Build a workshop's slide deck (`slideshows/<length>/index.html`) from its `slides-outline.md`, using a bundled deck template with build steps, presenter view, slide outline, and 16:9 scaling, then check layout, code accuracy, and voice. Can also publish each deck to Spacefast as its own Space that redeploys on push. |
 | `youtube-script` | Write or audit/rework a YouTube video script in Ryan's voice (conversational, dev-to-dev, not AI-sounding). |
 | `write-article` | Write long-form articles, blog posts, or P2 updates in Ryan's voice. |
 | `write-social-post` | Draft promotional LinkedIn / X / Facebook posts with the WP-DevRel persona, platform-specific formatting, and hashtags. |
@@ -40,6 +40,7 @@ _None yet — placeholder for future shareable skills._
 | `sounds-like-me` | Audit an existing script/teleprompter/draft for Ryan's voice: check every line against the style card (+ series cards), surface findings for approval, then fix in place and log new rules to the right refinement log. |
 | `ste-pass` | Audit/rewrite existing tutorials, recipes, and workshop steps against Simplified Technical English (STE). Hybrid by default: STE in action zones, Ryan's voice everywhere else. Owns `references/ste-card.md`, which `write-article`, `wp-workshop-scaffold`, and `sounds-like-me` read live. |
 | `ste-audit` | Internal forked helper for `ste-pass`, pinned to Sonnet: maps zones, runs `ste-lint.py`, and returns findings with full rewrites. Not user-invocable. |
+| `stream-prep` | Prep an OBS stream recording for Premiere: drops the Full Mix and Spotify audio tracks, pulls the mic track 9 frames earlier, keeps the other tracks separate, and writes `<name>-edit.mp4` next to the original. |
 | [`wp-source-of-truth`](devrel/skills/wp-source-of-truth/README.md) | Create and maintain the WordPress X.Y Source of Truth as Markdown in `wptrainingteam/source-of-truth`, one directory per release, each of which Spacefast builds into a standalone site, with a clean post and a `/draft/` review copy. Imports a Google Doc draft, sweeps PR, Trac and dev-note status (fact fixes go straight to `trunk`, editorial changes go out as proposal PRs), and sets up scheduled sweeps. Its README covers setup, the release timeline, and troubleshooting. |
 
 ## Context patterns

@@ -123,7 +123,7 @@ Files to generate:
 
 ### Step 3 — Report
 
-Print: target path, file count, and three next-step suggestions: declare sections, `git init`, create Studio site from `blueprint.json`.
+Print: target path, file count, and four next-step suggestions: declare sections, `git init`, create Studio site from `blueprint.json`, and once `slides-outline.md` is filled in, build the deck with `wp-workshop-deck`.
 
 ---
 
