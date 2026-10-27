@@ -12,8 +12,8 @@ metadata:
 # wp-workshop-deck
 
 A workshop deck is `templates/deck.html` plus slides. The template already has the deck's
-navigation, build steps, slide outline, controls panel, presenter view, timer, 16:9 scaling,
-brand theme, and code styling, all checked on projectors. A new deck reuses it unchanged, so
+navigation, build steps, slide outline, controls panel, presenter view, timer, .pptx and PDF
+export, 16:9 scaling, brand theme, and code styling, all checked on projectors. A new deck reuses it unchanged, so
 every deck looks and works the same.
 
 ## Inputs
