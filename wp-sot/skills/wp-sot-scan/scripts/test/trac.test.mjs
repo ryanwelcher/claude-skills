@@ -55,5 +55,5 @@ test( 'splits a batch update into one event per ticket', () => {
 test( 'parses the query CSV, BOM and quoted commas included', () => {
 	const rows = parseQueryCsv( csv );
 	assert.equal( rows.length, 2 );
-	assert.deepEqual( rows[ 0 ], { id: 61234, summary: 'Font Library: uploads, part two', status: 'assigned', milestone: '7.3', keywords: 'has-patch' } );
+	assert.deepEqual( rows[ 0 ], { id: 61234, summary: 'Font Library: uploads, part two', status: 'assigned', resolution: '', milestone: '7.3', keywords: 'has-patch' } );
 } );

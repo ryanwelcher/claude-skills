@@ -84,6 +84,6 @@ export function parseQueryCsv( text ) {
 	const [ head, ...rows ] = parseCsv( text.replace( /^﻿/, '' ) );
 	return rows.map( ( values ) => {
 		const r = Object.fromEntries( head.map( ( h, i ) => [ h.trim(), values[ i ] ?? '' ] ) );
-		return { id: +r.id, summary: r.summary ?? '', status: r.status ?? '', milestone: r.milestone ?? '', keywords: r.keywords ?? '' };
+		return { id: +r.id, summary: r.summary ?? '', status: r.status ?? '', resolution: r.resolution ?? '', milestone: r.milestone ?? '', keywords: r.keywords ?? '' };
 	} );
 }
