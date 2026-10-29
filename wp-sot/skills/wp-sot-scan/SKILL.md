@@ -91,7 +91,8 @@ scratchpad (written as `$SCRATCH` below).
      --out "$SCRATCH/work.json"
    ```
    Leave out both `--trac-*` flags if step 4 failed. Exit code 2 means the export is a sign-in
-   page or the tab doesn't exist. If the Trac timeline is down, the scan carries on and the block
+   page. A note that the tab heading wasn't found is normal for an empty or new tab, because the
+   export doesn't include tab names. If the Trac timeline is down, the scan carries on and the block
    says so. Tell the user what it printed and stop. Pass 1 takes a minute
    or two, because GitHub search is rate limited.
 
@@ -129,7 +130,8 @@ scratchpad (written as `$SCRATCH` below).
    are skipped with a warning. Fix and re-run if that happens.
 
 8. **Hand it over.** In Chrome, open the Doc at the target tab
-   (`https://docs.google.com/document/d/<DOC_ID>/edit`, then pick the tab). Tell the user:
+   (`https://docs.google.com/document/d/<DOC_ID>/edit`, then pick the tab). Check the tab
+   exists. If it doesn't, ask the user which tab to use, and don't re-run the scan. Tell the user:
    "The block is on your clipboard. Click at the very bottom of the <tab> tab and paste." Show
    the printed block too, in case the clipboard step failed.
 

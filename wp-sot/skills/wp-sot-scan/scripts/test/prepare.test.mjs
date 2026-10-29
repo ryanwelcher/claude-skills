@@ -28,8 +28,12 @@ function deps( calls = {} ) {
 	};
 }
 
-test( 'an unknown tab stops the run and lists the real tabs', async () => {
-	await assert.rejects( prepare( { releaseDir: releaseDir(), doc: fixture, tab: 'Scan Results', date: '2026-10-29' }, deps() ), /Notes/ );
+test( 'a tab the export doesn\'t show is a warning, not a stop', async () => {
+	const work = await prepare( { releaseDir: releaseDir(), doc: fixture, tab: 'Scan Test', date: '2026-10-29' }, deps() );
+	assert.equal( work.tab, 'Scan Test' );
+	assert.equal( work.tabFound, false );
+	const notes = await prepare( { releaseDir: releaseDir(), doc: fixture, date: '2026-10-29' }, deps() );
+	assert.equal( notes.tabFound, true );
 } );
 
 test( 'a Google sign-in page stops the run', async () => {

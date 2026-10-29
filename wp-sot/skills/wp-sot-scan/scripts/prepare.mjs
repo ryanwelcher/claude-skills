@@ -33,10 +33,10 @@ export async function prepare( opts, deps = { lookupGithub, lookupDevnote, fetch
 	const tab = opts.tab ?? 'Notes';
 	const date = opts.date ?? new Date().toISOString().slice( 0, 10 );
 	const doc = readDoc( opts.doc );
+	// The export doesn't name tabs. Its H1s are headings people typed, so an empty or new tab
+	// can't be seen here. Warn only; the hand-over in Chrome is the real check.
 	const wanted = tab.toLowerCase();
-	if ( ! doc.tabs.some( ( t ) => t.toLowerCase() === wanted || t.toLowerCase().includes( wanted ) ) ) {
-		throw new Error( `There's no "${ tab }" tab in the Doc. Tabs found: ${ doc.tabs.join( ', ' ) }.` );
-	}
+	const tabFound = doc.tabs.some( ( t ) => t.toLowerCase() === wanted || t.toLowerCase().includes( wanted ) );
 
 	const statePath = join( opts.releaseDir, 'notes', 'scan-state.json' );
 	const state = existsSync( statePath ) ? JSON.parse( readFileSync( statePath, 'utf8' ) ) : null;
@@ -89,6 +89,7 @@ export async function prepare( opts, deps = { lookupGithub, lookupDevnote, fetch
 		date,
 		version,
 		tab,
+		tabFound,
 		firstRun: ! state,
 		tracCsv,
 		docKeys: refs.map( ( r ) => r.key ),
@@ -119,6 +120,7 @@ if ( import.meta.url === pathToFileURL( process.argv[ 1 ] ).href ) {
 		} else {
 			if ( ! opts.releaseDir || ! opts.doc || ! opts.out ) throw new Error( 'usage: prepare.mjs --release-dir <dir> --doc <export.md> --out <work.json> [--tab Notes] [--date YYYY-MM-DD] [--trac-linked <csv>] [--trac-milestone <csv>]' );
 			const work = await prepare( opts );
+			if ( ! work.tabFound ) console.error( `Note: no "${ work.tab }" heading in the export. That's normal for an empty or new tab. Check the tab exists when you open the Doc.` );
 			writeFileSync( opts.out, JSON.stringify( work, null, '\t' ) + '\n' );
 			console.log( `${ work.findings.length } changes, ${ work.newTickets.length } new milestone tickets, ${ work.openCandidates.length } open candidates. Work file: ${ opts.out }` );
 		}
