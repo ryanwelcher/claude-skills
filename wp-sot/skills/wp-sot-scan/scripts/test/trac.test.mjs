@@ -52,6 +52,11 @@ test( 'splits a batch update into one event per ticket', () => {
 	assert.equal( batch[ 0 ].link, 'https://core.trac.wordpress.org/ticket/66187' );
 } );
 
+test( 'reads Trac\'s capitalized CSV headers', () => {
+	const rows = parseQueryCsv( 'id,Summary,Status,Resolution,Milestone,Keywords\r\n66187,Secrets API,closed,fixed,7.2,needs-dev-note\r\n' );
+	assert.deepEqual( rows, [ { id: 66187, summary: 'Secrets API', status: 'closed', resolution: 'fixed', milestone: '7.2', keywords: 'needs-dev-note' } ] );
+} );
+
 test( 'parses the query CSV, BOM and quoted commas included', () => {
 	const rows = parseQueryCsv( csv );
 	assert.equal( rows.length, 2 );
