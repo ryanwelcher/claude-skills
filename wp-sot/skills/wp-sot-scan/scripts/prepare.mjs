@@ -44,7 +44,7 @@ export async function prepare( opts, deps = { lookupGithub, lookupDevnote, fetch
 	const refs = linkedRefs( doc );
 
 	const snapshots = {};
-	await pool( refs.filter( ( r ) => r.kind !== 'trac' ), 4, async ( ref ) => {
+	await pool( refs.filter( ( r ) => r.kind === 'github' || r.kind === 'devnote' ), 4, async ( ref ) => {
 		snapshots[ ref.key ] = ref.kind === 'github' ? await deps.lookupGithub( ref ) : await deps.lookupDevnote( ref );
 	} );
 
@@ -53,7 +53,13 @@ export async function prepare( opts, deps = { lookupGithub, lookupDevnote, fetch
 	const end = Date.parse( `${ date }T00:00:00Z` );
 	let start = state?.lastRun ? Date.parse( `${ state.lastRun }T00:00:00Z` ) : end - 7 * DAY;
 	start = Math.max( start, end - MAX_DAYS * DAY );
-	const events = await deps.fetchTimeline( new Date( start ), Math.round( ( end - start ) / DAY ) );
+	const notes = [];
+	let events = [];
+	try {
+		events = await deps.fetchTimeline( new Date( start ), Math.round( ( end - start ) / DAY ) );
+	} catch {
+		notes.push( "The Trac timeline wasn't reachable this week." );
+	}
 	const linked = new Set( refs.filter( ( r ) => r.kind === 'trac' ).map( ( r ) => r.key ) );
 	const ghTrac = {};
 	for ( const key of linked ) {
@@ -71,6 +77,14 @@ export async function prepare( opts, deps = { lookupGithub, lookupDevnote, fetch
 	const trac = tracFindings( { linked, events, csvRows: rows.size ? [ ...rows.values() ] : null, prev: state?.refs ?? null, milestone: version, ghTrac } );
 	Object.assign( snapshots, trac.snapshots );
 
+	// A lookup that failed this week keeps last week's snapshot, and refs nobody looked at this week
+	// (unlinked milestone tickets when there's no CSV) carry forward, so the baseline never resets.
+	const prevRefs = state?.refs ?? {};
+	for ( const [ key, snap ] of Object.entries( snapshots ) ) {
+		if ( ( snap.error || snap.state === 'unknown' ) && prevRefs[ key ] ) snapshots[ key ] = prevRefs[ key ];
+	}
+	const merged = { ...prevRefs, ...snapshots };
+
 	return {
 		date,
 		version,
@@ -80,10 +94,11 @@ export async function prepare( opts, deps = { lookupGithub, lookupDevnote, fetch
 		docKeys: refs.map( ( r ) => r.key ),
 		struckKeys: [ ...struckKeys( doc.blocks ) ],
 		findings: [ ...diffRefs( state?.refs ?? null, snapshots, refs ), ...trac.findings ],
-		snapshots,
+		snapshots: merged,
+		notes,
 		newTickets: trac.newTickets,
 		openCandidates: state?.openCandidates ?? [],
-		checked: { linked: refs.length },
+		checked: { linked: refs.filter( ( r ) => r.kind !== 'link' ).length },
 	};
 }
 

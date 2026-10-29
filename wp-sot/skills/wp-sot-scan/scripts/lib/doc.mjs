@@ -25,7 +25,8 @@ export function parseDoc( markdown ) {
 	for ( const line of lines ) {
 		const isH1 = /^# /.test( line );
 		const text = plain( line );
-		const start = /^#{1,6}\s/.test( line ) && ! isH1 ? text.match( START_RE ) : null;
+		// A heading, or a plain-text paste of one ("\#\# Automated scan results: ...").
+		const start = ! isH1 ? text.match( START_RE ) : null;
 		if ( isH1 ) {
 			close();
 			tabs.push( text );
@@ -49,8 +50,10 @@ export function parseDoc( markdown ) {
 export function struckKeys( blocks ) {
 	const keys = new Set();
 	for ( const { text } of blocks ) {
-		for ( const [ , struck ] of unescapeExport( text ).matchAll( /~~([\s\S]+?)~~/g ) ) {
-			for ( const ref of extractRefs( struck ) ) keys.add( ref.key );
+		// Striking any part of a line strikes the whole finding, link included.
+		for ( const line of unescapeExport( text ).split( '\n' ) ) {
+			if ( ! /~~[\s\S]+?~~/.test( line ) ) continue;
+			for ( const ref of extractRefs( line ) ) keys.add( ref.key );
 		}
 	}
 	return keys;

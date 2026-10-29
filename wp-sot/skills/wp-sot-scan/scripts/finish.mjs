@@ -46,6 +46,10 @@ export async function finish( opts, deps = { copy: copyToClipboard } ) {
 
 	const extra = [];
 	for ( const item of [ ...( cands.items ?? [] ), ...work.openCandidates ] ) {
+		if ( ! /^https?:\/\//.test( item.url ?? '' ) ) {
+			console.error( `Skipped "${ item.text }": every finding needs a full http(s) link.` );
+			continue;
+		}
 		const key = keyOf( item );
 		if ( skip.has( key ) ) continue;
 		skip.add( key );
@@ -53,7 +57,7 @@ export async function finish( opts, deps = { copy: copyToClipboard } ) {
 	}
 	const findings = [ ...work.findings, ...extra ];
 
-	const notes = [];
+	const notes = [ ...( work.notes ?? [] ) ];
 	if ( work.firstRun ) notes.push( 'First scan for this release, so changes to linked items start next week.' );
 	if ( ! work.tracCsv ) notes.push( "Trac milestone values weren't checked this week." );
 	const checked = [ `${ work.checked.linked } linked tickets and PRs`, cands.checked ].filter( Boolean ).join( ', ' );

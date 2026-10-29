@@ -8,8 +8,10 @@ export function refKey( url ) {
 	if ( m ) return `${ m[ 1 ] }#${ m[ 2 ] }`;
 	m = url.match( /^https?:\/\/core\.trac\.wordpress\.org\/ticket\/(\d+)/ );
 	if ( m ) return `trac#${ m[ 1 ] }`;
-	m = url.match( /^(https?:\/\/make\.wordpress\.org\/core\/[^?#]*)/ );
-	if ( m ) return `url:${ m[ 1 ] }`;
+	// Anything else is keyed by its URL without query, anchor or trailing slash, so a struck or
+	// added link always matches the candidate it came from.
+	m = url.match( /^(https?:\/\/[^?#]+)/ );
+	if ( m ) return `url:${ m[ 1 ].replace( /\/+$/, '' ) }`;
 	return null;
 }
 
@@ -17,7 +19,10 @@ function toRef( url ) {
 	const key = refKey( url );
 	if ( ! key ) return null;
 	if ( key.startsWith( 'trac#' ) ) return { key, kind: 'trac', number: +key.slice( 5 ), url: `https://core.trac.wordpress.org/ticket/${ key.slice( 5 ) }` };
-	if ( key.startsWith( 'url:' ) ) return { key, kind: 'devnote', url: key.slice( 4 ) };
+	if ( key.startsWith( 'url:' ) ) {
+		const kind = /^https?:\/\/make\.wordpress\.org\/core\//.test( url ) ? 'devnote' : 'link';
+		return { key, kind, url: url.replace( /[?#].*$/, '' ) };
+	}
 	const [ repo, number ] = key.split( '#' );
 	return { key, kind: 'github', repo, number: +number, url: url.replace( /[?#].*$/, '' ) };
 }
@@ -25,7 +30,7 @@ function toRef( url ) {
 export function extractRefs( text ) {
 	const refs = new Map();
 	for ( const [ raw ] of text.matchAll( URL_RE ) ) {
-		const ref = toRef( raw.replace( /[.,;:]+$/, '' ) );
+		const ref = toRef( raw.replace( /[.,;:~*]+$/, '' ) );
 		if ( ref && ! refs.has( ref.key ) ) refs.set( ref.key, ref );
 	}
 	return [ ...refs.values() ];

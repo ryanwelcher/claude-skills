@@ -70,7 +70,7 @@ test( 'doc keys come from human text only, struck keys from the blocks', async (
 	assert.ok( work.docKeys.includes( 'WordPress/gutenberg#81888' ) );
 	assert.ok( ! work.docKeys.includes( 'WordPress/gutenberg#81777' ) );
 	assert.deepEqual( work.struckKeys, [ 'WordPress/gutenberg#81500' ] );
-	assert.equal( work.checked.linked, work.docKeys.length );
+	assert.equal( work.checked.linked, work.docKeys.filter( ( k ) => ! k.startsWith( 'url:' ) || k.includes( 'make.wordpress.org/core/' ) ).length );
 	assert.equal( work.tracCsv, false );
 } );
 

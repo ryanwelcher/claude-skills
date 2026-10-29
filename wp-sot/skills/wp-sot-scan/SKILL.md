@@ -52,23 +52,34 @@ scratchpad (written as `$SCRATCH` below).
 3. **Export the Doc.**
    `curl -sL -o "$SCRATCH/doc.md" "https://docs.google.com/document/d/<DOC_ID>/export?format=md"`
 
+   Check that strikethrough survives. If `doc.md` has a line starting with
+   `Automated scan results:` (an earlier block) but no `~~` anywhere, ask the user whether anyone
+   struck out a candidate. If they did, the export dropped the strikethrough, and rejections
+   can't be read. Stop and tell them, rather than re-listing candidates people already rejected.
+
 4. **Get the Trac query CSVs through Chrome.** Load the Chrome tools in one ToolSearch call
    (`tabs_context_mcp`, `tabs_create_mcp`, `navigate`, `javascript_tool`, `get_page_text`). Get
    the linked ticket numbers with
    `node <skill-dir>/scripts/prepare.mjs --doc "$SCRATCH/doc.md" --list-trac`.
+   First clear old downloads: `rm -f ~/Downloads/trac-milestone*.csv ~/Downloads/trac-linked*.csv`.
    Open a new tab at `https://core.trac.wordpress.org/`, wait until the page shows Trac (not
-   "Checking your browser"), then run this in the page with `javascript_tool`, once per query,
-   and save each result:
+   "Checking your browser"), then run this in the page with `javascript_tool`, once with
+   `name = 'trac-milestone'` and `query = 'milestone=<version>'`, and once with
+   `name = 'trac-linked'` and `query = 'id=<comma-separated ids>'`:
 
    ```js
-   await ( await fetch( '/query?milestone=<version>&format=csv&col=id&col=summary&col=status&col=resolution&col=milestone&col=keywords&max=1000' ) ).text()
-   ```
-   ```js
-   await ( await fetch( '/query?id=<comma-separated ids>&format=csv&col=id&col=summary&col=status&col=resolution&col=milestone&col=keywords&max=1000' ) ).text()
+   const text = await ( await fetch( `/query?${ query }&format=csv&col=id&col=summary&col=status&col=resolution&col=milestone&col=keywords&max=1000` ) ).text();
+   const a = document.createElement( 'a' );
+   a.href = URL.createObjectURL( new Blob( [ text ], { type: 'text/csv' } ) );
+   a.download = `${ name }.csv`;
+   a.click();
+   `${ text.slice( 0, 20 ) } | ${ text.trim().split( '\n' ).length } lines`;
    ```
 
-   Save them as `$SCRATCH/trac-milestone.csv` and `$SCRATCH/trac-linked.csv`. Each must start
-   with `id,summary`. If one starts with `<`, it's a challenge page: wait and try once more.
+   It saves the CSV to `~/Downloads/<name>.csv` and returns the first characters and the line
+   count, so the rows never pass through the conversation. Each must start with `id,summary`. If
+   one starts with `<`, it's a challenge page: wait and try once more. Check that
+   `wc -l < ~/Downloads/<name>.csv` matches the line count (give or take a final newline).
    If Chrome isn't connected or a fetch still fails, carry on without the CSVs. The block will
    say that milestone values weren't checked, and the timeline feed still covers closes,
    reopens and "milestone changed".
@@ -76,11 +87,12 @@ scratchpad (written as `$SCRATCH` below).
 5. **Pass 1.**
    ```
    node <skill-dir>/scripts/prepare.mjs --release-dir <clone>/<version> --doc "$SCRATCH/doc.md" \
-     --tab Notes --trac-linked "$SCRATCH/trac-linked.csv" --trac-milestone "$SCRATCH/trac-milestone.csv" \
+     --tab Notes --trac-linked ~/Downloads/trac-linked.csv --trac-milestone ~/Downloads/trac-milestone.csv \
      --out "$SCRATCH/work.json"
    ```
    Leave out both `--trac-*` flags if step 4 failed. Exit code 2 means the export is a sign-in
-   page or the tab doesn't exist. Tell the user what it printed and stop. Pass 1 takes a minute
+   page or the tab doesn't exist. If the Trac timeline is down, the scan carries on and the block
+   says so. Tell the user what it printed and stop. Pass 1 takes a minute
    or two, because GitHub search is rate limited.
 
 6. **Pass 2: find new candidates.** Follow
@@ -113,7 +125,8 @@ scratchpad (written as `$SCRATCH` below).
    node <skill-dir>/scripts/finish.mjs --release-dir <clone>/<version> --work "$SCRATCH/work.json" --candidates "$SCRATCH/candidates.json"
    ```
    It writes `notes/scans/<date>.md` and `notes/scan-state.json`, copies the block to the
-   clipboard (with links), and prints it.
+   clipboard (with links), and prints it. Items in `candidates.json` without a full http(s) link
+   are skipped with a warning. Fix and re-run if that happens.
 
 8. **Hand it over.** In Chrome, open the Doc at the target tab
    (`https://docs.google.com/document/d/<DOC_ID>/edit`, then pick the tab). Tell the user:

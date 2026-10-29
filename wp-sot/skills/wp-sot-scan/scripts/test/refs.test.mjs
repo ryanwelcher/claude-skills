@@ -11,15 +11,15 @@ test( 'Trac tickets key by number, ignoring the comment anchor', () => {
 	assert.equal( refKey( 'https://core.trac.wordpress.org/ticket/66187#comment:28' ), 'trac#66187' );
 } );
 
-test( 'Make Core posts key by URL without anchor or query', () => {
-	const key = 'url:https://make.wordpress.org/core/2026/10/20/some-dev-note/';
+test( 'Make Core posts key by URL without anchor, query or trailing slash', () => {
+	const key = 'url:https://make.wordpress.org/core/2026/10/20/some-dev-note';
 	assert.equal( refKey( 'https://make.wordpress.org/core/2026/10/20/some-dev-note/' ), key );
 	assert.equal( refKey( 'https://make.wordpress.org/core/2026/10/20/some-dev-note/#heading' ), key );
 	assert.equal( refKey( 'https://make.wordpress.org/core/2026/10/20/some-dev-note/?x=1' ), key );
 } );
 
-test( 'other URLs have no key', () => {
-	assert.equal( refKey( 'https://example.com/' ), null );
+test( 'non-URLs have no key', () => {
+	assert.equal( refKey( 'not a url' ), null );
 } );
 
 test( 'the same link twice gives one ref', () => {
