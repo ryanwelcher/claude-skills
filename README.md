@@ -19,7 +19,7 @@ runtime, and cache edits are lost on `/plugin update` — so never hand-edit the
 |---|---|---|---|
 | `public` | 1.0.0 | Safe to share with anyone | _(empty — placeholder for future shareable skills)_ |
 | `devrel` | 1.37.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `stream-prep` |
-| `wp-sot` | 1.1.2 | WordPress Source of Truth tooling, for anyone working on an SoT | `wp-source-of-truth`, `wp-sot-site`, `wp-sot-scan` |
+| `wp-sot` | 1.1.3 | WordPress Source of Truth tooling, for anyone working on an SoT | `wp-source-of-truth`, `wp-sot-site`, `wp-sot-scan` |
 
 ### `public` skills
 
