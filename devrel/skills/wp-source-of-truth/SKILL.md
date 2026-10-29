@@ -103,6 +103,9 @@ scheduled sweep or the Status workflow may have pushed since.
 
 ### 1b. Import a Google Doc draft
 
+Building or publishing the one-site version of a release (importing the Doc into the site) is the
+`wp-sot-site` skill. This job only builds the tracking mirror.
+
 The usual case: a draft already exists in Google Docs in the SoT layout (the Draft, Notes,
 Punted and Backlog tabs). Importing builds the repo mirror. It doesn't move the draft out of the
 Doc.
@@ -180,6 +183,9 @@ Only when the user asks, and only after someone has spot-checked the Notes tab.
    already has text, add only what's missing and propose rewrites instead of replacing.
 
 ### 4. Publish and schedule
+
+Publishing the one-site Source of Truth (all releases, one Spacefast site) is the `wp-sot-site`
+skill. Use it instead of this job for adding a release to the site or changing its layout.
 
 This is the later phase (see the top of this file). Read `references/publishing.md`. It covers connecting a release directory to its own Spacefast
 site (`sf git connect` with a root directory), creating the share links, the GitHub Actions fallback, and setting up a

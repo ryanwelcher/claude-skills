@@ -18,7 +18,7 @@ runtime, and cache edits are lost on `/plugin update` — so never hand-edit the
 | Plugin | Version | Visibility | Skills |
 |---|---|---|---|
 | `public` | 1.0.0 | Safe to share with anyone | _(empty — placeholder for future shareable skills)_ |
-| `devrel` | 1.34.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `wp-source-of-truth`, `stream-prep` |
+| `devrel` | 1.36.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `wp-source-of-truth`, `wp-sot-site`, `stream-prep` |
 
 ### `public` skills
 
@@ -42,6 +42,7 @@ _None yet — placeholder for future shareable skills._
 | `ste-audit` | Internal forked helper for `ste-pass`, pinned to Sonnet: maps zones, runs `ste-lint.py`, and returns findings with full rewrites. Not user-invocable. |
 | `stream-prep` | Prep an OBS stream recording for Premiere: drops the Full Mix and Spotify audio tracks, pulls the mic track 9 frames earlier, keeps the other tracks separate, and writes `<name>-edit.mp4` next to the original. |
 | [`wp-source-of-truth`](devrel/skills/wp-source-of-truth/README.md) | Create and maintain the WordPress X.Y Source of Truth as Markdown in `wptrainingteam/source-of-truth`, one directory per release, each of which Spacefast builds into a standalone site, with a clean post and a `/draft/` review copy. Imports a Google Doc draft, sweeps PR, Trac and dev-note status (fact fixes go straight to `trunk`, editorial changes go out as proposal PRs), and sets up scheduled sweeps. Its README covers setup, the release timeline, and troubleshooting. |
+| [`wp-sot-site`](devrel/skills/wp-sot-site/README.md) | Build and publish the one-site WordPress Source of Truth (every release from 6.2 on, one Spacefast site) by importing each release's Google Doc into `wptrainingteam/source-of-truth`. Covers adding a release, custom layouts and the layout slot contract. Tracking and sweeps stay in `wp-source-of-truth`. |
 
 ## Context patterns
 
