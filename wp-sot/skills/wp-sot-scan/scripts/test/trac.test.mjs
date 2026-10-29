@@ -8,7 +8,7 @@ const csv = readFileSync( new URL( 'fixtures/query.csv', import.meta.url ), 'utf
 
 test( 'parses each kind of timeline event', () => {
 	const events = parseTimeline( xml );
-	assert.equal( events.length, 5 );
+	assert.equal( events.length, 7 );
 	const closed = events.find( ( e ) => e.kind === 'closed' );
 	assert.equal( closed.ticket, 66408 );
 	assert.equal( closed.resolution, 'fixed' );
@@ -43,6 +43,13 @@ test( 'fetches two days per request and keeps only the requested days', async ()
 	assert.ok( calls.every( ( u ) => u.includes( 'daysback=1' ) && u.includes( 'max=5000' ) && u.includes( 'ticket_details=on' ) ) );
 	assert.deepEqual( calls.map( ( u ) => new URL( u ).searchParams.get( 'from' ) ), [ '10/23/26', '10/25/26' ] );
 	assert.deepEqual( events.map( ( e ) => e.date ).sort(), [ '2026-10-22', '2026-10-23', '2026-10-24' ] );
+} );
+
+test( 'splits a batch update into one event per ticket', () => {
+	const batch = parseTimeline( xml ).filter( ( e ) => e.title === '' );
+	assert.deepEqual( batch.map( ( e ) => e.ticket ), [ 66187, 66353 ] );
+	assert.ok( batch.every( ( e ) => e.kind === 'closed' && e.resolution === 'fixed' ) );
+	assert.equal( batch[ 0 ].link, 'https://core.trac.wordpress.org/ticket/66187' );
 } );
 
 test( 'parses the query CSV, BOM and quoted commas included', () => {

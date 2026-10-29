@@ -9,8 +9,10 @@ const tag = ( item, name ) => decode( item.match( new RegExp( `<${ name }>([\\s\
 const isoDay = ( d ) => d.toISOString().slice( 0, 10 );
 const tracDay = ( d ) => `${ String( d.getUTCMonth() + 1 ).padStart( 2, '0' ) }/${ String( d.getUTCDate() ).padStart( 2, '0' ) }/${ String( d.getUTCFullYear() ).slice( 2 ) }`;
 
+const fieldsOf = ( description ) => [ ...description.matchAll( /<i>([^<]+)<\/i>/g ) ].map( ( m ) => m[ 1 ].toLowerCase() );
+
 export function parseTimeline( xml ) {
-	return [ ...xml.matchAll( /<item>([\s\S]*?)<\/item>/g ) ].map( ( [ , item ] ) => {
+	return [ ...xml.matchAll( /<item>([\s\S]*?)<\/item>/g ) ].flatMap( ( [ , item ] ) => {
 		const rawTitle = tag( item, 'title' );
 		const link = tag( item, 'link' );
 		const description = tag( item, 'description' );
@@ -18,11 +20,20 @@ export function parseTimeline( xml ) {
 		const date = pubDate ? isoDay( new Date( pubDate ) ) : '';
 		const cs = rawTitle.match( /^Changeset \[(\d+)\]:\s*(.*)$/ );
 		if ( cs ) return { ticket: null, changeset: +cs[ 1 ], kind: 'changeset', fields: [], title: cs[ 2 ], link, date };
+		// One commit or bulk edit touching several tickets: "Tickets #1,<ZWSP>2 batch updated".
+		const batch = rawTitle.match( /^Tickets ([#\d,\u200b\s]+) batch updated$/ );
+		if ( batch ) {
+			const resolution = description.match( /^(\w+):/ )?.[ 1 ];
+			return batch[ 1 ].match( /\d+/g ).map( ( n ) => ( {
+				ticket: +n, changeset: null, kind: resolution ? 'closed' : 'updated', ...( resolution && { resolution } ),
+				fields: fieldsOf( description ), title: '', link: `https://core.trac.wordpress.org/ticket/${ n }`, date,
+			} ) );
+		}
 		const t = rawTitle.match( /^Tickets? #(\d+) \((.*)\) (created|closed|reopened|updated)$/ );
 		if ( ! t ) return { ticket: null, changeset: null, kind: 'updated', fields: [], title: rawTitle, link, date };
 		const event = { ticket: +t[ 1 ], changeset: null, kind: t[ 3 ], fields: [], title: t[ 2 ], link, date };
 		if ( event.kind === 'closed' ) event.resolution = description.match( /^(\w+):/ )?.[ 1 ];
-		event.fields = [ ...description.matchAll( /<i>([^<]+)<\/i>/g ) ].map( ( m ) => m[ 1 ].toLowerCase() );
+		event.fields = fieldsOf( description );
 		return event;
 	} );
 }
