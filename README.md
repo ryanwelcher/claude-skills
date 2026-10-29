@@ -19,7 +19,7 @@ runtime, and cache edits are lost on `/plugin update` — so never hand-edit the
 |---|---|---|---|
 | `public` | 1.0.0 | Safe to share with anyone | _(empty — placeholder for future shareable skills)_ |
 | `devrel` | 1.37.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `stream-prep` |
-| `wp-sot` | 1.0.0 | WordPress Source of Truth tooling, for anyone working on an SoT | `wp-source-of-truth`, `wp-sot-site` |
+| `wp-sot` | 1.1.0 | WordPress Source of Truth tooling, for anyone working on an SoT | `wp-source-of-truth`, `wp-sot-site`, `wp-sot-scan` |
 
 ### `public` skills
 
@@ -49,6 +49,7 @@ _None yet — placeholder for future shareable skills._
 |---|---|
 | [`wp-source-of-truth`](wp-sot/skills/wp-source-of-truth/README.md) | Create and maintain the WordPress X.Y Source of Truth as Markdown in `wptrainingteam/source-of-truth`, one directory per release, each of which Spacefast builds into a standalone site, with a clean post and a `/draft/` review copy. Imports a Google Doc draft, sweeps PR, Trac and dev-note status (fact fixes go straight to `trunk`, editorial changes go out as proposal PRs), and sets up scheduled sweeps. Its README covers setup, the release timeline, and troubleshooting. |
 | [`wp-sot-site`](wp-sot/skills/wp-sot-site/README.md) | Build and publish the one-site WordPress Source of Truth (every release from 6.2 on, one Spacefast site) by importing each release's Google Doc into `wptrainingteam/source-of-truth`. Covers adding a release, custom layouts and the layout slot contract. Tracking and sweeps stay in `wp-source-of-truth`. |
+| `wp-sot-scan` | Weekly scan of a release's SoT Google Doc: re-checks every linked Trac ticket, PR and dev note, finds new candidates, and produces one dated "Automated scan results" block for the editor to paste at the bottom of the Notes tab. Never edits the Doc. |
 
 ## Context patterns
 
