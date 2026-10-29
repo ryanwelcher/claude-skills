@@ -1,6 +1,6 @@
 {
   "name": "wp-sot",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "WordPress Source of Truth skills: track a release's notes in its Google Doc and build the one-site Source of Truth.",
   "author": {
     "name": "Ryan Welcher",
