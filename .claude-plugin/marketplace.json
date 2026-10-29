@@ -25,7 +25,7 @@
       "name": "devrel",
       "description": "Ryan's developer-advocacy work skills (workshop scaffolding, article drafting, social posts, YouTube scripts and stream descriptions, voice-consistency passes, session logging to Obsidian).",
       "source": "./devrel",
-      "version": "1.36.0",
+      "version": "1.37.0",
       "author": {
         "name": "Ryan Welcher",
         "email": "me@ryanwelcher.com"
@@ -43,8 +43,21 @@
         "./skills/analyze-stream-recording",
         "./skills/ste-pass",
         "./skills/ste-audit",
-        "./skills/stream-prep",
-        "./skills/wp-source-of-truth"
+        "./skills/stream-prep"
+      ]
+    },
+    {
+      "name": "wp-sot",
+      "description": "WordPress Source of Truth skills: track a release's notes in its Google Doc and build the one-site Source of Truth.",
+      "source": "./wp-sot",
+      "version": "1.0.0",
+      "author": {
+        "name": "Ryan Welcher",
+        "email": "me@ryanwelcher.com"
+      },
+      "skills": [
+        "./skills/wp-source-of-truth",
+        "./skills/wp-sot-site"
       ]
     }
   ]
