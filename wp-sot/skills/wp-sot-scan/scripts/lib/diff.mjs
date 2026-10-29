@@ -86,7 +86,8 @@ export function tracFindings( { linked, events, csvRows, prev, milestone, ghTrac
 			if ( ! fromCsv.has( n ) ) snap.state = 'reopened';
 			add( n, `Reopened: ${ label }` );
 		}
-		if ( moved ) add( n, `Milestone changed on ${ label.replace( /\.$/, '' ) }, check whether it was punted` );
+		if ( moved && fromCsv.has( n ) ) add( n, `Moved to ${ snap.milestone || 'no milestone' }: ${ label }` );
+		else if ( moved ) add( n, `Milestone changed on ${ label.replace( /\.$/, '' ) }, check whether it was punted` );
 		if ( ! fromCsv.has( n ) && ( status?.title || moved?.title ) ) snap.title = status?.title || moved?.title;
 		snapshots[ key ] = snap;
 	}

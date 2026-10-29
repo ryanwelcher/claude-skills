@@ -94,3 +94,10 @@ test( 'R7: work notes reach the block, and items without a link are skipped', as
 	assert.ok( ! markdown.includes( 'undefined' ) && ! markdown.includes( 'No link.' ) && ! markdown.includes( 'Relative.' ) );
 	assert.ok( markdown.includes( `Good. ${ CS }` ) );
 } );
+
+test( 'first run with the CSV names where a ticket moved', () => {
+	const csvRows = [ { id: 46744, summary: 'Prevent default_role', status: 'new', resolution: '', milestone: '7.3', keywords: '' } ];
+	const events = [ { ticket: 46744, kind: 'updated', fields: [ 'milestone' ], title: 'Prevent default_role', link: '', date: '' } ];
+	const { findings } = tracFindings( { linked: new Set( [ 'trac#46744' ] ), events, csvRows, prev: null, milestone: '7.2', ghTrac: {} } );
+	assert.deepEqual( findings.map( ( f ) => f.text ), [ 'Moved to 7.3: #46744 Prevent default_role.' ] );
+} );
