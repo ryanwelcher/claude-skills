@@ -106,5 +106,4 @@ Include work that changes something a reader will notice or has to act on: new U
 changed APIs, deprecations, breaking changes, defaults that changed, and features that ship. Fold
 related small PRs into one item, or into a "quality of life" bullet list. Leave out internal
 refactors, test-only changes, TypeScript conversions and dependency bumps, unless they break
-something for extenders. Record skipped items in the sweep log's "Merged but not added" line, so
-the next sweep doesn't re-research them.
+something for extenders. Leave skipped items out of the notes entirely.

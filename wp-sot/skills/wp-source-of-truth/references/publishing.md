@@ -113,31 +113,13 @@ jobs:
 
 Use only one of the two deploy paths. If both run, every push publishes twice.
 
-## Scheduled sweeps
+## The Status workflow
 
-Two parts, both optional:
+The Status workflow (`.github/workflows/status-X-Y.yml` at the repo root, copied from the skill's
+`assets/status-workflow.yml`) runs `check-status.mjs` in the release directory every morning with
+the repo's own token. It commits `notes/status.json` and `notes/status-report.md`. Pushing it
+doesn't change the post, so the site rebuilds with the same content.
 
-1. **The Status workflow** (`.github/workflows/status-X-Y.yml` at the repo root, copied from
-   the skill's `assets/status-workflow.yml`) runs `check-status.mjs` in the release directory
-   every morning with the repo's own token. It commits `notes/status.json`
-   and `notes/status-report.md`. Pushing it doesn't change the post, so the site rebuilds with
-   the same content.
-2. **A cloud routine** does the judgment step. Use the `schedule` skill to create one on the
-   content repo. Run it daily from Beta 1 to the final release, about an hour after the Status
-   workflow. Before Beta 1, weekly is enough. Prompt:
+The weekly Notes update is the wp-sot-scan skill, run by hand. There's no scheduled sweep.
 
-   > Run a Source of Truth sweep on the X.Y release in this repo. Work in the X.Y/ directory.
-   > Follow X.Y/CLAUDE.md, or the wp-source-of-truth skill's sweep procedure if that skill is
-   > available. Use today's X.Y/notes/status-report.md.
-   > Re-import the Google Doc first, then update its Notes, Punted and Backlog tabs and put
-   > anything editorial under "Proposed for the draft". Commit the mirror to trunk. Don't
-   > ask questions: record anything that needs a decision in notes/open-questions.md.
-
-   The routine needs push access to the repo, plus write access to the Google Doc
-   (`references/google-doc.md`, section 4). Without the Doc write path, it writes
-   `notes/doc-updates.md` and someone has to paste the updates in. The release's
-   `CLAUDE.md` carries the rules, so the routine works even if the skill isn't installed where
-   it runs.
-
-After the release ships, turn off the routine and the Status workflow
-(`gh workflow disable "Status X.Y"`).
+After the release ships, turn off the Status workflow (`gh workflow disable "Status X.Y"`).

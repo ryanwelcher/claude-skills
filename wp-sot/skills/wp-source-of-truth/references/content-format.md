@@ -147,7 +147,7 @@ never reaches readers. Clear a flag once nothing in the item's working notes sti
 
 A working note says what to check and what to do with the answer: "🔍 Merged Oct 18, after
 Gutenberg 24.2; confirm it's in Beta 1. Remove the sentence if not." Notes that say only "check
-this" can't be resolved by a sweep.
+this" can't be resolved by anyone but the author.
 
 ## 6. House style
 
@@ -172,8 +172,8 @@ Match the published 7.1 post:
 | File | Holds |
 |---|---|
 | `notes/research.md` | Release basics (milestone table, squad, Gutenberg range), official planning sources, and a research entry for every candidate, including ones that never reach the post |
-| `notes/sweep-log.md` | One dated entry per sweep, newest first (format in `sweep.md`) |
-| `notes/open-questions.md` | A numbered list of questions that block a decision. Remove an answered question and note the answer in the sweep log. |
+| `notes/scans/`, `notes/scan-state.json` | Weekly scan results and state, written by wp-sot-scan |
+| `notes/open-questions.md` | A numbered list of questions that block a decision. Remove a question once it's answered. |
 | `notes/punted.md` | Items confirmed out of the release, with the reason and a source link |
 | `notes/backlog.md` | Items carried over from the previous release, to re-check |
 | `notes/status.json` | Written by `npm run status`. Don't edit it by hand. |

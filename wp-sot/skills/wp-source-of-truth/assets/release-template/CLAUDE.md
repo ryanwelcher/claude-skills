@@ -13,7 +13,7 @@ edit text that has an open comment. If you can't write to the Doc, put the chang
 `notes/doc-updates.md` and say so in the commit message.
 
 If the `wp-source-of-truth` skill is available, use it for any work here. Its references hold
-the full content format and sweep procedure. If it isn't, follow the rules below.
+the full content format. If it isn't, follow the rules below.
 
 ## Content rules
 
@@ -30,26 +30,15 @@ the full content format and sweep procedure. If it isn't, follow the rules below
 - Run `npm run build` before every commit. Commit messages describe the change. No AI
   co-author or "generated with" lines.
 
-## Sweep (scheduled or on request)
+## Notes updates
 
-1. `git pull`. If `notes/status-report.md` was written today by the `Status X.Y` workflow, use it.
-   Otherwise run `npm run status`.
-2. For each changed ref, 🔍 note, or open question: if the fact settles it, apply the change on
-   `trunk`. That covers:
-   - clearing or adding markers and notes;
-   - hiding an item that missed Beta (`published: false`);
-   - moving a confirmed punt to `notes/punted.md`;
-   - adding a dev-note `Read more:` link;
-   - resolving the question;
-   - factual corrections: swapping a now-wrong fact (version, date, "proposed" → committed)
-     inside an existing sentence, with the source cited in the sweep log.
-3. New items, rewritten sentences or paragraphs, and priority or Overview changes go in the
-   Doc's Notes tab under "Proposed for the draft". Never put them straight into the Draft.
-   Check that section first so you don't add a duplicate.
-4. Add a dated entry at the top of `notes/sweep-log.md` (what was checked, what changed, what
-   was proposed, which questions were resolved), update the Doc's Notes, Punted and Backlog
-   tabs, build, commit, and push.
-5. The wordpress-develop commit that pins Gutenberg for each Beta or RC lists every PR it
-   includes. That's the most direct proof a PR is in. Otherwise, a merged PR's milestone (`Gutenberg NN.N`) is the plugin version it ships in. If that version
-   is after the release's range (see `sot.json`), the PR needs a backport or a Beta/RC post that
-   confirms it.
+The weekly Notes update is the `wp-sot-scan` skill. It adds one dated block at the bottom of the
+Doc's Notes tab and changes nothing else. Don't run a sweep from here, and don't edit the Notes,
+Punted or Backlog tabs automatically.
+
+## Is it in the release?
+
+The wordpress-develop commit that pins Gutenberg for each Beta or RC lists every PR it
+includes. That's the most direct proof a PR is in. Otherwise, a merged PR's milestone (`Gutenberg NN.N`) is the plugin version it ships in. If that version
+is after the release's range (see `sot.json`), the PR needs a backport or a Beta/RC post that
+confirms it.

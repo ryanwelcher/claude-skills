@@ -4,12 +4,10 @@ description: |
   Create and maintain the "WordPress X.Y Source of Truth" post (the big per-release roundup of
   every feature, tagged by audience) as Markdown in the wptrainingteam/source-of-truth repo, one
   directory per release, each building a standalone site on Spacefast. Use to start a new release's Source of Truth (from research or by importing a Google
-  Doc draft), to sweep or refresh it (re-check PRs, Trac tickets, dev notes, Beta/RC inclusion and
-  update status), to add or propose items, to publish or redeploy the site, or to schedule
-  automatic sweeps, or to explain how it works and check which setup steps are done. Trigger on
-  "source of truth", "SoT", "refresh/sweep the 7.x draft", "what changed for 7.x since last week",
-  "SoT help", or any request to track what's landing in a WordPress release, even if the user
-  doesn't name the skill.
+  Doc draft), to add items, to draft from the notes, to publish or redeploy the site, or to
+  explain how it works and check which setup steps are done. Trigger on "source of truth", "SoT",
+  "start the 7.x SoT", "draft the 7.x SoT", "SoT help". Weekly sweeps, scans and Notes updates
+  ("sweep", "refresh the notes", "what changed for 7.x") are the wp-sot-scan skill.
 ---
 
 # WordPress Source of Truth
@@ -21,8 +19,8 @@ https://gutenbergtimes.com/wordpress-7-1-source-of-truth/
 
 **The Google Doc is the working draft.** Each release has one Google Doc with four tabs (Draft,
 Notes, Punted, Backlog). It's where people read the draft and comment on it during the cycle, and
-it wins whenever it disagrees with the repo. The busy work this skill exists to remove is
-gathering and updating the Notes tab, so most jobs end by updating the Doc. Read
+it wins whenever it disagrees with the repo. Gathering and updating the Notes tab is the
+wp-sot-scan skill's job: a weekly scan that hands the editor one dated block to paste. Read
 `references/google-doc.md` before any job that reads or writes the Doc. Writing to the Doc isn't
 set up yet, and that file says what to do until it is. Never lose a comment.
 
@@ -59,16 +57,16 @@ correctly and read like the published SoT.
 
 ## Pick the job
 
-Work out which of these the user wants. Most requests are a sweep.
+Work out which of these the user wants.
 
 | Request sounds like | Job |
 |---|---|
 | "Start the 7.3 SoT", "set up the repo" | **1. Start a release** |
 | "Here's the Google Doc / import the draft" | **1b. Import a draft** |
-| "Sweep", "refresh", "update the notes", "what changed", "update the statuses", a scheduled run | **2. Sweep** |
+| "Sweep", "refresh", "update the notes", "what changed", "scan" | Use the **wp-sot-scan** skill |
 | "Add X", "we missed Y", "rewrite the Notes item" | **3. Add or propose items** |
 | "Write the draft from the notes", "draft the 7.3 SoT" | **3b. Draft from notes** |
-| "Publish it", "set up Spacefast", "share link", "run it every day" | **4. Publish and schedule** |
+| "Publish it", "set up Spacefast", "share link" | **4. Publish and schedule** |
 | "Help", "how does this work", "what's set up?", "where does it get its info?" | **5. Help and setup status** |
 
 Before any job, find the clone: the current directory or one of its parents, then
@@ -76,7 +74,7 @@ Before any job, find the clone: the current directory or one of its parents, the
 `gh repo clone wptrainingteam/source-of-truth ~/repositories/source-of-truth`. Then pick the
 release directory. If the user didn't name a version and more than one release is still in
 progress (no `published` date in its `sot.json`), ask which one. `git pull` first, because a
-scheduled sweep or the Status workflow may have pushed since.
+scan or the Status workflow may have pushed since.
 
 ### 1. Start a release
 
@@ -121,54 +119,21 @@ Doc.
 3. Read the summary it prints, and open a few item files. Items under Developer Goodies often
    have no tags of their own, which is normal: they filter by the section's tags. Check that H4
    groups (like "Global Styles and theme.json") stayed together in one file.
-4. Build, then commit with a message like `Import 7.2 draft from Google Docs (Oct 19 sweep)`.
+4. Build, then commit with a message like `Import 7.2 draft from Google Docs (Oct 19)`.
    Push as in job 1, step 6.
 5. Record the Doc's ID and URL in `sot.json` → `googleDoc`. The Doc stays the working draft,
-   and each sweep re-imports it before it starts, so edits people make in the Doc always win.
+   and every later import starts from it, so edits people make in the Doc always win.
 
-### 2. Sweep
-
-This job runs most often and is the one that runs on a schedule. Follow `references/sweep.md`
-step by step. In short: re-import the Doc, run `npm run status`, compare the results with what
-each item claims, apply the status-level changes directly, log the sweep, then update the Doc
-(Notes, Punted and Backlog tabs, plus factual corrections in the Draft) and commit and push the
-mirror to `trunk`. Anything that needs editorial judgment goes into the Notes tab's "Proposed for
-the draft" section instead.
-
-The split between direct changes and proposals is the main safety rule of the skill:
-
-- **Apply directly:**
-  - Markers (🔍 🎨 🏈 🙏 ✏️) and `<!-- -->` working notes.
-  - Resolved open questions, the sweep log, and `notes/status.json`.
-  - Links that changed: a dev note was published, or a tracking issue moved.
-  - Moving a confirmed-punted item out of the post into `notes/punted.md` and the Punted tab,
-    and marking Backlog items that landed or punted again.
-  - **Factual corrections**: a sourced swap of a fact that's now wrong, inside an existing
-    sentence. Examples: a version number (1.4.0 → 1.5.0), "proposed" → committed, a date, a
-    renamed setting, or removing a clause that a working note said to drop if it shipped
-    earlier.
-- **Propose, don't apply:** new items, new paragraphs, rewritten sentences, reordering priority
-  items, and the Overview narrative.
-
-To test whether something is a factual correction: could the author check it against one link
-in the commit message and accept it without re-reading the paragraph? If yes, apply it and cite
-the source in the sweep log. If it changes what the paragraph says, or how it says it, propose
-it. The line sits there because facts are checkable and reversible, but prose is the author's
-voice and their name is on the byline. A sweep that rewrites copy unasked makes every diff
-something the author has to re-read closely, and then they stop trusting the automation. A sweep
-that leaves "1.4.0" wrong for a week is just as bad.
-
-### 3. Add or propose items
+### 3. Add items
 
 1. Research the item (`references/research.md`) and collect the PR, issue, Trac and dev-note
    links.
 2. Write it in the item format and house style (`references/content-format.md`). Put it in the
    right section folder with an order number between its neighbours (`025-…` fits between `020`
    and `030`).
-3. If the user asked for it in this session, add it to the Doc's Draft tab and commit the mirror
-   to `trunk`. If a sweep or another automated run found it, add it to the Notes tab under
-   "Proposed for the draft", with the reason it belongs: what merged, which milestone, and who it
-   affects. The author moves it into the Draft.
+3. Add it to the Doc's Draft tab with the comment rules in `references/google-doc.md`, and
+   commit the mirror to `trunk`. Only do this when the user asked for it in this session.
+   Automated runs never add items. wp-sot-scan lists them as candidates instead.
 
 ### 3b. Draft from notes
 
@@ -188,8 +153,7 @@ Publishing the one-site Source of Truth (all releases, one Spacefast site) is th
 skill. Use it instead of this job for adding a release to the site or changing its layout.
 
 This is the later phase (see the top of this file). Read `references/publishing.md`. It covers connecting a release directory to its own Spacefast
-site (`sf git connect` with a root directory), creating the share links, the GitHub Actions fallback, and setting up a
-scheduled sweep. Creating a Spacefast space, connecting a repo, and sharing a link are visible to
+site (`sf git connect` with a root directory), creating the share links, and the GitHub Actions fallback. Creating a Spacefast space, connecting a repo, and sharing a link are visible to
 other people, so confirm with the user before each one, unless they've already asked for that
 exact step.
 
@@ -204,13 +168,12 @@ updating?"), check the real state of that release and report it against README s
 | Step | How to check |
 |---|---|
 | Google Doc | `sot.json` → `googleDoc` is set, and the Drive connector can read it with comments |
-| Doc write path | Can this session write to the Doc (`references/google-doc.md`, section 4)? Until then, report "not set up". |
 | Pushed | `git log origin/trunk -1 -- <version>/` shows the release directory |
 | Spacefast site | `sot.json` → `spacefast.space` / `liveUrl`, then `npx spacefast versions --space <space>` |
 | Autodeploy | Is the latest version newer than the last push that changed `<version>/`? |
 | Share links | `sot.json` → `spacefast.shareLinkId` / `draftLinkId`, then list the space's share links and check both are active |
 | Status workflow | `gh workflow list` and `gh run list --workflow "Status <version>" --limit 3` |
-| Scheduled sweep | Is there a recent sweep entry in `notes/sweep-log.md`? Is a routine listed under `/schedule`? |
+| Weekly scan | Is there a recent file in `notes/scans/`? (See wp-sot-scan.) |
 
 Give a short checklist (done, not done, couldn't check), then offer to do the next step that
 isn't done. If a check needs a sign-in you don't have, such as Spacefast, say so and don't guess.
@@ -229,11 +192,10 @@ isn't done. If a check needs a sign-in you don't have, such as Spacefast, say so
 - **Punted items never appear in the post.** They move to `notes/punted.md` with the reason and
   a link. If one lands again later, it comes back through a proposal.
 - **Reader-visible changes get a changelog line.** Once the post is published (`sot.json` has a
-  `published` date), any sweep that changes what readers see adds a bullet under today's date in
+  `published` date), any change to what readers see adds a bullet under today's date in
   the intro's Changelog, newest date first.
 - **Builds must pass.** Run `npm run build` before every commit. A warning about a working marker
   or placeholder in published text is fine during the draft stage. Before the first publish,
   `npm run build:strict` must pass. Commit `package-lock.json` whenever it changes, because
   Spacefast installs with `npm ci`.
-- **Commit messages describe the change** ("Sweep Oct 27: 6 items confirmed in Beta 2, Secrets
-  API committed"). Don't add AI co-author trailers or "generated with" lines.
+- **Commit messages describe the change** ("Import Oct 27 draft: Secrets API item added"). Don't add AI co-author trailers or "generated with" lines.

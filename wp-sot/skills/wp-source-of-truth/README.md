@@ -4,9 +4,9 @@ Builds and maintains the **WordPress X.Y Source of Truth**, the per-release post
 every notable change with audience tags and links.
 
 The working draft is a **Google Doc** with four tabs: Draft, Notes, Punted and Backlog. People
-read it and comment on it there during the cycle. The skill's main job is to keep the Notes tab
-up to date, which is the busy-work part. A person spot-checks the notes, and the author writes
-or polishes the Draft. Writing to the Doc isn't set up yet. Until it is, the skill writes its Doc
+read it and comment on it there during the cycle. Keeping the Notes tab up to date, the busy-work
+part, is the wp-sot-scan skill: a weekly scan that hands you one dated block to paste at the
+bottom of the tab. A person spot-checks the notes, and the author writes or polishes the Draft. Writing to the Doc isn't set up yet. Until it is, this skill writes its Doc
 updates to `notes/doc-updates.md` for you to paste in. See `references/google-doc.md`.
 
 Behind the Doc, every release also lives in one GitHub repo,
@@ -39,7 +39,7 @@ published one:
 | Path (inside `7.3/`) | What it is |
 |---|---|
 | `content/post/` | The post: one Markdown file per item, in section folders |
-| `notes/` | Research, the sweep log, open questions, punted items, and status data. Never published. |
+| `notes/` | Research, scan results, open questions, punted items, and status data. Never published. |
 | `sot.json` | Release version, dates, Gutenberg range, byline, and Spacefast links |
 | `scripts/build.mjs` | Builds the site |
 | `scripts/check-status.mjs` | Re-checks every linked PR and Trac ticket |
@@ -60,7 +60,7 @@ Each build makes two pages:
   release squad, dev notes), Gutenberg release posts and GitHub release notes, open iteration
   issues, Trac, and the previous release's punted list. An item goes into the post only when
   there's merged or committed work behind it. Every claim links to its source.
-- **The status check on each sweep:** it looks up every PR and issue link on GitHub (state,
+- **The status check (`npm run status`):** it looks up every PR and issue link on GitHub (state,
   merged date, milestone, labels) and every Trac ticket. Trac blocks scripts, so tickets are
   checked through `Fixes #N` commits and PRs in `WordPress/wordpress-develop`. It also reads
   the latest Gutenberg releases, new dev notes, and Make Core posts tagged for the release,
@@ -76,23 +76,22 @@ Each build makes two pages:
 |---|---|
 | "Start the 7.3 Source of Truth" | Creates `7.3/` from the template, researches the release, writes the first items |
 | "Import this doc: <Google Doc link>" | Downloads the doc as Markdown and mirrors it into a release directory. The Doc stays the working draft. |
-| "Sweep the 7.3 SoT" / "Update the notes" / "What changed since last week?" | Re-imports the Doc, re-checks everything, updates the Notes, Punted and Backlog tabs, proposes Draft changes in the Notes tab, and logs the sweep |
+| "Sweep the 7.3 SoT" / "Update the notes" / "What changed since last week?" | Handled by the wp-sot-scan skill |
 | "Add <feature> to the SoT" | Researches it, writes it in house style, and adds it to the Draft |
 | "Write the draft from the notes" | Drafts the merged and blessed items into the Draft tab, after you've spot-checked the notes |
 | "Set up Spacefast for the 7.3 SoT" | Creates the release's site, connects it to its directory, and creates the reader and reviewer links |
-| "Schedule the sweeps" | Creates the daily cloud routine |
 | "SoT help" / "What's set up for 7.3?" | Explains how it works and checks which setup steps are done for that release |
 
 ## 4. A release from start to finish
 
 | When | What happens |
 |---|---|
-| Cycle starts (roadmap post) | Create the Doc and the release directory. Copy the previous release's Punted tab into Backlog. The first research pass fills the Notes tab. Spot-check it, then ask for a first draft. Run weekly sweeps. |
-| Beta 1 | First draft done. The Doc goes to people who work in Core and to news organizations. Confirm the Gutenberg range from the Beta 1 post. Switch sweeps to daily. Items that missed Beta 1 and aren't blessed get hidden. |
-| Beta 2 – RC 1 | Daily sweeps. Move accepted proposals into the Draft, answer open questions and comments, add visuals. Dev notes land and become `Read more:` links. |
+| Cycle starts (roadmap post) | Create the Doc and the release directory. Copy the previous release's Punted tab into Backlog. The first research pass fills the Notes tab. Spot-check it, then ask for a first draft. Run the weekly scan (wp-sot-scan). |
+| Beta 1 | First draft done. The Doc goes to people who work in Core and to news organizations. Confirm the Gutenberg range from the Beta 1 post. Items that missed Beta 1 and aren't blessed get hidden. |
+| Beta 2 – RC 1 | Weekly scans. Move what matters from the scan blocks into the Draft, answer open questions and comments, add visuals. Dev notes land and become `Read more:` links. |
 | About Beta 3 | The SoT is shared publicly on Gutenberg Times. From now on, every change readers can see gets a Changelog line. |
 | RC 1 | The SoT is done. Link the Field Guide, which goes live now. Fill in the byline and `published` date in `sot.json`. |
-| Final release | Gutenberg Times has the text version. If you're using Spacefast, get `npm run build:strict` passing and make its reader link public, linked from the top of the Gutenberg Times post. Turn off the routine and the Status workflow. The Punted tab becomes the next release's Backlog. |
+| Final release | Gutenberg Times has the text version. If you're using Spacefast, get `npm run build:strict` passing and make its reader link public, linked from the top of the Gutenberg Times post. Turn off the Status workflow. The Punted tab becomes the next release's Backlog. |
 
 ## 5. Setup checklist
 
@@ -103,10 +102,10 @@ creates or shares something.
 2. **The Google Doc:** four tabs (Draft, Notes, Punted, Backlog), shared as "anyone with the
    link can comment". Save its ID and URL in `sot.json` → `googleDoc`.
 3. **Doc write path (not built yet):** a Google Docs API service account with edit access to the
-   Doc, available to the scheduled routine. Until then, sweeps write `notes/doc-updates.md`.
+   Doc. Until then, jobs that change the Doc write `notes/doc-updates.md`.
    See `references/google-doc.md`, section 4.
 
-Steps 4 to 10 are for the repo mirror and the Spacefast site.
+Steps 4 to 9 are for the repo mirror and the Spacefast site.
 
 4. **Push the release:** commit the release directory, its status workflow and the root
    README row, and push to `trunk`. The repo is visible to the whole wptrainingteam org.
@@ -121,22 +120,15 @@ Steps 4 to 10 are for the repo mirror and the Spacefast site.
    `references/publishing.md`.
 9. **Status workflow:** `.github/workflows/status-X-Y.yml` runs at 11:00 UTC every day. Check
    it with `gh workflow list`, and run it once by hand with `gh workflow run "Status X.Y"`.
-10. **Scheduled sweep:** run `/schedule` to create a cloud routine on the repo for this release, daily from Beta 1
-   and an hour after the Status workflow. Use the routine prompt in `references/publishing.md`.
 
 If Spacefast's GitHub connection doesn't build correctly, `references/publishing.md` has a
 GitHub Actions publish workflow to use instead.
 
 ## 6. Reviewing changes
 
-A sweep applies only changes you can check against a link: markers, working notes, hidden or
-punted items, dev-note links, and **factual corrections** (a version number, a date,
-"proposed" → committed). It logs each one with its source in `notes/sweep-log.md`. It never
-changes Doc text that has an open comment on it, and it never resolves comments.
-
-Anything editorial comes to you as a **proposal** in the Doc's Notes tab, under "Proposed for the
-draft": new items, rewritten sentences, priority changes, and the Overview. Move the ones you
-want into the Draft, and delete the ones you don't.
+Nothing here edits the Doc on its own. The weekly scan (wp-sot-scan) only adds a dated block of
+findings at the bottom of the Notes tab, and you decide what moves into the Draft. Strike out a
+candidate in its block to stop it coming back.
 
 Questions that need a person (blessed or punted? which tracking issue?) go in
 `notes/open-questions.md`, and the draft page lists them at the end.

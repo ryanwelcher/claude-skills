@@ -23,10 +23,10 @@ right, so the draft is never private.
 
 | Tab | Holds | Who writes it |
 |---|---|---|
-| **Draft** | The post itself, in the layout of `content-format.md` | The author. A sweep makes factual corrections only (section 5). Claude writes a first draft only when asked. |
-| **Notes** | Everything happening in the release, merged or not, each entry with its emoji status and links. It's usually longer than the Draft. | Sweeps. This is the main job. |
-| **Punted** | Items punted from **this** release, with the reason and a link, so the next release knows to check them | Sweeps, when a punt is confirmed |
-| **Backlog** | Items punted from the **previous** release. Copy it from the previous release's Punted tab when the release starts, and check each item during research. | Start of release, then sweeps as items land or punt again |
+| **Draft** | The post itself, in the layout of `content-format.md` | The author. Claude writes a first draft only when asked. |
+| **Notes** | Everything happening in the release, merged or not, each entry with its emoji status and links. It's usually longer than the Draft. | People, working from the weekly wp-sot-scan blocks pasted at the bottom of the tab. |
+| **Punted** | Items punted from **this** release, with the reason and a link, so the next release knows to check them | The author, when a punt is confirmed. Scans report likely punts. |
+| **Backlog** | Items punted from the **previous** release. Copy it from the previous release's Punted tab when the release starts, and check each item during research. | Start of release, then the author as items land or punt again |
 
 Gathering the notes is most of the work, so it comes first. Writing the Draft from the notes
 comes second, and only after a person has spot-checked the notes. Claude sometimes says a
@@ -42,12 +42,6 @@ Emoji key: ✏️ to be edited · 🙏 blessed (developed during Beta) · 🔍 t
 
 Release basics: Beta 1 …, Beta 2 …, RC 1 …, Final …. Gutenberg range: 24.0 – 24.3 (🔍 until the Beta 1 pin).
 
-## Proposed for the draft
-(dated proposals from sweeps: new items and rewrites, waiting for the author)
-
-## Sweep log
-(newest first, same format as references/sweep.md)
-
 ## Editor enhancements
 ### Notes in the canvas margin ✅
 Merged in #81234 (Gutenberg 24.1). Dev note: <link>. Tags: end user, site admin.
@@ -57,9 +51,10 @@ The Notes tab covers everything, including open PRs and early ideas, because it 
 whole release. The rule in the ground rules, that only merged, committed or blessed work goes
 into the post, applies to the **Draft** tab.
 
-Proposals live in the Notes tab under "Proposed for the draft", not in proposal PRs, because the
-Draft is edited in the Doc. The author moves an accepted proposal into the Draft. Delete a
-proposal once it's in the Draft or the author rejects it.
+The weekly scan (wp-sot-scan) adds a dated "Automated scan results" block at the bottom of the
+tab: what changed for linked items, and new candidates. People move what matters into the
+entries above or into the Draft, and strike out candidates they don't want. Nothing else edits
+the tab automatically.
 
 ## 3. Reading the Doc
 
@@ -81,17 +76,16 @@ proposal once it's in the Draft or the author rejects it.
 
 The write path this skill expects is the Google Docs API, `documents.batchUpdate`, with each
 request's `location` or `range` carrying the tab's `tabId` (get the IDs with `documents.get`
-and `includeTabsContent=true`). A scheduled sweep runs in the cloud with no one at the keyboard,
-so it needs credentials there: a service account the Doc is shared with as an editor, and its
+and `includeTabsContent=true`). A run in the cloud has no one at the keyboard,
+so it would need credentials there: a service account the Doc is shared with as an editor, and its
 key available to the routine. None of this exists yet.
 
 Until it does, every job that would write to the Doc does this instead:
 
-1. Make the change in the repo mirror as usual, so the status checks and sweep log stay right.
+1. Make the change in the repo mirror as usual, so the status checks stay right.
 2. Write the Doc changes, grouped by tab, to `notes/doc-updates.md` under today's date, newest
    first, ready to paste: the exact text to add, and for an edit the old text and the new text.
-3. Tell the user the Doc wasn't updated and point them to `notes/doc-updates.md`. A scheduled
-   run says so in its commit message.
+3. Tell the user the Doc wasn't updated and point them to `notes/doc-updates.md`.
 
 ## 5. Keeping comments safe
 
@@ -99,18 +93,16 @@ Losing comments is the one failure people won't forgive, so every write follows 
 
 - Insert and append. Never clear a tab and rewrite it, and never replace a whole entry when a
   few words changed.
-- Make a factual correction (the same test as in `SKILL.md`) with a replace on just the changed
-  words.
-- If the text you'd change has an open comment on it, don't change it. Add the new fact as a
-  proposal in the Notes tab, and mention the comment in the report.
-- Don't resolve, edit or delete comments. Answer a comment's question in the sweep log, and let
+- If the text you'd change has an open comment on it, don't change it. Tell the user the new
+  fact and mention the comment.
+- Don't resolve, edit or delete comments. Answer a comment's question in your report to the user, and let
   the person who asked resolve it.
 
 ## 6. Release timeline
 
 | When | The Doc |
 |---|---|
-| Cycle start | Create the Doc with the four tabs. Copy the previous release's Punted tab into Backlog. Sweeps start filling Notes. |
+| Cycle start | Create the Doc with the four tabs. Copy the previous release's Punted tab into Backlog. Weekly scans (wp-sot-scan) start. |
 | Beta 1 | First draft done. The Doc goes to people who work in Core and to news organizations, who know it's still in progress. |
 | About Beta 3 | The SoT is shared publicly on Gutenberg Times. |
 | RC 1 | The SoT is done. The Developer Field Guide goes live, so link it. |
