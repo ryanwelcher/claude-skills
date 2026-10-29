@@ -34,6 +34,30 @@ People say no to a candidate by striking it out in the block where it appeared. 
 candidate never comes back. A candidate that isn't struck out keeps appearing in every block
 until someone adds it to the Doc.
 
+## Before the first run (once per machine)
+
+Check these before the first scan on a new machine. If the user asks "is the SoT scan set up?",
+go through this list and report each item as done, not done, or couldn't check.
+
+1. **macOS.** The clipboard step uses macOS's pasteboard. On another OS, skip the clipboard
+   and the user copies the printed block.
+2. **Node 20 or later** (`node --version`) and **`gh` signed in** (`gh auth status`). Without
+   `gh`, GitHub lookups fall back to anonymous requests, which run out after 60 an hour. A
+   release Doc links 300+ PRs.
+3. **Push access** to `wptrainingteam/source-of-truth`
+   (`gh repo view wptrainingteam/source-of-truth --json viewerPermission` shows `WRITE` or
+   higher).
+4. **Claude in Chrome connected** (`tabs_context_mcp` answers), with permission to act on
+   `core.trac.wordpress.org` and `docs.google.com`. The extension asks the first time.
+5. **Chrome allows automatic downloads from Trac.** Open
+   `chrome://settings/content/automaticDownloads` and add `https://core.trac.wordpress.org`
+   under "Allowed to automatically download multiple files". If the page doesn't show that
+   list, it's under Settings → Privacy and security → Site settings → **Additional
+   permissions** → Automatic downloads. If Chrome is managed by an IT policy and the setting is
+   locked, run without the Trac CSV (step 4 below explains).
+6. **The Doc is shared as "anyone with the link can comment".** Otherwise the export in step 3
+   returns a sign-in page.
+
 ## Run a scan
 
 Ask which release if the user didn't say and more than one is in progress. The tab defaults to
@@ -98,7 +122,9 @@ scratchpad (written as `$SCRATCH` below).
    ```
    Both `--trac-*` flags take the same file, since one query covers both. Leave them out if step 4
    failed. Exit code 2 means the export is a sign-in
-   page. A note that the tab heading wasn't found is normal for an empty or new tab, because the
+   page. Pass 1 takes about 4 minutes for a Doc with 350 links, because GitHub search is rate
+   limited. Run it in the background and do Pass 2 research meanwhile. A note that the tab
+   heading wasn't found is normal for an empty or new tab, because the
    export doesn't include tab names. If the Trac timeline is down, the scan carries on and the block
    says so. Tell the user what it printed and stop. Pass 1 takes a minute
    or two, because GitHub search is rate limited.
@@ -108,6 +134,9 @@ scratchpad (written as `$SCRATCH` below).
    Make Core posts tagged for the release and its dev notes, Gutenberg releases in the range,
    iteration issues, the Gutenberg pin commits, wordpress-develop commits for the milestone. Also
    go through `newTickets` in `work.json` (tickets on the milestone that are new since last week).
+   On the first run `newTickets` is the whole milestone (hundreds of tickets). Look at the ones
+   closed as `fixed` first, especially with `needs-dev-note` or `has-dev-note` in their
+   keywords. Read the CSV in `~/Downloads/trac-scan.csv` with a script rather than printing it.
 
    List only what meets research.md's "What makes an item" bar, and only with a source link.
    Skip anything whose key is in `docKeys` or `struckKeys` (finish.mjs drops those anyway). Trust
@@ -148,12 +177,23 @@ scratchpad (written as `$SCRATCH` below).
    `trunk`. Never touch `releases/`, `layouts/`, `scripts/` or `test/`. Those belong to
    wp-sot-site.
 
-## If something goes wrong
+## Troubleshooting
 
-- **A finding looks wrong.** Fix it in `candidates.json` (Pass 2), or tell the user which Pass 1
-  line is suspect. Don't edit the saved block after it's committed. Next week's block corrects
-  it.
-- **A block came out but wasn't pasted.** Re-run step 8 from `notes/scans/<date>.md`. Don't
-  re-run the scan, or the comparison baseline moves.
-- **The user wants to re-run today's scan.** Use `git checkout` to restore
-  `notes/scan-state.json` to its state before today's commit, then run again.
+| What happens | Why, and what to do |
+|---|---|
+| The Doc export is an HTML sign-in page (`prepare.mjs` exits with code 2) | The Doc isn't shared as "anyone with the link". Ask the user to fix the sharing, or to download it with File > Download > Markdown and give you the path for `--doc`. |
+| "No ... heading in the export" note | Normal. The export doesn't include tab names, only headings people typed. Check the tab exists when you open the Doc in step 8. |
+| Trac shows "Checking your browser..." | Wait a few seconds in the Chrome tab and check `document.title` is "WordPress Trac" before running the query. Never get around the check another way. |
+| The query returns text starting with `<` | The browser check came back. Reload the Trac tab, wait, and run the query once more. |
+| `~/Downloads/trac-scan.csv` doesn't appear after the query | Chrome blocked the download. Check the automatic downloads setting (setup item 5). Chrome also blocks a second download from the same page, so reload Trac before trying again. After two failures, run Pass 1 without the `--trac-*` flags. |
+| The download is saved as `trac-scan (1).csv` | An old file was still there. Delete the old ones (step 4) and use the new file. |
+| The Trac tab freezes, or a JavaScript call times out | Usually a Chrome permission prompt waiting in that tab (the clipboard one in particular). Ask the user to dismiss it and close the tab, then open a new one. Don't use `navigator.clipboard` in Trac. |
+| `zsh: no matches found` when clearing old downloads | zsh fails on a glob that matches nothing. Use the `find ... -delete` command in step 4, which doesn't. |
+| Pass 1 is slow or mentions rate limits | GitHub search allows 30 requests a minute, and the script waits. Check `gh auth status`. Anonymous GitHub runs out after 60 requests an hour. |
+| The block says "Trac milestone values weren't checked" | Pass 1 ran without the CSV. The timeline still covers closes and reopens. Next week, with the CSV, compares properly again. |
+| The block says "The Trac timeline wasn't reachable" | Trac's RSS feed failed. The scan went on with the CSV and GitHub. Nothing to do unless it happens every week. |
+| The clipboard paste comes out as plain text, or nothing pastes | The clipboard step failed (`finish.mjs` says so) or isn't on macOS. Copy the block printed in the session and paste it. A plain-text paste still works: the next scan finds the block by its first line. |
+| A rejected candidate came back | Check how it was struck. Striking any part of its line works. If the Doc export has no `~~` at all, the export dropped strikethrough (step 3). Stop and tell the user. |
+| A finding looks wrong | Fix it in `candidates.json` (Pass 2), or tell the user which Pass 1 line is suspect. Don't edit a saved block after it's committed. Next week's block corrects it. |
+| A block came out but wasn't pasted | Re-run step 8 from `notes/scans/<date>.md`. Don't re-run the scan, or the comparison baseline moves. |
+| The user wants to re-run today's scan | Use `git checkout` to restore `notes/scan-state.json` to its state before today's commit, then run again. |
