@@ -63,7 +63,8 @@ and `npm ci` if `node_modules` is missing.
    this repo.
 7. Push to `trunk` after the user confirms. In an interactive run, always confirm before the push
    and before any Spacefast action (creating a space, connecting a repo, sharing a link). The
-   repo is visible to the whole wptrainingteam org.
+   repo is visible to the whole wptrainingteam org. A cloud run follows the push rule in
+   [Cloud runs](#cloud-runs) instead.
 
 The old editions (6.2 to 7.1) were imported once from their published posts. That migration is
 done and isn't a job. Rebuild them like any other release.
@@ -136,5 +137,13 @@ If a check needs a sign-in you don't have, such as Spacefast, say so and don't g
 A scheduled or cloud run uses one prompt: "Update the X.Y release of the Source of Truth site
 from its Google Doc. Follow CLAUDE.md." No Drive connector is needed: the importer downloads the
 Doc's public export, so the Doc has to be shared as "anyone with the link can view". If it isn't,
-the run stops with the sign-in message and reports that instead of guessing. In a cloud run there
-is no person to confirm with, so follow the clone's `CLAUDE.md` for what may be pushed.
+the run stops with the sign-in message and reports that instead of guessing.
+
+If the prompt gives no Doc link or ID, read it from the existing `releases/<version>/release.json`
+(`source.id`, or the ID in `source.url`). If neither is set, stop and report that the release has
+no stored Doc.
+
+There is no person to confirm with, so the clone's `CLAUDE.md` decides what may be pushed. Push to
+`trunk` only if `npm test` and `npm run build` pass and the diff touches only
+`releases/<version>/` for the release being updated. Otherwise stop and report what happened
+without pushing.

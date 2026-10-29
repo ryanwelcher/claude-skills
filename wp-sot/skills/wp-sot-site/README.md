@@ -27,7 +27,9 @@ table, commands and content rules, and Claude reads them first.
 | "SoT site help" | Explains how it works and reports which setup steps are done |
 
 Claude asks before it pushes to `trunk` or does anything on Spacefast, because the repo is visible
-to the whole wptrainingteam org.
+to the whole wptrainingteam org. A scheduled or cloud run has no one to ask, so it pushes only when
+`npm test` and `npm run build` pass and only that release's `releases/<version>/` folder changed.
+Otherwise it stops and reports.
 
 ## Custom layouts
 
