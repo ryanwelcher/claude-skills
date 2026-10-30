@@ -37,6 +37,25 @@ def ts(t):
 def esc(s):
     return s.replace("\\", "").replace("{", "(").replace("}", ")")
 
+# Whisper always hears "Automattic" as "automatic", and the vocabulary prompt
+# can't help: with --condition-on-previous-text False it only applies to the
+# first 30 s. The company follows "my employer" / "hosted with" / "owned by" /
+# "inside of" and is followed by punctuation or a small word, while the
+# adjective ("automatic updates", "I have it automatic") is not.
+AFTER = {"employer", "with", "by", "of", "at", "for", "from", "join", "joined"}
+BEFORE = {"or", "and", "all", "so", "for", "i", "we", "is", "the", "to", "which", "who"}
+
+def fix_names(words):
+    bare = lambda s: s.lower().strip(".,?!")
+    for i, w in enumerate(words):
+        if bare(w[2]) != "automatic" or i == 0 or bare(words[i - 1][2]) not in AFTER:
+            continue
+        nxt = bare(words[i + 1][2]) if i + 1 < len(words) else ""
+        if w[2][-1] in ".,?!" or nxt in BEFORE or not nxt:
+            w[2] = "Automattic" + w[2][len("automatic"):]
+
+fix_names(words)
+
 groups, group = [], []
 for i, w in enumerate(words):
     group.append(w)
