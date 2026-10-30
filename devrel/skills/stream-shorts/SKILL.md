@@ -1,6 +1,6 @@
 ---
 name: stream-shorts
-description: Cut vertical shorts (9:16, facecam on top, screen below, word-by-word captions) from a local live-stream recording. Proposes a shortlist of standalone moments, then renders the ones Ryan picks into a shorts/ folder next to the recording. Use to make shorts, clips, reels, or highlights from a stream, instead of Firecut, Opus Clip, or Descript.
+description: Cut vertical shorts (9:16, facecam on top, screen below, all-caps captions that whip in a few words at a time) from a local live-stream recording. Proposes a shortlist of standalone moments, then renders the ones Ryan picks into a shorts/ folder next to the recording. Use to make shorts, clips, reels, or highlights from a stream, instead of Firecut, Opus Clip, or Descript.
 allowed-tools: Bash(bash *) Bash(python3 *) Bash(ffmpeg *) Bash(ffprobe *) Read Write
 ---
 
