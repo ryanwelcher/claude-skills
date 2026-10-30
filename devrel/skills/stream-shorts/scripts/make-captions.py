@@ -15,10 +15,13 @@ import json, sys
 MAX_WORDS = 3
 PAUSE = 0.5          # seconds of silence that ends a group
 HOLD = 0.3           # keep a group on screen this long after its last word
-FONT = "Helvetica Neue"
-SIZE = 84
+# Brand type from the stream overlays (BRB, "Stream ended"). It must be the
+# static Jost-SemiBold.ttf: libass ignores the weight axis of the variable
+# Jost font and draws its default weight.
+FONT = "Jost SemiBold"
+SIZE = 96
 WHITE = "&HFFFFFF&"
-ACTIVE = "&H4F6BF2&"  # the orange of "Codes" in the stream wordmark (BGR)
+ACTIVE = "&H516FE7&"  # brand orange #E76F51, from the stream countdown (BGR)
 CAPTION_Y = 900      # the seam between the cam band and the screen band
 
 words_path, start, end, out_path = sys.argv[1], float(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
@@ -64,7 +67,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Pop,%s,%d,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,7,2,5,60,60,0,1
+Style: Pop,%s,%d,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,8,3,5,60,60,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

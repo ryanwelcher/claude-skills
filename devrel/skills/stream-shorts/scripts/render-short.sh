@@ -90,6 +90,12 @@ if ! grep -qw ass <<< "$FILTERS"; then
   exit 1
 fi
 
+# Without the brand font libass silently swaps in another one.
+if [ ! -f "$HOME/Library/Fonts/Jost-SemiBold.ttf" ] && [ ! -f "/Library/Fonts/Jost-SemiBold.ttf" ]; then
+  echo "ERROR: caption font missing. Install the static Jost-SemiBold.ttf (Google Fonts, Jost) into ~/Library/Fonts." >&2
+  exit 1
+fi
+
 # ffmpeg's filter syntax chokes on spaces, quotes and colons in a path, and
 # recordings live under "My Drive", so the captions go in a plain temp path.
 TMP="$(mktemp -d)"
