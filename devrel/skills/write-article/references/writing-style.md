@@ -132,7 +132,7 @@ Audience: **intermediate-to-advanced WordPress developers**
 - **Matter-of-fact about own work**: "⭐ Published PHP-only block registration in WordPress 7.0" — no extended self-promotion
 - **Normalize scope constraints without apologizing**: "I'm AFK for the next week, so there won't be any movement until the following week."
 - Cross-post references: `+p2name` at the bottom
-- Opens team posts with **"Howdy"**
+- Never opens a post with **"Howdy"** (see the voice card's Hard bans). Start straight on the context.
 
 ---
 

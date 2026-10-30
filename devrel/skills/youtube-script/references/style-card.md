@@ -167,6 +167,10 @@ Frequencies from ~53k words of transcript, highest first:
 - **Fabricated next-video teases or metadata** — never invent "next week we'll cover X", an
   end-screen target, or factual header fields. Pull from the content plan or keep the CTA
   generic.
+- **Don't thank a bot.** In a reply to a review bot (CodeRabbit, Copilot) on a PR, open with
+  the decision itself ("I'm going to leave the note on X as it is."), not "Thanks for the note".
+- **Never open a post with "Howdy!"** (P2s, team updates, any written post). He'd never say it.
+  Start straight on the context instead.
 
 ## Anti-AI tells (strip these every time — this is what makes it sound written-by-a-bot)
 - ❌ "dive in", "delve", "unleash", "unlock", "supercharge", "game-changer", "robust",
