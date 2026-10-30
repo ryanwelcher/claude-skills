@@ -8,6 +8,7 @@
 #   pid        this worker's PID while it runs
 #   log        ffmpeg / mlx_whisper stderr
 #   audio.srt  the full transcript (only once whisper finishes)
+#   words.json every word as [start, end, text], for stream-shorts
 #   done       marker: transcript is complete
 #   failed     marker: the job failed; contents are the reason
 #
@@ -44,15 +45,20 @@ mlx_whisper "$DIR/audio.wav" \
   --condition-on-previous-text False \
   --word-timestamps True \
   --hallucination-silence-threshold 2 \
-  --output-format srt \
+  --output-format all \
   --output-dir "$DIR" >> "$DIR/log" 2>&1 \
   || fail "mlx_whisper failed (see $DIR/log)"
 
 [ -s "$DIR/audio.srt" ] || fail "transcription produced no SRT in $DIR"
 
+# Keep the word timings; the other formats repeat what the SRT has.
+python3 "$(dirname "${BASH_SOURCE[0]}")/whisper-words.py" "$DIR/audio.json" > "$DIR/words.json" \
+  || fail "could not read word timings from $DIR/audio.json"
+rm -f "$DIR/audio.json" "$DIR/audio.txt" "$DIR/audio.vtt" "$DIR/audio.tsv"
+
 # If a range still looped, re-transcribe it once with different settings.
 bash "$(dirname "${BASH_SOURCE[0]}")/repair-transcript.sh" "$FILE" "$DIR" "$MODEL"
 
-# The WAV is roughly 115 MB per hour of stream. The SRT is all we need to keep.
+# The WAV is roughly 115 MB per hour of stream. The SRT and words.json are all we keep.
 rm -f "$DIR/audio.wav" "$DIR/pid"
 touch "$DIR/done"

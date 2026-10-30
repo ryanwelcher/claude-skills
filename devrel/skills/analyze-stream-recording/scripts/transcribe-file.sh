@@ -15,6 +15,7 @@
 #     LINES: <n>
 #     WORDS: <n>
 #     SRT: <path>         full cue-level transcript
+#     WORDS_JSON: <path>  every word as [start, end, text] (used by stream-shorts)
 #     COVERAGE: <n>%      share of the recording outside any SUSPECT range
 #     SUSPECT: <range> …  zero or more: a repeated-phrase loop or a long silence
 #   Read the CONDENSED file to work with the content. Keeping the payload out of
@@ -78,7 +79,7 @@ PROMPT="${WHISPER_PROMPT:-Ryan Welcher, WordPress, Gutenberg, block editor, bloc
 # decoder settings gives the same transcript. Bump SETTINGS whenever the
 # mlx_whisper flags or the repair step change. The bucket size only
 # affects condensing, which is cheap, so it is not part of the key.
-SETTINGS="v3-repair-loops"
+SETTINGS="v4-words"
 ABS_FILE="$(cd "$(dirname "$FILE")" && pwd)/$(basename "$FILE")"
 FILE_STAT="$(stat -f '%z %m' "$ABS_FILE" 2>/dev/null || stat -c '%s %Y' "$ABS_FILE")"
 KEY="$(printf '%s\n%s\n%s\n%s\n%s\n' "$ABS_FILE" "$FILE_STAT" "$MODEL" "$PROMPT" "$SETTINGS" | shasum -a 256 | cut -c1-16)"
@@ -93,7 +94,7 @@ job_running() {
 }
 
 start_job() {
-  rm -f "$DIR/failed" "$DIR/pid" "$DIR/audio.wav" "$DIR/audio.srt"
+  rm -f "$DIR/failed" "$DIR/pid" "$DIR/audio.wav" "$DIR/audio.srt" "$DIR/words.json"
   echo $(( $(cat "$DIR/attempts" 2>/dev/null || echo 0) + 1 )) > "$DIR/attempts"
   : > "$DIR/log"
   nohup bash "$SCRIPT_DIR/transcribe-worker.sh" "$ABS_FILE" "$DIR" "$MODEL" "$PROMPT" \
@@ -200,4 +201,5 @@ echo "CONDENSED: $CONDENSED"
 echo "LINES: $(wc -l < "$CONDENSED" | tr -d ' ')"
 echo "WORDS: $(wc -w < "$CONDENSED" | tr -d ' ')"
 echo "SRT: $SRT"
+echo "WORDS_JSON: $DIR/words.json"
 cat "$QUALITY"

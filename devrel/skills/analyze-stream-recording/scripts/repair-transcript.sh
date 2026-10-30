@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Re-transcribe the ranges where Whisper looped on one phrase, and splice the
-# new cues into <cache-dir>/audio.srt. Called by transcribe-worker.sh once the
-# first pass finishes. One attempt per range; whatever still loops afterwards
-# is reported by transcribe-file.sh as a SUSPECT range.
+# new cues into <cache-dir>/audio.srt and the new words into words.json.
+# Called by transcribe-worker.sh once the first pass finishes. One attempt per
+# range; whatever still loops afterwards is reported by transcribe-file.sh as a
+# SUSPECT range.
 #
 # Usage:
 #   repair-transcript.sh <input-file> <cache-dir> <model>
@@ -31,7 +32,7 @@ mkdir -p "$WORK"
 
 while read -r START END; do
   echo "Re-transcribing looped range $START-$END..." >> "$DIR/log"
-  rm -f "$WORK/range.wav" "$WORK/range.srt"
+  rm -f "$WORK"/range.*
   ffmpeg -nostdin -loglevel error -y -ss "$START" -to "$END" -i "$FILE" \
     -vn -ac 1 -ar 16000 -c:a pcm_s16le "$WORK/range.wav" >> "$DIR/log" 2>&1 || continue
   mlx_whisper "$WORK/range.wav" \
@@ -40,16 +41,18 @@ while read -r START END; do
     --temperature 0.2 \
     --word-timestamps True \
     --hallucination-silence-threshold 2 \
-    --output-format srt \
+    --output-format all \
     --output-dir "$WORK" >> "$DIR/log" 2>&1 || continue
   [ -s "$WORK/range.srt" ] || continue
+  python3 "$SCRIPT_DIR/whisper-words.py" "$WORK/range.json" "$(echo "$START" | awk -F: '{print $1*3600+$2*60+$3}')" \
+    > "$WORK/range-words.json" || continue
 
-  # Drop the first-pass cues that start inside the range, then add the new
-  # cues shifted by the range start.
-  python3 - "$SRT" "$WORK/range.srt" "$START" "$END" <<'PY' || continue
-import re, sys
+  # Drop the first-pass cues and words that start inside the range, then add
+  # the new ones shifted by the range start.
+  python3 - "$SRT" "$WORK/range.srt" "$START" "$END" "$DIR/words.json" "$WORK/range-words.json" <<'PY' || continue
+import json, re, sys
 
-main_path, part_path, start, end = sys.argv[1:5]
+main_path, part_path, start, end, words_path, part_words_path = sys.argv[1:7]
 TS = re.compile(r"(\d\d):(\d\d):(\d\d),(\d{3})\s+-->\s+(\d\d):(\d\d):(\d\d),(\d{3})")
 
 def hms(s):
@@ -81,6 +84,11 @@ merged = sorted(kept + read(part_path, lo))
 with open(main_path, "w", encoding="utf-8") as fh:
     for n, (s, e, text) in enumerate(merged, 1):
         fh.write("%d\n%s --> %s\n%s\n\n" % (n, fmt(s), fmt(e), text))
+
+words = [w for w in json.load(open(words_path)) if not (lo <= w[0] < hi)]
+words = sorted(words + json.load(open(part_words_path)))
+with open(words_path, "w") as fh:
+    json.dump(words, fh, separators=(",", ":"))
 PY
 done <<< "$RANGES"
 
