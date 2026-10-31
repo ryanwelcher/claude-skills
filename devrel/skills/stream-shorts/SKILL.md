@@ -12,10 +12,19 @@ Everything about a clip lives in `shorts/shorts.json` next to the recording, and
 
 ## Steps
 
-1. **Check ffmpeg.** Run `ffmpeg -hide_banner -filters | grep -w ass`. If nothing prints, stop and give Ryan this install command to run (do not run it yourself):
+1. **Check the tools.** Transcribing needs `mlx_whisper` (Apple Silicon only), and transcribing and rendering both need an ffmpeg with libass (for burning in captions):
+   ```bash
+   if ! command -v ffmpeg >/dev/null; then echo "ffmpeg: MISSING"; elif ffmpeg -hide_banner -filters 2>/dev/null | grep -qw ass; then echo "ffmpeg: OK"; else echo "ffmpeg: NO_LIBASS"; fi; command -v mlx_whisper >/dev/null && echo "mlx_whisper: OK" || echo "mlx_whisper: MISSING ($(uname -m))"
    ```
-   brew uninstall ffmpeg && brew tap homebrew-ffmpeg/ffmpeg && brew install homebrew-ffmpeg/ffmpeg/ffmpeg
-   ```
+   If both print `OK`, go to step 2. Otherwise ask Ryan with one AskUserQuestion whether to install what's missing now. Say which tools and why each is needed, and that it can take several minutes. The commands:
+   - `ffmpeg: MISSING`: `brew tap homebrew-ffmpeg/ffmpeg && brew install homebrew-ffmpeg/ffmpeg/ffmpeg`
+   - `ffmpeg: NO_LIBASS`: the same, with `brew uninstall ffmpeg && ` in front (the stock Homebrew ffmpeg has no libass).
+   - `mlx_whisper: MISSING (arm64)`: `uv tool install mlx-whisper`. If `command -v uv` finds nothing, put `brew install uv && ` in front.
+   - `mlx_whisper: MISSING` on anything other than `arm64`: it can't be installed; this Mac isn't Apple Silicon. Stop and tell Ryan.
+
+   If he says yes, check `command -v brew` first when a command uses it. Without Homebrew, stop and tell him to install it from https://brew.sh. Run each install with `run_in_background` (the ffmpeg build can outlast the foreground timeout), wait for its exit notification, then run the check again. If `mlx_whisper` is installed but still not found, run `uv tool update-shell` and check again. On two `OK`s, continue to step 2. If an install fails, report the last lines of its output and stop.
+
+   If he says no, stop and give him the commands to run himself with `!`.
 
 2. **Get the shortlist.** Invoke the `find-stream-shorts` skill with the recording path. It runs in a fork and returns a `Shortlist` table, a `Words` path and `Transcript gaps`. If it returns an `ERROR:` line, report it and stop. Show Ryan the table as-is, plus any gaps, and ask which to render. Ryan can answer with numbers ("1, 4, 7") and nudges ("start 4 two seconds later").
 
