@@ -1,17 +1,24 @@
 #!/usr/bin/env python3
 """Write the captions for one short as an ASS subtitle file.
 
-Usage: make-captions.py <words.json> <start> <end> <out.ass>
+Usage: make-captions.py [--caption-y Y] [--fixes JSON] [--text] <words.json> <start> <end> <out.ass>
 
 <start> and <end> are seconds on the transcript's clock: the same times the
 short is cut at. Caption times in the file are relative to <start>, so the
 file lines up with the rendered clip.
 
+--caption-y Y   height of the captions in the 1080x1920 frame (the layout's
+                caption_y; default 900).
+--fixes JSON    a JSON object of {"heard": "meant"} phrase fixes for this clip,
+                on top of glossary.json. Matching ignores case and punctuation.
+--text          print the caption groups as text, one per line, instead of
+                writing the .ass file (pass - as <out.ass>).
+
 The look matches the Firecut shorts on the channel: words in groups of up to
 MAX_WORDS, all caps, white with a soft navy glow, and each group whips in and
 out with a horizontal blur. A group also ends at punctuation or a pause.
 """
-import json, sys
+import argparse, json, os, re, sys
 
 MAX_WORDS = 3
 PAUSE = 0.5          # seconds of silence that ends a group
@@ -24,9 +31,19 @@ WHIP_OUT = 80        # ms for a group to blur out
 # thickens it to the ExtraBold look of the Firecut captions.
 FONT = "Jost SemiBold"
 SIZE = 128
-CAPTION_Y = 900      # the seam between the cam band and the screen band
+GLOSSARY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "glossary.json")
 
-words_path, start, end, out_path = sys.argv[1], float(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
+ap = argparse.ArgumentParser()
+ap.add_argument("--caption-y", type=int, default=900)
+ap.add_argument("--fixes", default="{}")
+ap.add_argument("--text", action="store_true")
+ap.add_argument("words_path")
+ap.add_argument("start", type=float)
+ap.add_argument("end", type=float)
+ap.add_argument("out_path")
+args = ap.parse_args()
+words_path, start, end, out_path = args.words_path, args.start, args.end, args.out_path
+CAPTION_Y = args.caption_y
 words = [w for w in json.load(open(words_path)) if w[0] >= start and w[1] <= end]
 
 def ts(t):
@@ -56,6 +73,40 @@ def fix_names(words):
 
 fix_names(words)
 
+# Phrase fixes: glossary.json for terms Whisper gets wrong on every stream,
+# then the clip's own fixes. A fix can change the number of words ("theme
+# JSON" -> "theme.json"); the new words share the old ones' time evenly and
+# the last one keeps the trailing punctuation.
+def norm(s):
+    return s.lower().strip(".,?!;:\"'")
+
+def apply_fixes(words, fixes):
+    rules = sorted(([norm(t) for t in k.split()], v.split()) for k, v in fixes.items() if k.split())
+    rules.sort(key=lambda r: -len(r[0]))
+    out, i = [], 0
+    while i < len(words):
+        for pat, rep in rules:
+            n = len(pat)
+            if [norm(w[2]) for w in words[i:i + n]] == pat:
+                tail = re.search(r"[.,?!;:]*$", words[i + n - 1][2]).group(0)
+                s, e = words[i][0], words[i + n - 1][1]
+                step = (e - s) / max(len(rep), 1)
+                for j, t in enumerate(rep):
+                    out.append([s + j * step, s + (j + 1) * step, t + (tail if j == len(rep) - 1 else "")])
+                i += n
+                break
+        else:
+            out.append(words[i])
+            i += 1
+    return out
+
+fixes = json.load(open(GLOSSARY)) if os.path.exists(GLOSSARY) else {}
+try:
+    fixes.update(json.loads(args.fixes))
+except ValueError as err:
+    sys.exit("ERROR: --fixes is not a JSON object: %s" % err)
+words = apply_fixes(words, fixes)
+
 groups, group = [], []
 for i, w in enumerate(words):
     group.append(w)
@@ -72,6 +123,12 @@ def whip(duration_ms, blur):
     return ("\\fscx135\\blur16\\alpha&H60&"
             "\\t(0,%d,\\fscx100\\blur%d\\alpha&H00&)"
             "\\t(%d,%d,\\fscx135\\blur16\\alpha&HFF&)" % (WHIP_IN, blur, out_at, duration_ms))
+
+if args.text:
+    for group in groups:
+        t = max(0.0, group[0][0] - start)
+        print("[%d:%05.2f] %s" % (t // 60, t % 60, " ".join(w[2] for w in group).upper()))
+    sys.exit(0)
 
 events = []
 for g, group in enumerate(groups):

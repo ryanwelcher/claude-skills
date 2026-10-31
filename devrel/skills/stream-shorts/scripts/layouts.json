@@ -1,0 +1,20 @@
+{
+  "default": "coding-rebrand",
+  "layouts": {
+    "coding-rebrand": {
+      "description": "OBS \"Coding - Rebrand\" scene: facecam band on top, screen crop below (stops above the bottom bar).",
+      "bands": [
+        { "name": "cam", "crop": [600, 500, 1320, 520], "height": 900 },
+        { "name": "screen", "crop": [1038, 980, 200, 20], "height": 1020, "pan": [0, 882] }
+      ],
+      "caption_y": 900
+    },
+    "center": {
+      "description": "One full-frame 9:16 cut. For full-screen cam, a talk, or any single-camera shot. pan_x moves it left or right.",
+      "bands": [
+        { "name": "frame", "crop": [608, 1080, 656, 0], "height": 1920, "pan": [0, 1312] }
+      ],
+      "caption_y": 1500
+    }
+  }
+}
