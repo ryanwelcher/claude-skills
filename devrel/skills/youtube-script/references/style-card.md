@@ -159,6 +159,9 @@ Frequencies from ~53k words of transcript, highest first:
   window is closing", "on a countdown". Press-release framing for a timeline. Say what's
   actually happening, plainly, and let the dates/releases carry the urgency: "And the last
   few releases have been closing that gap."
+- **Dramatic framing for practical pointers** — "the rescue path", "falling behind is never
+  fatal", and labels like "Rescue". When the reader just needs to know where something is, say
+  where it is: "Stuck? The finished code for every section is in `code-reference/section-N/`."
 - **Audience-tag clichés** — "this one's for you", "you're in the right place". Pay off a
   "if you're a developer…" setup with a casual "stick around," or state who it's for as a
   flat sentence.
