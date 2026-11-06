@@ -210,6 +210,27 @@ Frequencies from ~53k words of transcript, highest first:
   em-dash hooks and colon-lists ("an agentic expert: a senior dev at your disposal") — break
   them into short spoken sentences.
 - ❌ Forced enthusiasm ("This is absolutely amazing!") and corporate hedging.
+- ❌ **"That said," as a pivot.** A stock AI transition he doesn't use. Drop it and start
+  the sentence, or use a spoken connector ("But", "So", "Anyway").
+- ❌ **"Small alone, big together" framing** — "None of these are huge on their own, but
+  together they'd…". Say what fixing them does: "Fixing these four would clear out most of
+  the confusion I saw."
+- ❌ **Stakes-raising closers** — "All of this matters even more with/because…",
+  "This is especially important now that…". State the fact that raises the stakes and let
+  it carry: "WP Credits is about to send whole groups of new contributors through the
+  toolkit, so these fixes will get tested fast."
+- ❌ **Tie-back tails** — trailing clauses that stitch a point back to an earlier section:
+  "…which is exactly what X did", "…which is what Y asked for anyway", "…that covers both
+  problems at once." One callback per piece is fine; more reads like the writing is
+  tying everything up with a bow. End the sentence at the point itself.
+- ❌ **"X-style" compounds** coined on the spot — "a OneDrive-style permissions problem".
+  Say it plainly: "a permissions problem like the OneDrive one".
+- ❌ **Stock product-post phrases** — "rough edges", "points of friction", "pain points".
+  Name the actual problem, or just say "problem".
+- ❌ **Template bullets in written posts** — every bullet built as bold label → problem →
+  "We should / Let's / I think we should" + fix. Break the pattern: where the fix is
+  obvious, a bullet can just state the problem ("**Auto updates:** The app can't update
+  itself yet.").
 - ✅ Instead: uneven rhythm, fragments, a tangent, a self-deprecating aside, a real
   reaction. If a sentence sounds like a press release, rewrite it the way he'd say it out loud.
 
