@@ -189,6 +189,7 @@ Frequencies from ~53k words of transcript, highest first:
   and PHP…", "And what that means in practice is…", "the one thing to do right now is…".
   A natural lead-in to a single point is fine; what's banned is the slide-label /
   announce-then-restate construction.
+- ❌ **Bold labels on bullets in written posts** — "**Format.** It's a 40-minute talk", "**Two machines.** I'm testing on…", "**Done.** / **In progress.**". Bold the start of a real sentence instead: "**It's a 40-minute talk for developers**, plus…", "**The build test hasn't started.** I still need to…".
 - ❌ **Telegraphic colon-speak** — VO lines that dropped their verbs/articles into shot-list
   shorthand: "Watch: tablet preview.", "Fixed block: updates. Broken block: doesn't
   flinch.", "Two blocks, one job: how wide is the canvas?". Restore the
@@ -229,8 +230,7 @@ Frequencies from ~53k words of transcript, highest first:
   Name the actual problem, or just say "problem".
 - ❌ **Template bullets in written posts** — every bullet built as bold label → problem →
   "We should / Let's / I think we should" + fix. Break the pattern: where the fix is
-  obvious, a bullet can just state the problem ("**Auto updates:** The app can't update
-  itself yet.").
+  obvious, a bullet can just state the problem ("**The app can't update itself yet.**").
 - ✅ Instead: uneven rhythm, fragments, a tangent, a self-deprecating aside, a real
   reaction. If a sentence sounds like a press release, rewrite it the way he'd say it out loud.
 
