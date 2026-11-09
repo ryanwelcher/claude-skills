@@ -220,6 +220,16 @@ Frequencies from ~53k words of transcript, highest first:
   "This is especially important now that…". State the fact that raises the stakes and let
   it carry: "WP Credits is about to send whole groups of new contributors through the
   toolkit, so these fixes will get tested fast."
+- ❌ **Verdict tags** — a short sentence that grades the point just made: "That's a huge win.",
+  "That's progress.", "That's the dream." Cut it, or give a real first-person reaction: "I was
+  really happy to see that."
+- ❌ **Aphorism + list-announcer bridges** — a life-lesson line followed by a signpost to the
+  next section: "Watching first-time users go through it shows you every problem pretty
+  quickly. Here's what I ran into…". In a post with section headings, cut the bridge; the
+  headings already announce the list.
+- ❌ **Neat cause-and-effect reframes** — "X removed the friction, and in doing that it exposed
+  the next blocker." Say what happened plainly: "So the toolkit fixed the setup problem, and
+  finding a ticket is the next one to fix."
 - ❌ **Tie-back tails** — trailing clauses that stitch a point back to an earlier section:
   "…which is exactly what X did", "…which is what Y asked for anyway", "…that covers both
   problems at once." One callback per piece is fine; more reads like the writing is
