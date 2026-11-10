@@ -172,6 +172,7 @@ Frequencies from ~53k words of transcript, highest first:
   generic.
 - **Don't thank a bot.** In a reply to a review bot (CodeRabbit, Copilot) on a PR, open with
   the decision itself ("I'm going to leave the note on X as it is."), not "Thanks for the note".
+- **Stock "here's my post" link lead-ins** — "I wrote up where my head's at", "I put my thoughts together", "I wrote down some thoughts". Say plainly what the post is or what's in it: "I wrote a post about what I'd try next time:", or just drop the link after the point.
 - **Never open a post with "Howdy!"** (P2s, team updates, any written post). He'd never say it.
   Start straight on the context instead.
 
