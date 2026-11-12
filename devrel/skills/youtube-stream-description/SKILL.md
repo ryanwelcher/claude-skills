@@ -59,17 +59,18 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
    - Boilerplate sections from TEMPLATE.md verbatim
    - Hashtag line per the rules in TEMPLATE.md
 
-8. **Output the full description in a single fenced code block** so the user can copy-paste it directly into YouTube Studio. Do not add commentary inside the code block.
-
-9. **For a local recording, save the title and description to `youtube-description.txt`** in the recording's folder. Don't ask first, and overwrite the file if it already exists. Write the final text, after any voice pass, in this format:
+8. **Save the title and description to a file.** For a local recording, write `youtube-description.txt` in the recording's folder. Don't ask first, and overwrite the file if it already exists. For the other scenarios, write it to the session scratchpad. Use this format:
    ```
    Title:
    <title>
 
    Description:
-   <the full description from the code block>
+   <the full description>
    ```
-   Tell the user the file's path.
+
+9. **Run a voice pass on the file.** Invoke the `sounds-like-me` skill with the file path, and follow it through to the fixes Ryan approves. Then run a separate em-dash and AI-ism scan on the file, not bundled into the voice pass.
+
+10. **Output the final title and description** from the file. Put the full description in a single fenced code block so the user can copy-paste it directly into YouTube Studio. Do not add commentary inside the code block. For a local recording, tell the user the file's path.
 
 ## Defaults & guardrails
 
@@ -87,4 +88,4 @@ To draft from a recording without a session, run this from a terminal (not from 
 bash scripts/describe-stream.sh <recording> [--title "..."] [--stream-together]
 bash scripts/describe-stream.sh <folder> [--stream-together]
 ```
-It writes `<recording>.description.md` next to each file. With a folder, it skips recordings that already have one. Mentioned links and transcript gaps are listed after the code block for you to check.
+It writes `<recording>.description.md` next to each file. With a folder, it skips recordings that already have one. Mentioned links and transcript gaps are listed after the code block for you to check. Headless runs skip the voice pass, so run `sounds-like-me` on the `.description.md` file before you use it.

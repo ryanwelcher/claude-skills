@@ -59,17 +59,38 @@ Everything about a clip lives in `shorts/shorts.json` next to the recording, and
    ```
    Show Ryan the output with likely mishearings marked: names, WordPress APIs, product names, anything that reads wrong. Put each fix he approves in that clip's `fixes`. If a mishearing will come back on other streams (a term Whisper always gets wrong), suggest adding it to `scripts/glossary.json` in the claude-skills repo instead. Fixes match whole words and ignore case and punctuation, and the captions are uppercased, so casing fixes do nothing.
 
+   **A short never ends on dangling words.** The last caption line must finish the clip's last sentence. If the captions end on words that start the next sentence (for example "SO" or "SO I THINK"), fix the clip without asking:
+   - Find the words around the clip's end in the `words` file. It's a JSON list of `[start, end, word]`, in seconds from the start of the recording.
+   - Set the clip's `end` to the start of the first dangling word minus 0.45 seconds. The render adds 0.4 seconds after `end` (`render-short.sh`), so the clip stops before that word.
+   - If the last word you keep ends later than the new `end` plus 0.4, set `end` to that word's end minus 0.4 instead. Tell Ryan the cut is tight so he can listen to it.
+   - Run `--captions` for that clip again to make sure it ends cleanly, and tell Ryan which clips you trimmed.
+
 6. **Render** one clip per Bash call, in the **foreground** with the Bash `timeout` at `600000`:
    ```bash
    python3 ${CLAUDE_SKILL_DIR}/scripts/shorts.py "<recording dir>/shorts/shorts.json" <NN>
    ```
    It prints `SHORT: <path>` on success. Report an `ERROR:` line as-is.
 
-7. **Report** the output paths and anything skipped, with the reasons.
+7. **Write titles and descriptions** for the rendered clips to `shorts/shorts-descriptions.txt`. Don't ask first, and overwrite the file if it already exists. Build each one only from what's said in the clip (the step 5 captions). Don't add links, because the full stream usually isn't uploaded yet. Use this format, with a blank line between clips:
+   ```
+   <NN>-<slug>.mp4
+
+   Title:
+   <title, under 100 characters>
+
+   Description:
+   <2-4 first-person sentences>
+
+   #wordpress <1-2 topic hashtags> #shorts
+   ```
+
+8. **Run a voice pass on the file.** Invoke the `sounds-like-me` skill with the file path, and follow it through to the fixes Ryan approves. Then run a separate em-dash and AI-ism scan on the file, not bundled into the voice pass.
+
+9. **Report** the output paths, anything skipped with the reasons, and the final titles and descriptions. Mention that YouTube Studio's "Related video" field can link each short to the full stream once it's up.
 
 ## Re-rendering
 
-To nudge a clip later, edit its entry in `shorts/shorts.json` and run step 6 for that clip number. The transcript is cached, so nothing needs to be transcribed again. `--dry-run` prints the ffmpeg command without running it.
+To nudge a clip later, edit its entry in `shorts/shorts.json`, check it for dangling words as in step 5, and run step 6 for that clip number. The transcript is cached, so nothing needs to be transcribed again. `--dry-run` prints the ffmpeg command without running it.
 
 ## Adding a layout
 
@@ -87,4 +108,4 @@ A layout is a stack of bands, top to bottom. Each band crops a box from the sour
 
 ## Not covered
 
-- No titles, descriptions or posting. Post copy goes through `write-social-post`.
+- No posting. Social post copy goes through `write-social-post`.

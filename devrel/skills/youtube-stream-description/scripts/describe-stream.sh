@@ -51,6 +51,7 @@ Answers to the intake questions, so do not ask me anything:
 - Stream Together / viewer call-in: $TOGETHER
 
 Install nothing. If a dependency is missing, stop and say which one.
+Skip the steps that save the description to a file and run a voice pass. This run is headless, so it cannot write files or ask for approval.
 Output the final description as a single fenced code block. After it, list any transcript gaps the helper reported."
 
   echo "Drafting description for $(basename "$file")..." >&2
