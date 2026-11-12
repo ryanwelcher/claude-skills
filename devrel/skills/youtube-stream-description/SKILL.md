@@ -61,6 +61,16 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
 
 8. **Output the full description in a single fenced code block** so the user can copy-paste it directly into YouTube Studio. Do not add commentary inside the code block.
 
+9. **For a local recording, save the title and description to `youtube-description.txt`** in the recording's folder. Don't ask first, and overwrite the file if it already exists. Write the final text, after any voice pass, in this format:
+   ```
+   Title:
+   <title>
+
+   Description:
+   <the full description from the code block>
+   ```
+   Tell the user the file's path.
+
 ## Defaults & guardrails
 
 - **Timestamps depend on the source:**
