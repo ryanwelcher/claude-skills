@@ -1,7 +1,7 @@
 ---
 name: stream-shorts
 description: Cut vertical shorts (9:16, facecam on top, screen below, all-caps captions that whip in a few words at a time) from a local live-stream recording. Proposes a shortlist of standalone moments, then renders the ones Ryan picks into a shorts/ folder next to the recording. Use to make shorts, clips, reels, or highlights from a stream, instead of Firecut, Opus Clip, or Descript.
-allowed-tools: Bash(bash *) Bash(python3 *) Bash(ffmpeg *) Bash(ffprobe *) Read Write Edit
+allowed-tools: Bash(bash *) Bash(python3 *) Bash(ffmpeg *) Bash(ffprobe *) Read Write Edit Skill
 ---
 
 # Stream Shorts
@@ -64,6 +64,12 @@ Everything about a clip lives in `shorts/shorts.json` next to the recording, and
    - Set the clip's `end` to the start of the first dangling word minus 0.45 seconds. The render adds 0.4 seconds after `end` (`render-short.sh`), so the clip stops before that word.
    - If the last word you keep ends later than the new `end` plus 0.4, set `end` to that word's end minus 0.4 instead. Tell Ryan the cut is tight so he can listen to it.
    - Run `--captions` for that clip again to make sure it ends cleanly, and tell Ryan which clips you trimmed.
+
+   **A short never starts on dangling words either.** The first caption line must start a sentence. Check the words just before the clip's `start` in the `words` file, and fix the clip without asking:
+   - If the captions open on the end of the previous sentence (for example "UP. THERE WAS ONE"), set `start` to the start of the first word of the next sentence.
+   - If the clip starts partway through a sentence, set `start` to the start of that sentence's first word.
+   - The render starts 0.2 seconds before `start` (`render-short.sh`). If the word before the new `start` ends less than 0.2 seconds before it, tell Ryan the cut is tight so he can listen to it.
+   - Run `--captions` for that clip again to make sure it starts cleanly, and tell Ryan which clips you moved.
 
 6. **Render** one clip per Bash call, in the **foreground** with the Bash `timeout` at `600000`:
    ```bash
