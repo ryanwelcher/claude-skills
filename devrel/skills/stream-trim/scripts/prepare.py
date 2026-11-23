@@ -17,7 +17,7 @@ import audio_chain
 LEAD_IN = 0.5   # s before the first word
 TAIL = 1.0      # s after the last word
 INTRO_MIN = 60  # the opening silence must last this long to count as Starting Soon
-PEAK_RATE = 1000  # Hz the mic is resampled to for peaks
+PEAK_RATE = 8000  # Hz the mic is resampled to for peaks; keeps the voice band (up to 4 kHz)
 PER_S = 20      # waveform buckets per second
 END_SLACK = 1.0  # s; a silence ending this close to the end counts as closing
 SILENCE = "silencedetect=noise=-45dB:d=2"
@@ -64,8 +64,11 @@ def peaks_from_pcm(pcm, rate, per_s):
     samples = array.array("h")
     samples.frombytes(pcm[: len(pcm) // 2 * 2])
     size = rate // per_s
-    return [round(max((abs(x) for x in samples[i:i + size]), default=0) / 32767, 4)
-            for i in range(0, len(samples), size)]
+    peaks = []
+    for i in range(0, len(samples), size):
+        chunk = samples[i:i + size]
+        peaks.append(round(min(32767, max(max(chunk), -min(chunk))) / 32767, 4))
+    return peaks
 
 
 def prepare(raw, chain, progress=None):

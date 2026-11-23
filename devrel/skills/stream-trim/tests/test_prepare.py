@@ -49,7 +49,7 @@ class PureTest(unittest.TestCase):
 
     def test_peaks_from_pcm(self):
         samples = array.array("h", [0] * 2000)
-        samples[3 * 50 + 7] = 32767
+        samples[3 * 50 + 7] = -32768
         peaks = prepare.peaks_from_pcm(samples.tobytes(), 1000, 20)
         self.assertEqual(len(peaks), 40)
         self.assertEqual(peaks[3], 1.0)
@@ -87,6 +87,11 @@ class EndToEndTest(unittest.TestCase):
                     peaks = json.load(f)
                 self.assertEqual(peaks["per_s"], 20)
                 self.assertAlmostEqual(len(peaks["peaks"]), 1992, delta=10)
+                # The 1 kHz tone (amplitude 0.125 * 0.3) must show up in the
+                # waveform: peaks are taken before any downsampling.
+                voiced = peaks["peaks"][75 * 20:85 * 20]
+                self.assertGreater(max(voiced), 0.02)
+                self.assertLess(max(peaks["peaks"][10 * 20:60 * 20]), 0.001)
                 t = time.time()
                 self.assertEqual(prepare.prepare(raw, CHAIN), a)
                 self.assertLess(time.time() - t, 1)

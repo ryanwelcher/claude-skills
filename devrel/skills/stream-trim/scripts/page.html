@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>stream-trim</title>
+<style>
+  :root { --bg: #14131f; --panel: #1f1d2e; --text: #e8e6f0; --muted: #9a97ad; --accent: #7c6cf0; --in: #3ccf8e; --out: #f0716c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 -apple-system, system-ui, sans-serif; }
+  main { max-width: 1280px; margin: 0 auto; padding: 16px 20px 32px; }
+  h1 { font-size: 16px; font-weight: 600; margin: 0 0 12px; color: var(--muted); }
+  video { width: 100%; max-height: calc(100vh - 290px); background: #000; border-radius: 6px; display: block; }
+  #wave { width: 100%; height: 110px; display: block; margin-top: 10px; background: var(--panel); border-radius: 6px; cursor: pointer; touch-action: none; }
+  .readout { display: flex; gap: 28px; margin: 12px 0; font: 600 17px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .readout .in { color: var(--in); } .readout .out { color: var(--out); }
+  .readout span small { display: block; font: 12px -apple-system, system-ui, sans-serif; color: var(--muted); margin-bottom: 4px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .keys { color: var(--muted); font-size: 13px; }
+  kbd { background: var(--panel); border: 1px solid #34314a; border-radius: 4px; padding: 1px 6px; font: 12px ui-monospace, Menlo, monospace; color: var(--text); }
+  button { font: 600 15px -apple-system, system-ui, sans-serif; padding: 9px 22px; border-radius: 6px; border: 0; cursor: pointer; background: var(--accent); color: #fff; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  button.secondary { background: #34314a; }
+  #status { margin-top: 14px; min-height: 24px; }
+  progress { width: 320px; height: 10px; vertical-align: middle; margin-right: 10px; accent-color: var(--accent); }
+  .error { color: var(--out); white-space: pre-wrap; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  .note { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="name">Loading...</h1>
+  <video id="video" src="/proxy.mp4" preload="auto"></video>
+  <canvas id="wave"></canvas>
+  <div class="row">
+    <div class="readout">
+      <span class="in"><small>In</small><b id="in-t">-</b></span>
+      <span class="out"><small>Out</small><b id="out-t">-</b></span>
+      <span><small>Length</small><b id="len-t">-</b></span>
+      <span><small>Playhead</small><b id="now-t">-</b></span>
+    </div>
+    <div>
+      <button id="stop" class="secondary" hidden>Stop</button>
+      <button id="render">Render</button>
+    </div>
+  </div>
+  <div class="keys">
+    <kbd>Space</kbd> play/pause &nbsp; <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> back 5 s / pause / play (again for faster) &nbsp;
+    <kbd>I</kbd> <kbd>O</kbd> set In / Out &nbsp; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> 1 frame &nbsp; <kbd>Shift</kbd>+arrows 1 s &nbsp;
+    <kbd>Q</kbd> <kbd>W</kbd> jump to In / Out &nbsp; drag the green and red markers
+  </div>
+  <div id="status"></div>
+</main>
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('wave');
+const ctx = canvas.getContext('2d');
+const $ = (id) => document.getElementById(id);
+let S = null;          // state from /api/state
+let inT = 0, outT = 0; // seconds, video clock
+let dragging = null;   // 'in' | 'out' | 'seek'
+let polling = null;
+
+function tc(t) {
+  const fps = Math.round(S.fps);
+  const total = Math.max(0, t);
+  const h = Math.floor(total / 3600), m = Math.floor(total % 3600 / 60), s = Math.floor(total % 60);
+  const f = Math.floor((total % 1) * S.fps + 1e-6) % fps;
+  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(f).padStart(2, '0')}`;
+}
+
+function snap(t) { return Math.min(S.duration, Math.max(0, Math.round(t * S.fps) / S.fps)); }
+
+function readout() {
+  $('in-t').textContent = tc(inT);
+  $('out-t').textContent = tc(outT);
+  $('len-t').textContent = tc(outT - inT);
+  $('now-t').textContent = tc(video.currentTime);
+}
+
+function x(t) { return t / S.duration * canvas.width; }
+
+function draw() {
+  if (!S) return;
+  const dpr = window.devicePixelRatio || 1;
+  if (canvas.width !== canvas.clientWidth * dpr) { canvas.width = canvas.clientWidth * dpr; canvas.height = canvas.clientHeight * dpr; }
+  const W = canvas.width, H = canvas.height, mid = H / 2;
+  ctx.clearRect(0, 0, W, H);
+  const peaks = S.peaks, perPx = peaks.length / W;
+  const top = S.peakMax || 1;
+  ctx.fillStyle = '#7c6cf0';
+  for (let px = 0; px < W; px++) {
+    let p = 0;
+    const a = Math.floor(px * perPx), b = Math.max(a + 1, Math.floor((px + 1) * perPx));
+    for (let i = a; i < b && i < peaks.length; i++) p = Math.max(p, peaks[i]);
+    const h = Math.max(1, Math.min(1, p / top) * (H - 8));
+    ctx.fillRect(px, mid - h / 2, 1, h);
+  }
+  ctx.fillStyle = 'rgba(10, 9, 18, 0.7)';
+  ctx.fillRect(0, 0, x(inT), H);
+  ctx.fillRect(x(outT), 0, W - x(outT), H);
+  for (const [t, color] of [[inT, '#3ccf8e'], [outT, '#f0716c']]) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x(t) - 1.5 * dpr, 0, 3 * dpr, H);
+  }
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x(video.currentTime) - 0.5 * dpr, 0, 1 * dpr, H);
+}
+
+function tick() { readout(); draw(); requestAnimationFrame(tick); }
+
+function timeAt(e) {
+  const r = canvas.getBoundingClientRect();
+  return snap((e.clientX - r.left) / r.width * S.duration);
+}
+
+canvas.addEventListener('pointerdown', (e) => {
+  const r = canvas.getBoundingClientRect();
+  const px = e.clientX - r.left, near = (t) => Math.abs(t / S.duration * r.width - px) < 8;
+  dragging = near(inT) ? 'in' : near(outT) ? 'out' : 'seek';
+  canvas.setPointerCapture(e.pointerId);
+  move(e);
+});
+canvas.addEventListener('pointermove', (e) => { if (dragging) move(e); });
+canvas.addEventListener('pointerup', () => { dragging = null; });
+
+function move(e) {
+  const t = timeAt(e);
+  if (dragging === 'in') inT = Math.min(t, outT - 1 / S.fps);
+  else if (dragging === 'out') outT = Math.max(t, inT + 1 / S.fps);
+  else video.currentTime = t;
+  if (dragging !== 'seek') video.currentTime = dragging === 'in' ? inT : outT;
+}
+
+document.addEventListener('keydown', (e) => {
+  if (!S || e.metaKey || e.ctrlKey || e.altKey) return;
+  const step = e.shiftKey ? 1 : 1 / S.fps;
+  const k = e.key.toLowerCase();
+  if (k === ' ') { video.paused ? video.play() : video.pause(); }
+  else if (k === 'k') { video.pause(); video.playbackRate = 1; }
+  else if (k === 'l') {
+    if (!video.paused) video.playbackRate = Math.min(8, video.playbackRate * 2);
+    else { video.playbackRate = 1; video.play(); }
+  }
+  else if (k === 'j') { video.currentTime = Math.max(0, video.currentTime - 5); }
+  else if (k === 'i') { const t = snap(video.currentTime); if (t < outT) inT = t; else flash('In has to be before Out'); }
+  else if (k === 'o') { const t = snap(video.currentTime); if (t > inT) outT = t; else flash('Out has to be after In'); }
+  else if (k === 'arrowleft') { video.pause(); video.currentTime = snap(video.currentTime - step); }
+  else if (k === 'arrowright') { video.pause(); video.currentTime = snap(video.currentTime + step); }
+  else if (k === 'q') { video.currentTime = inT; }
+  else if (k === 'w') { video.currentTime = outT; }
+  else return;
+  e.preventDefault();
+});
+
+function flash(text) { $('status').innerHTML = `<span class="note">${text}</span>`; }
+
+function showRender(r) {
+  const busy = r.state === 'running';
+  $('render').disabled = busy || S.exists || r.state === 'done';
+  $('stop').hidden = !busy;
+  if (busy) {
+    const label = r.phase === 'measuring' ? 'Measuring loudness' : 'Encoding 4K';
+    $('status').innerHTML = `<progress max="100" value="${r.percent}"></progress>${label}: ${r.percent.toFixed(1)}%`;
+  } else if (r.state === 'done') {
+    S.exists = true;
+    $('status').innerHTML = `Done: <b>${escapeHtml(r.output)}</b><br><span class="note">Shorts from this edit come next.</span>`;
+  } else if (r.state === 'error') {
+    $('status').innerHTML = `<div class="error">${escapeHtml(r.error)}</div>`;
+  } else if (S.exists) {
+    $('status').innerHTML = `<span class="note">${escapeHtml(S.output.split('/').pop())} already exists</span>`;
+  }
+  if (busy && !polling) polling = setInterval(poll, 1000);
+  if (!busy && polling) { clearInterval(polling); polling = null; }
+}
+
+async function poll() { showRender(await (await fetch('/api/render')).json()); }
+
+function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+$('render').addEventListener('click', async () => {
+  $('render').disabled = true;
+  const res = await fetch('/api/render', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ in: inT, out: outT }) });
+  if (res.status !== 202) {
+    const body = await res.json();
+    $('status').innerHTML = `<div class="error">${escapeHtml(body.error)}</div>`;
+    $('render').disabled = S.exists;
+    return;
+  }
+  poll();
+  if (!polling) polling = setInterval(poll, 1000);
+});
+
+$('stop').addEventListener('click', () => fetch('/api/stop', { method: 'POST' }));
+
+(async () => {
+  S = await (await fetch('/api/state')).json();
+  inT = S.in; outT = S.out;
+  S.peakMax = Math.max(1e-4, ...S.peaks.filter((p) => p > 0).sort((a, b) => a - b).slice(-Math.max(1, Math.floor(S.peaks.length / 200))).slice(0, 1));
+  $('name').textContent = S.name;
+  video.addEventListener('loadedmetadata', () => { video.currentTime = inT; }, { once: true });
+  showRender(S.render);
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
