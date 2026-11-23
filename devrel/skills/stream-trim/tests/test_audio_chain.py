@@ -10,6 +10,8 @@ sys.path.insert(0, SCRIPTS)
 import audio_chain  # noqa: E402
 
 CHAIN_PATH = os.path.join(SCRIPTS, "chain.json")
+# Fixed values for the string tests, so tuning chain.json doesn't break them.
+FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixture_chain.json")
 INPUTS = {"mic": "0:a:1", "guest": "0:a:2", "theme": "0:a:4", "firebot": "0:a:5"}
 
 
@@ -36,7 +38,7 @@ class VoiceFiltersTest(unittest.TestCase):
         self.assertEqual(len([n for n in names if n == "equalizer"]), len(chain["eq_db"]) + 1)
 
     def test_voice_filters_values(self):
-        f = audio_chain.voice_filters(self.chain)
+        f = audio_chain.voice_filters(audio_chain.load_chain(FIXTURE_PATH))
         self.assertIn("highpass=f=110", f)
         self.assertIn("attacks=0.002", f)
         self.assertIn("decays=0.05", f)
@@ -46,7 +48,7 @@ class VoiceFiltersTest(unittest.TestCase):
 
 class BuildFiltergraphTest(unittest.TestCase):
     def setUp(self):
-        self.chain = audio_chain.load_chain(CHAIN_PATH)
+        self.chain = audio_chain.load_chain(FIXTURE_PATH)
 
     def test_build_filtergraph_shift_and_mix(self):
         g = audio_chain.build_filtergraph(self.chain, INPUTS, 0.375375)

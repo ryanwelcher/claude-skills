@@ -44,7 +44,7 @@ LOUDNORM = """[Parsed_loudnorm_0 @ 0x1]
 """
 
 
-def make_mp4(path, tracks, seconds, tone=True):
+def make_mp4(path, tracks, seconds, tone=True, level=0.3):
     """Black video plus `tracks` audio tracks. Track 2 (track 1 when there is
     only one) is a 1 kHz sine with
     pauses (so it reads as speech-like for loudness gating); the rest are
@@ -53,7 +53,7 @@ def make_mp4(path, tracks, seconds, tone=True):
             "-f", "lavfi", "-i", f"color=c=black:s=320x180:r=24000/1001:d={seconds}"]
     for t in range(1, tracks + 1):
         if t == min(2, tracks) and tone:
-            src = (f"sine=f=1000:d={seconds},volume='if(lt(mod(t,1),0.7),0.3,0)':eval=frame,"
+            src = (f"sine=f=1000:d={seconds},volume='if(lt(mod(t,1),0.7),{level},0)':eval=frame,"
                    "aformat=channel_layouts=stereo")
         else:
             src = f"anullsrc=r=48000:cl=stereo:d={seconds}"

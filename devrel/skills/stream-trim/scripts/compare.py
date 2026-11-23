@@ -6,6 +6,7 @@ file (through the voice chain), measure both, and write a blind A/B page.
 
 Stretches are <render start s>:<seconds>. Raw time = render time + offset."""
 import argparse
+import copy
 import html
 import json
 import os
@@ -135,11 +136,17 @@ def main(argv=None):
         ours_wav = os.path.join(a.out, f"ours-{i}.wav")
         try:
             cut_reference(a.reference, start, seconds, ref_wav)
-            audio_chain.render_stretch(a.raw, start + a.offset, seconds, chain, ours_wav)
+            ref_m = measure.measure(ref_wav)
+            # Level-match each pair to the reference: louder reads as better
+            # in a blind test, and Premiere normalized the whole stream, not
+            # this stretch.
+            matched = copy.deepcopy(chain)
+            matched["loudness"]["I"] = max(-70.0, ref_m["I"])
+            audio_chain.render_stretch(a.raw, start + a.offset, seconds, matched, ours_wav)
         except (ValueError, RuntimeError) as e:
             print(f"ERROR: stretch {i + 1}: {e}", file=sys.stderr)
             return 1
-        ref_m, ours_m = measure.measure(ref_wav), measure.measure(ours_wav)
+        ours_m = measure.measure(ours_wav)
         if min(ref_m["I"], ours_m["I"]) <= MIN_LOUDNESS:
             print(f"ERROR: stretch {i + 1} is silent in the reference or ours", file=sys.stderr)
             return 1

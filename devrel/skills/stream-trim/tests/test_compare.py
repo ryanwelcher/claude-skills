@@ -31,7 +31,7 @@ class CliTest(unittest.TestCase):
         cls.raw = os.path.join(cls.tmp.name, "raw, 1.mp4")
         cls.ref = os.path.join(cls.tmp.name, "ref  render.mp4")
         make_mp4(cls.raw, 6, 8)
-        make_mp4(cls.ref, 1, 8)
+        make_mp4(cls.ref, 1, 8, level=0.05)
         cls.long_raw = os.path.join(cls.tmp.name, "long raw.mp4")
         cls.two = os.path.join(cls.tmp.name, "two.mp4")
         cls.silent = os.path.join(cls.tmp.name, "silent mic.mp4")
@@ -115,6 +115,9 @@ class CliTest(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(out, f"ref-{i}.wav")))
             self.assertTrue(os.path.exists(os.path.join(out, f"ours-{i}.wav")))
         self.assertIn("delta", report["stretches"][0])
+        # Each pair is level-matched to the reference so the blind test is fair.
+        for st in report["stretches"]:
+            self.assertLessEqual(abs(st["delta"]["I"]), 1.0)
 
 
 if __name__ == "__main__":
