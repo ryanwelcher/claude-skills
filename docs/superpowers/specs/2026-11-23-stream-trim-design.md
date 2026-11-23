@@ -1,0 +1,244 @@
+# stream-trim: prep, trim, export and cut shorts from a live stream without Premiere
+
+Date: 2026-11-23
+Status: approved by Ryan 2026-11-23
+
+## Intent and why
+
+Ryan wants to stop using Adobe Premiere Pro. Live streams are the first
+workflow to move. Today a stream goes through `stream-prep` (the Premiere
+UXP plugin sets up the sequence, cuts the intro, fixes mic sync and gain),
+and then Ryan does two things by hand in Premiere before exporting:
+
+1. Trim the start and the end.
+2. Apply Essential Sound > Podcast Voice to the mic.
+
+`stream-trim` replaces both, and the Premiere step around them, with a
+devrel skill and a small local browser UI. Ryan then wants the same UI
+to carry on into shorts: take the finished edit and render vertical
+shorts from it, so one page covers prep, trim, export and shorts for a
+stream. Assembling other kinds of videos is a later, separate project.
+
+## Goals
+
+- From the raw OBS recording, produce a finished, upload-ready file with
+  no Premiere involved.
+- A browser page where Ryan checks and adjusts one In point and one Out
+  point, then clicks Render.
+- In and Out are pre-filled with good guesses, so most streams need only
+  a glance and Render.
+- Voice processing that replaces Podcast Voice closely enough that Ryan
+  is happy shipping it.
+- After the export, the same page shows a shortlist of shorts from the
+  finished edit; Ryan picks, adjusts, and renders them there.
+
+## Non-goals
+
+- More than one segment per recording (no cutting out the middle).
+- Overlays, graphics, titles, chapters, multi-file assembly.
+- Rewriting how shorts are found, laid out or captioned. The UI drives
+  the existing `stream-shorts` scripts; it doesn't replace them.
+- Changing `stream-prep` or its Premiere plugin. They stay as they are
+  for any stream Ryan still wants to edit in Premiere.
+
+## Anti-goals
+
+- Audio that sounds worse than Podcast Voice. If the ffmpeg chain can't
+  get close, that is a failure even if trimming works.
+- A UI that needs a build step, a framework, or a long-running service.
+- Touching the original recording.
+
+## Constraints and known facts
+
+- Input is the raw OBS 4K mp4 (OBS "Rebrand" scene collection). Track
+  layout as documented in `stream-prep/SKILL.md`: 1 Full Mix, 2 mic,
+  3 guest + StreamElements, 4 Spotify, 5 theme song, 6 Firebot.
+- The mic (track 2) lags video by 9 frames (0.375375 s at 23.976 fps);
+  frame rate is read from the file.
+- The mic is digital silence during "Starting Soon"; voice begins 4:19 to
+  5:50 in. The existing Quick Action detects it with
+  `silencedetect=noise=-45dB:d=2` on `0:a:1` and trusts it only if the
+  silence runs at least 60 s from the start.
+- ffmpeg on this Mac (homebrew-ffmpeg tap) has `arnndn`, `afftdn`,
+  `deesser`, `acompressor`, `loudnorm`, `showwavespic`.
+- Podcast Voice can't be inspected or scripted, so the replacement is
+  an approximation tuned by ear.
+
+## Approaches considered
+
+- **A. Local browser trimmer + ffmpeg render (picked).** Proxy preview
+  with processed audio, pre-filled In/Out, ffmpeg render with a voice
+  chain. Fits the existing `stream-prep` / `stream-shorts` pattern (raw
+  OBS file, ffmpeg, a skill). Cost: we build and tune it.
+- B. LosslessCut for trimming plus a skill for audio. No UI to build, but
+  two tools, and no pre-filled points.
+- C. DaVinci Resolve Studio ($295): Voice Isolation and Dialogue Leveler
+  are the closest match to Podcast Voice, and it's scriptable. But it
+  swaps one heavy editor for another. Worth revisiting for the "assemble
+  other videos" project, not this one.
+
+Ryan picked A.
+
+## Design
+
+### Flow
+
+1. Ryan runs the skill on a recording (`/stream-trim <file>`). The
+   skill does everything `stream-prep` does today (drop Full Mix and
+   Spotify, shift the mic 9 frames, find the voice start, mic gain), but
+   in ffmpeg as part of the render, not by writing a Premiere project.
+2. The skill runs an analysis pass and makes a preview proxy, then starts
+   a local server and opens the page in the browser.
+3. Ryan checks In and Out, adjusts if needed, clicks Render.
+4. The server renders the final file next to the recording and the page
+   shows progress, then the output path.
+5. The page moves on to Shorts (below).
+
+### Analysis
+
+- Voice start: same silencedetect rule as the Quick Action. Default In =
+  voice start minus 0.5 s lead-in. If the 60 s rule fails, In = 0.
+- Voice end: last non-silent stretch on the mic. Default Out = voice end
+  plus a short tail (builder's call, around 1 s).
+- Waveform: a mic waveform image (or peak data) for the page.
+
+### Preview proxy
+
+- Low-res H.264 (about 720p) via VideoToolbox, cached next to the
+  recording or in a cache dir (builder's call), reused on rerun.
+- Its single audio track is the same mix and processing as the final
+  render, so what Ryan hears is what ships.
+
+### The page
+
+- One static HTML file served by the local server. No framework, no
+  build step.
+- Video player on the proxy, mic waveform under it with In and Out
+  markers, a playhead, and draggable markers.
+- Keys like Premiere: Space play/pause, J/K/L, I and O set points,
+  Left/Right nudge one frame, Shift+arrow nudge 1 s, a key to jump to
+  In and to Out.
+- Shows In, Out and resulting duration. A Render button.
+- Sketch:
+
+  ```
+  +--------------------------------------------------+
+  |                 [ video preview ]                |
+  +--------------------------------------------------+
+  | ▁▂▅▇▅▂▁ |[In]▅▇▆▅▇▆▅▇▆▅▇▆▅▇▆▅▇▆▅▇▆[Out]| ▁▂▁      |
+  +--------------------------------------------------+
+  In 0:05:12.40   Out 1:42:08.10   Length 1:36:55.70
+  [I] set in  [O] set out  [←/→] 1 frame     [Render]
+  ```
+
+### Render
+
+- Input: the original 4K recording, trimmed to In/Out (frame-accurate,
+  so re-encoded, not stream-copied).
+- Video: 4K (same as the recording, which is what Ryan uploads), HEVC
+  through VideoToolbox. Bitrate or quality level is the builder's call,
+  aimed at YouTube 4K upload quality.
+- Audio (Ryan confirmed): one stereo mix of mic (2), guest +
+  StreamElements (3), theme song (5) and Firebot (6). Full Mix (1) and
+  Spotify (4) are dropped. The mic goes through the voice chain.
+  Claude's call: the guest track goes through the same chain, and the
+  levels of 3, 5 and 6 against the mic are set during the tuning step by
+  matching Ryan's Premiere reference. Loudness normalization runs on the
+  whole mix, not the mic alone.
+- A 4K render of a 90+ minute stream can outlast a foreground command,
+  so the server runs ffmpeg in the background and the page polls for
+  progress.
+- Voice chain (starting point, tuned by ear against a Premiere Podcast
+  Voice export): high-pass ~80 Hz, `arnndn` noise reduction, compressor,
+  light presence EQ, `deesser`, `loudnorm` to -14 LUFS / -1 dBTP
+  (two-pass).
+- Output: `<name>-final.mp4` next to the recording. Never overwrite; write
+  to a temp name and rename on success, like `prep-stream.sh`.
+
+### Tuning the voice chain
+
+Part of the build, before the UI: Ryan exports a 2 to 3 minute stretch
+of one stream from Premiere with Podcast Voice, his usual mic gain and
+his usual mix (talking, typing, ideally a laugh). Claude renders the
+same stretch through the chain and mix. Ryan listens and picks. Repeat
+until he's happy. Lock the chain and levels in a script.
+
+Reference (found 2026-11-23): the Nov 12 stream has the raw OBS file,
+its `.prproj`, and Ryan's final Premiere render
+(`renders/Contributor Toolkit - ... Nov 12, 2026.mp4`: 4K H.264 at
+about 4.9 Mbps, AAC stereo 320k, 1:29:15). The full render is the
+reference, so no separate export is needed. The `.prproj` stores the
+Podcast Voice settings as plain parameters. It is a chain of standard
+effects with Enhance Speech (the AI part) off: Reduce Rumble (FFT
+filter), Dynamics (expander/compressor curve), DeEsser, a 10-band
+graphic EQ with small boosts, Vocal Enhancer, and Loudness on. Each
+has an ffmpeg counterpart, so tuning starts from these values rather
+than from guesses. The mic clip level is about +1.7 dB.
+
+This is a go/no-go gate: no UI work starts until Ryan signs off on the
+audio. If several rounds can't get close, stop and decide with Ryan
+(Resolve, trim-only, or something else).
+
+### Shorts (stage 2 of the same page)
+
+Builds on `stream-shorts` as it is (`find-stream-shorts` helper,
+`shorts/shorts.json`, `scripts/shorts.py`, `render-short.sh`).
+
+- After Render finishes, the page switches to a Shorts view.
+- Finding the moments needs Claude (`find-stream-shorts` is an LLM
+  skill), so the skill session, not the server, runs it and writes the
+  shortlist into `shorts/candidates.json`. The page polls for that file and
+  shows the candidates. The skill kicks this off automatically (Claude's call)
+  once the final render is done.
+- Only moments inside In/Out are offered: "from the final edit".
+- How "from the edit" is built (Claude's call): shorts are still cut from
+  the raw recording (so the existing mic-offset logic, transcript and
+  crop presets keep working unchanged), at times inside In/Out, with
+  the same mix and voice chain as the long video (Ryan confirmed shorts
+  use the same audio as the long video), loudness-normalized per clip. The page shows times relative to the final edit.
+- Per candidate the page shows the hook, start/end (nudgeable), the
+  layout preview jpg (`shorts.py --preview`) with a `pan_x` slider, the
+  caption text (`shorts.py --captions`) with a place to add fixes, and
+  a checkbox. "Render selected" runs `shorts.py` on the ticked clips and
+  shows progress per clip.
+- Output stays `shorts/` next to the recording.
+
+Builder-check calls (Claude's, for Ryan to check):
+
+- The steps of `stream-shorts` that need judgment stay with Claude, in
+  the skill session, which stays alive while the page is open. Before
+  the shortlist reaches the page, Claude fixes dangling-word starts and
+  ends, previews layouts and picks a layout or `skip` for each, and
+  flags likely mishearings (shown on the page as suggested fixes).
+  After "Render selected", Claude writes `shorts-descriptions.txt` and
+  runs the voice pass and the em-dash/AI-ism scan on it, as today.
+- File ownership: Claude writes the candidates to
+  `shorts/candidates.json`. The page writes only the picked clips to
+  `shorts/shorts.json`, so `shorts.py ... all` keeps meaning "what Ryan
+  picked". Neither writes the other's file.
+- `render-short.sh` gets an opt-in flag for the stream-trim audio. Run
+  on its own, `/stream-shorts` behaves exactly as it does today unless
+  Ryan asks otherwise. This is a version bump on a shipped skill.
+
+### Where it lives
+
+`~/repositories/claude-skills/devrel/skills/stream-trim/` with `SKILL.md`
+and `scripts/`. Deployed the same way as the other devrel skills.
+
+## Left to the builder
+
+- Server language (Python stdlib or Node, no dependencies), port choice.
+- Proxy cache location and naming.
+- Waveform as an image or as peak data drawn on a canvas.
+- Exact tail length after voice end.
+- Progress reporting from ffmpeg to the page.
+
+## Build order
+
+1. Voice chain and mix tuning against Ryan's reference (go/no-go).
+2. Analysis, proxy, trim page, 4K render.
+3. Shorts view and the `render-short.sh` audio flag.
+
+## Open questions
+
+None left for Ryan, other than the reference export for step 1.
