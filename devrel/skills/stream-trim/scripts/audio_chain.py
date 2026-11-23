@@ -67,8 +67,9 @@ def build_filtergraph(chain, inputs, mic_shift_s):
     return ";".join(branches)
 
 
-def probe(path):
-    """(audio track count, duration in s, fps) of a media file."""
+def probe(path, video=True):
+    """(audio track count, duration in s, fps) of a media file. fps is None
+    when video is False."""
     import subprocess
 
     def ff(*args):
@@ -77,6 +78,8 @@ def probe(path):
 
     tracks = len(ff("-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0"))
     duration = float(ff("-show_entries", "format=duration", "-of", "csv=p=0")[0])
+    if not video:
+        return tracks, duration, None
     num, _, den = ff("-select_streams", "v:0", "-show_entries", "stream=r_frame_rate",
                      "-of", "csv=p=0")[0].partition("/")
     return tracks, duration, float(num) / float(den or 1)

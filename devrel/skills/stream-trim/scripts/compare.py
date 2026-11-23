@@ -11,7 +11,6 @@ import json
 import os
 import random
 import re
-import shutil
 import sys
 
 import audio_chain
@@ -30,6 +29,53 @@ def parse_stretch(text):
     if start < 0 or length <= 0:
         raise ValueError(f"bad stretch {text!r}")
     return start, length
+
+
+OWN_FILES = re.compile(r"(ref|ours)-\d+\.wav|report\.json|index\.html")
+SILENT_DB = -90  # OBS writes digital silence on the mic during Starting Soon
+MIN_LOUDNESS = -70  # a cut quieter than this is treated as silence
+
+
+def mic_peak_db(raw, start_s, seconds):
+    """Loudest sample (dB) on the mic track over the given raw stretch."""
+    err = measure.run_ffmpeg(["-ss", str(start_s), "-t", str(seconds), "-i", raw,
+                              "-map", f"0:a:{audio_chain.TRACKS['mic'] - 1}",
+                              "-af", "volumedetect", "-f", "null", "-"])
+    m = re.search(r"max_volume:\s+(-?[\d.]+|-inf)", err)
+    return float(m.group(1)) if m else float("-inf")
+
+
+def check_inputs(raw, reference, offset, stretches):
+    """Raise ValueError for anything that would give a wrong or empty
+    comparison, before any output is written."""
+    tracks, raw_duration, fps = audio_chain.probe(raw)
+    if tracks != 6:
+        raise ValueError(f"expected 6 audio tracks, found {tracks}")
+    shift = audio_chain.MIC_LAG_FRAMES / fps
+    _, ref_duration, _ = audio_chain.probe(reference, video=False)
+    for i, (start, seconds) in enumerate(stretches, 1):
+        if start + seconds > ref_duration:
+            raise ValueError(f"stretch {i} runs past the end of the reference ({ref_duration:.2f} s)")
+        if start + offset + seconds + shift > raw_duration:
+            raise ValueError(f"stretch {i} runs past the end of the raw recording ({raw_duration:.2f} s)")
+        if mic_peak_db(raw, start + offset + shift, seconds) <= SILENT_DB:
+            raise ValueError(f"stretch {i}: the mic is silent here (Starting Soon? check --offset)")
+
+
+def prepare_out(out, force, sources):
+    """Create `out`, or with force clear only the files compare writes.
+    Refuse a folder that holds the source files."""
+    real = os.path.realpath(out)
+    if any(os.path.dirname(os.path.realpath(p)) == real for p in sources):
+        raise ValueError(f"{out} holds the raw recording or the reference, pick another --out")
+    if os.path.exists(out):
+        if not force:
+            raise ValueError(f"{out} exists, pass --force to overwrite")
+        for name in os.listdir(out):
+            if OWN_FILES.fullmatch(name):
+                os.remove(os.path.join(out, name))
+    else:
+        os.makedirs(out)
 
 
 def cut_reference(reference, start_s, seconds, out_wav):
@@ -68,17 +114,19 @@ def main(argv=None):
 
     try:
         stretches = [parse_stretch(s) for s in a.stretches]
-    except ValueError as e:
+        chain = audio_chain.load_chain(a.chain)
+        audio_chain.build_filtergraph(chain, {r: "x" for r in audio_chain.ROLES}, 0)
+        if os.path.exists(a.out) and not a.force:
+            raise ValueError(f"{a.out} exists, pass --force to overwrite")
+        check_inputs(a.raw, a.reference, a.offset, stretches)
+        prepare_out(a.out, a.force, [a.raw, a.reference])
+    except KeyError as e:
+        print(f"ERROR: chain settings missing key {e}", file=sys.stderr)
+        return 1
+    except (ValueError, RuntimeError, OSError) as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 1
-    if os.path.exists(a.out):
-        if not a.force:
-            print(f"ERROR: {a.out} exists, pass --force to overwrite", file=sys.stderr)
-            return 1
-        shutil.rmtree(a.out)
-    os.makedirs(a.out)
 
-    chain = audio_chain.load_chain(a.chain)
     report = {"raw": a.raw, "reference": a.reference, "offset": a.offset,
               "chain": chain, "stretches": [], "answer": []}
     sections = []
@@ -92,6 +140,9 @@ def main(argv=None):
             print(f"ERROR: stretch {i + 1}: {e}", file=sys.stderr)
             return 1
         ref_m, ours_m = measure.measure(ref_wav), measure.measure(ours_wav)
+        if min(ref_m["I"], ours_m["I"]) <= MIN_LOUDNESS:
+            print(f"ERROR: stretch {i + 1} is silent in the reference or ours", file=sys.stderr)
+            return 1
         report["stretches"].append({"start": start, "seconds": seconds, "reference": ref_m,
                                     "ours": ours_m, "delta": delta(ours_m, ref_m)})
         order = random.sample(["ours", "ref"], 2)
