@@ -88,6 +88,26 @@ def probe(path, video=True):
 MIC_LAG_FRAMES = 9
 
 
+def mix_graph(chain, fps):
+    """(filtergraph ending in [mix] for a raw OBS file, mic shift in s)."""
+    shift = round(MIC_LAG_FRAMES / fps, 6)
+    inputs = {role: f"0:a:{TRACKS[role] - 1}" for role in ROLES}
+    return build_filtergraph(chain, inputs, shift), shift
+
+
+def loudness_target(chain):
+    L = chain["loudness"]
+    return f"I={L['I']}:TP={L['TP']}:LRA={L['LRA']}"
+
+
+def second_pass(chain, first):
+    """The pass-2 loudnorm filter, from pass 1's printed measurements."""
+    return (f"loudnorm={loudness_target(chain)}:measured_I={first['input_i']}"
+            f":measured_TP={first['input_tp']}:measured_LRA={first['input_lra']}"
+            f":measured_thresh={first['input_thresh']}:offset={first['target_offset']}"
+            ":linear=true,aresample=48000")
+
+
 def render_stretch(raw, start_s, seconds, chain, out_wav):
     """Render `seconds` of the final mix from the raw OBS file, starting at
     raw time `start_s` (video clock), through the voice chain and two-pass
@@ -103,17 +123,14 @@ def render_stretch(raw, start_s, seconds, chain, out_wav):
     if start_s + seconds + shift > duration:
         raise ValueError(f"stretch {start_s}+{seconds} s runs past the end ({duration:.2f} s)")
 
-    inputs = {role: f"0:a:{TRACKS[role] - 1}" for role in ROLES}
-    graph = build_filtergraph(chain, inputs, shift) + f";[mix]atrim=duration={seconds}[cut]"
-    L = chain["loudness"]
-    target = f"I={L['I']}:TP={L['TP']}:LRA={L['LRA']}"
+    graph, _ = mix_graph(chain, fps)
+    graph += f";[mix]atrim=duration={seconds}[cut]"
+    target = loudness_target(chain)
     src = ["-ss", str(start_s), "-t", str(seconds + shift), "-i", raw]
 
     first = measure.parse_loudnorm(measure.run_ffmpeg(
         src + ["-filter_complex", graph + f";[cut]loudnorm={target}:print_format=json[out]",
                "-map", "[out]", "-f", "null", "-"]))
-    second = (f"loudnorm={target}:measured_I={first['input_i']}:measured_TP={first['input_tp']}"
-              f":measured_LRA={first['input_lra']}:measured_thresh={first['input_thresh']}"
-              f":offset={first['target_offset']}:linear=true,aresample=48000")
+    second = second_pass(chain, first)
     measure.run_ffmpeg(src + ["-filter_complex", graph + f";[cut]{second}[out]",
                               "-map", "[out]", "-c:a", "pcm_s24le", "-y", out_wav])
