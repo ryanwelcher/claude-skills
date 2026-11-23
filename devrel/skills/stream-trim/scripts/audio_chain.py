@@ -65,3 +65,52 @@ def build_filtergraph(chain, inputs, mic_shift_s):
     labels = "".join(f"[{r}]" for r in ROLES)
     branches.append(f"{labels}amix=inputs={len(ROLES)}:normalize=0[mix]")
     return ";".join(branches)
+
+
+def probe(path):
+    """(audio track count, duration in s, fps) of a media file."""
+    import subprocess
+
+    def ff(*args):
+        return subprocess.run(["ffprobe", "-v", "error", *args, path],
+                              capture_output=True, text=True, check=True).stdout.split()
+
+    tracks = len(ff("-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0"))
+    duration = float(ff("-show_entries", "format=duration", "-of", "csv=p=0")[0])
+    num, _, den = ff("-select_streams", "v:0", "-show_entries", "stream=r_frame_rate",
+                     "-of", "csv=p=0")[0].partition("/")
+    return tracks, duration, float(num) / float(den or 1)
+
+
+MIC_LAG_FRAMES = 9
+
+
+def render_stretch(raw, start_s, seconds, chain, out_wav):
+    """Render `seconds` of the final mix from the raw OBS file, starting at
+    raw time `start_s` (video clock), through the voice chain and two-pass
+    loudness, to a 48 kHz 24-bit stereo WAV."""
+    import measure
+
+    tracks, duration, fps = probe(raw)
+    if tracks != 6:
+        raise ValueError(f"expected 6 audio tracks, found {tracks}")
+    shift = round(MIC_LAG_FRAMES / fps, 6)
+    if start_s < 0 or seconds <= 0:
+        raise ValueError(f"bad stretch: start {start_s}, length {seconds}")
+    if start_s + seconds + shift > duration:
+        raise ValueError(f"stretch {start_s}+{seconds} s runs past the end ({duration:.2f} s)")
+
+    inputs = {role: f"0:a:{TRACKS[role] - 1}" for role in ROLES}
+    graph = build_filtergraph(chain, inputs, shift) + f";[mix]atrim=duration={seconds}[cut]"
+    L = chain["loudness"]
+    target = f"I={L['I']}:TP={L['TP']}:LRA={L['LRA']}"
+    src = ["-ss", str(start_s), "-t", str(seconds + shift), "-i", raw]
+
+    first = measure.parse_loudnorm(measure.run_ffmpeg(
+        src + ["-filter_complex", graph + f";[cut]loudnorm={target}:print_format=json[out]",
+               "-map", "[out]", "-f", "null", "-"]))
+    second = (f"loudnorm={target}:measured_I={first['input_i']}:measured_TP={first['input_tp']}"
+              f":measured_LRA={first['input_lra']}:measured_thresh={first['input_thresh']}"
+              f":offset={first['target_offset']}:linear=true,aresample=48000")
+    measure.run_ffmpeg(src + ["-filter_complex", graph + f";[cut]{second}[out]",
+                              "-map", "[out]", "-c:a", "pcm_s24le", "-y", out_wav])
