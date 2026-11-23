@@ -87,3 +87,51 @@ class RenderTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+FPS = 24000 / 1001
+FLASH = 120  # frame with a white flash; a beep starts at the same instant on the theme track
+
+
+def make_sync_mp4(path):
+    """12 s, 6 tracks. Frames 120-122 are white; track 5 (theme, no voice
+    chain) beeps for exactly those frames. Everything else is silent/black."""
+    t0, t1 = FLASH / FPS, (FLASH + 3) / FPS
+    args = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i",
+            f"color=c=black:s=320x180:r=24000/1001:d=12,"
+            f"drawbox=c=white:t=fill:enable='between(n,{FLASH},{FLASH + 2})'"]
+    for t in range(1, 7):
+        src = (f"sine=f=1000:d=12,volume='between(t,{t0},{t1})':eval=frame,aformat=channel_layouts=stereo"
+               if t == 5 else "anullsrc=r=48000:cl=stereo:d=12")
+        args += ["-f", "lavfi", "-i", src]
+    args += ["-map", "0:v"] + sum((["-map", f"{i}:a"] for i in range(1, 7)), [])
+    subprocess.run(args + ["-c:v", "libx264", "-c:a", "pcm_s16le", "-shortest",
+                           path.replace(".mp4", ".mov")], check=True)
+    return path.replace(".mp4", ".mov")
+
+
+def flash_minus_beep(path):
+    """Seconds from the beep onset to the first white frame in `path`."""
+    import re
+    err = subprocess.run(["ffmpeg", "-nostdin", "-hide_banner", "-i", path, "-vf",
+                          "signalstats,metadata=print:key=lavfi.signalstats.YAVG", "-an", "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    frames = re.findall(r"pts_time:([\d.]+)\s*\n.*?YAVG=([\d.]+)", err)
+    flash = next(float(t) for t, y in frames if float(y) > 128)
+    err = subprocess.run(["ffmpeg", "-nostdin", "-hide_banner", "-i", path, "-vn", "-af",
+                          "silencedetect=noise=-50dB:d=0.05", "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    beep = float(re.findall(r"silence_end: ([\d.]+)", err)[0])
+    return flash - beep
+
+
+class SyncTest(unittest.TestCase):
+    def test_off_grid_in_stays_in_sync(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            offsets = []
+            for name, in_frames in (("grid", 72), ("off", 72.6)):
+                raw = make_sync_mp4(os.path.join(tmp, f"{name}.mp4"))
+                out = render.render_final(raw, in_frames / FPS, 10.0, CHAIN)
+                offsets.append(flash_minus_beep(out))
+            # The off-grid In must give the same A/V offset as the on-grid one.
+            self.assertAlmostEqual(offsets[1], offsets[0], delta=0.005, msg=offsets)

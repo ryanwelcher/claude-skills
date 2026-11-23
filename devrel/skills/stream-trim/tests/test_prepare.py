@@ -47,6 +47,11 @@ class PureTest(unittest.TestCase):
         d = prepare.defaults([(0, 300.5), (5399.6, 5400)], 5400)
         self.assertEqual(d["out"], 5400)
 
+    def test_defaults_silent_mic(self):
+        # A muted mic: one silence covering the whole file.
+        d = prepare.defaults([(0, 79.62)], 80)
+        self.assertEqual((d["in"], d["out"]), (0, 80))
+
     def test_peaks_from_pcm(self):
         samples = array.array("h", [0] * 2000)
         samples[3 * 50 + 7] = -32768

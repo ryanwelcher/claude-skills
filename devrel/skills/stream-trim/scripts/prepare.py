@@ -48,6 +48,9 @@ def parse_silences(stderr, duration):
 
 
 def defaults(silences, duration):
+    if silences and silences[0][0] <= 0 and silences[0][1] >= duration - END_SLACK:
+        # The mic is silent the whole way (muted?): nothing to go on.
+        return {"voice_start": 0, "voice_end": duration, "in": 0, "out": duration}
     voice_start = 0
     if silences and silences[0][0] <= 0 and silences[0][1] >= INTRO_MIN:
         voice_start = silences[0][1]

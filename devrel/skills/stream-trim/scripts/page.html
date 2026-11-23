@@ -60,20 +60,26 @@ let inT = 0, outT = 0; // seconds, video clock
 let dragging = null;   // 'in' | 'out' | 'seek'
 let polling = null;
 
+// Non-drop timecode from the frame count, like Premiere shows 23.976:
+// 24 frames per timecode second.
 function tc(t) {
-  const fps = Math.round(S.fps);
-  const total = Math.max(0, t);
-  const h = Math.floor(total / 3600), m = Math.floor(total % 3600 / 60), s = Math.floor(total % 60);
-  const f = Math.floor((total % 1) * S.fps + 1e-6) % fps;
-  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(f).padStart(2, '0')}`;
+  const base = Math.round(S.fps);
+  const n = Math.max(0, frameAt(t + 1e-6));
+  const ff = n % base, secs = Math.floor(n / base);
+  const h = Math.floor(secs / 3600), m = Math.floor(secs % 3600 / 60), s = secs % 60;
+  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(ff).padStart(2, '0')}`;
 }
 
 function snap(t) { return Math.min(S.duration, Math.max(0, Math.round(t * S.fps) / S.fps)); }
+// The frame on screen: currentTime sits inside a frame, so floor, not round.
+function frameAt(t) { return Math.floor(t * S.fps + 1e-6); }
+// Seek a little into frame k, so float error never shows frame k - 1.
+function seekFrame(k) { video.currentTime = Math.min(S.duration, Math.max(0, (k + 0.1) / S.fps)); }
 
 function readout() {
   $('in-t').textContent = tc(inT);
   $('out-t').textContent = tc(outT);
-  $('len-t').textContent = tc(outT - inT);
+  $('len-t').textContent = tc((Math.round(outT * S.fps) - Math.round(inT * S.fps)) / S.fps);
   $('now-t').textContent = tc(video.currentTime);
 }
 
@@ -127,13 +133,16 @@ function move(e) {
   const t = timeAt(e);
   if (dragging === 'in') inT = Math.min(t, outT - 1 / S.fps);
   else if (dragging === 'out') outT = Math.max(t, inT + 1 / S.fps);
-  else video.currentTime = t;
-  if (dragging !== 'seek') video.currentTime = dragging === 'in' ? inT : outT;
+  else seekFrame(frameAt(t + 0.5 / S.fps));
+  if (dragging !== 'seek') seekFrame(Math.round((dragging === 'in' ? inT : outT) * S.fps));
 }
 
 document.addEventListener('keydown', (e) => {
   if (!S || e.metaKey || e.ctrlKey || e.altKey) return;
-  const step = e.shiftKey ? 1 : 1 / S.fps;
+  // A focused button would also take Space/Enter (a stray Render).
+  if (e.target instanceof HTMLButtonElement) e.target.blur();
+  const step = e.shiftKey ? Math.round(S.fps) : 1;
+  const here = frameAt(video.currentTime);
   const k = e.key.toLowerCase();
   if (k === ' ') { video.paused ? video.play() : video.pause(); }
   else if (k === 'k') { video.pause(); video.playbackRate = 1; }
@@ -142,12 +151,12 @@ document.addEventListener('keydown', (e) => {
     else { video.playbackRate = 1; video.play(); }
   }
   else if (k === 'j') { video.currentTime = Math.max(0, video.currentTime - 5); }
-  else if (k === 'i') { const t = snap(video.currentTime); if (t < outT) inT = t; else flash('In has to be before Out'); }
-  else if (k === 'o') { const t = snap(video.currentTime); if (t > inT) outT = t; else flash('Out has to be after In'); }
-  else if (k === 'arrowleft') { video.pause(); video.currentTime = snap(video.currentTime - step); }
-  else if (k === 'arrowright') { video.pause(); video.currentTime = snap(video.currentTime + step); }
-  else if (k === 'q') { video.currentTime = inT; }
-  else if (k === 'w') { video.currentTime = outT; }
+  else if (k === 'i') { const t = here / S.fps; if (t < outT) inT = t; else flash('In has to be before Out'); }
+  else if (k === 'o') { const t = here / S.fps; if (t > inT) outT = t; else flash('Out has to be after In'); }
+  else if (k === 'arrowleft') { video.pause(); seekFrame(here - step); }
+  else if (k === 'arrowright') { video.pause(); seekFrame(here + step); }
+  else if (k === 'q') { seekFrame(Math.round(inT * S.fps)); }
+  else if (k === 'w') { seekFrame(Math.round(outT * S.fps)); }
   else return;
   e.preventDefault();
 });
@@ -178,6 +187,7 @@ async function poll() { showRender(await (await fetch('/api/render')).json()); }
 function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
 $('render').addEventListener('click', async () => {
+  $('render').blur();
   $('render').disabled = true;
   const res = await fetch('/api/render', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ in: inT, out: outT }) });
   if (res.status !== 202) {
@@ -194,10 +204,10 @@ $('stop').addEventListener('click', () => fetch('/api/stop', { method: 'POST' })
 
 (async () => {
   S = await (await fetch('/api/state')).json();
-  inT = S.in; outT = S.out;
+  inT = snap(S.in); outT = snap(S.out);
   S.peakMax = Math.max(1e-4, ...S.peaks.filter((p) => p > 0).sort((a, b) => a - b).slice(-Math.max(1, Math.floor(S.peaks.length / 200))).slice(0, 1));
   $('name').textContent = S.name;
-  video.addEventListener('loadedmetadata', () => { video.currentTime = inT; }, { once: true });
+  video.addEventListener('loadedmetadata', () => seekFrame(Math.round(inT * S.fps)), { once: true });
   showRender(S.render);
   requestAnimationFrame(tick);
 })();
