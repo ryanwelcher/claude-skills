@@ -242,3 +242,32 @@ and `scripts/`. Deployed the same way as the other devrel skills.
 ## Open questions
 
 None left for Ryan, other than the reference export for step 1.
+
+## Stage 1 result (2026-11-23)
+
+Passed. Ryan listened to the round 1 blind A/B on the Nov 12 stream
+(stretches at 5:00, 40:00 and 1:15:00 into the render, each 150 s,
+level-matched) and said: "the audio is good".
+
+Final `scripts/chain.json`:
+
+```json
+{
+  "mic_gain_db": 1.71,
+  "rumble_hz": 80,
+  "compand": {"attacks": 0.002, "decays": 0.05,
+              "points": [[-90, -90], [-84, -91], [-75, -77], [-68, -68], [-44, -33], [0, -1]]},
+  "deesser": {"i": 0.4, "m": 0.5, "f": 0.5},
+  "eq_db": {"250": 0.6, "500": 0.25, "2000": 0.6, "4000": 0.9, "8000": 0.3},
+  "presence": {"hz": 180, "db": 0, "q": 1.0},
+  "levels_db": {"guest": 0, "theme": 0, "firebot": 0},
+  "loudness": {"I": -17, "TP": -1, "LRA": 20}
+}
+```
+
+Round 1 numbers (ours minus reference): LRA +0.5 / +1.4 / +0.8 LU.
+Octave bands 63 Hz to 8 kHz within ±1.1 dB, except 125 Hz at -1.5 dB
+on stretch 1. Ours peaks at -1 dBTP; Premiere's render reaches +0.1.
+
+Not yet checked: the guest + StreamElements track (3) through the voice
+chain. Stage 2 should include one stretch with a guest or an alert.
