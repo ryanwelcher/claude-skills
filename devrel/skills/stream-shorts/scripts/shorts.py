@@ -22,6 +22,8 @@ shorts.json:
 Only file, start and end are required. A clip with "skip" set is left out
 unless it's asked for by number. "screen_x" is the old name for "pan_x".
 A layouts.json next to shorts.json adds layouts for this recording only.
+A top-level "mix_audio" (a path to stream-trim's short_audio.py) renders the
+audio through the stream-trim mix and voice chain instead of the mic alone.
 """
 import json, os, subprocess, sys
 
@@ -92,6 +94,8 @@ for clip in chosen:
     pan = clip.get("pan_x", clip.get("screen_x"))
     if pan is not None:
         cmd += ["--pan-x", str(pan)]
+    if manifest.get("mix_audio") and not mode:
+        cmd += ["--mix-audio", manifest["mix_audio"]]
     if clip.get("fixes"):
         cmd += ["--fixes", json.dumps(clip["fixes"])]
     cmd += [manifest["recording"], manifest["words"], str(clip["start"]), str(clip["end"]), out]

@@ -16,6 +16,10 @@
 #                  --screen-x is the old name and still works.
 #   --fixes JSON   per-clip caption fixes, {"heard": "meant"}, on top of
 #                  glossary.json.
+#   --mix-audio SCRIPT
+#                  use SCRIPT (stream-trim's short_audio.py) to render the
+#                  audio: the stream-trim mix and voice chain instead of the
+#                  mic track alone. Raw OBS recordings only. Render mode only.
 #   --preview      write the layout frame instead of the clip.
 #   --captions     print the caption text instead of rendering (no ffmpeg).
 #   --dry-run      print the ffmpeg command instead of running it.
@@ -34,6 +38,7 @@ set -euo pipefail
 LAYOUT_NAME=""
 PAN_X=""
 FIXES="{}"
+MIX_AUDIO=""
 MODE=render
 DRY=0
 while [ $# -gt 0 ]; do
@@ -41,6 +46,7 @@ while [ $# -gt 0 ]; do
     --layout) LAYOUT_NAME="$2"; shift 2 ;;
     --pan-x|--screen-x) PAN_X="$2"; shift 2 ;;
     --fixes) FIXES="$2"; shift 2 ;;
+    --mix-audio) MIX_AUDIO="$2"; shift 2 ;;
     --preview) MODE=preview; shift ;;
     --captions) MODE=captions; shift ;;
     --dry-run) DRY=1; shift ;;
@@ -49,7 +55,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ $# -ne 5 ]; then
-  echo "ERROR: usage: render-short.sh [--layout NAME] [--pan-x PX] [--fixes JSON] [--preview|--captions] [--dry-run] <recording> <words.json> <start> <end> <out>" >&2
+  echo "ERROR: usage: render-short.sh [--layout NAME] [--pan-x PX] [--fixes JSON] [--mix-audio SCRIPT] [--preview|--captions] [--dry-run] <recording> <words.json> <start> <end> <out>" >&2
   exit 1
 fi
 IN="$1"; WORDS="$2"; OUT="$5"
@@ -126,6 +132,24 @@ TMP="$(mktemp -d)"
 python3 "$SCRIPT_DIR/make-captions.py" --caption-y "$CAPTION_Y" --fixes "$FIXES" "$WORDS" "$S" "$E" "$TMP/captions.ass"
 
 mkdir -p "$(dirname "$OUT")"
+if [ -n "$MIX_AUDIO" ]; then
+  if [ "$AUDIO_TRACKS" -lt 6 ]; then
+    echo "ERROR: --mix-audio needs the raw OBS recording (6 audio tracks)" >&2
+    exit 1
+  fi
+  # The WAV starts at the video cut, so it needs no offset of its own.
+  run python3 "$MIX_AUDIO" "$IN" "$VS" "$DUR" "$TMP/audio.wav"
+  run ffmpeg -nostdin -loglevel error -stats -y \
+    -ss "$VS" -t "$DUR" -i "$IN" \
+    -i "$TMP/audio.wav" \
+    -filter_complex "${LAYOUT},ass=$TMP/captions.ass[v]" \
+    -map "[v]" -map 1:a \
+    -c:v h264_videotoolbox -b:v 12M -profile:v high \
+    -c:a aac -b:a 192k -ar 48000 \
+    -movflags +faststart "$OUT"
+  [ "$DRY" -eq 1 ] || echo "SHORT: $OUT"
+  exit 0
+fi
 run ffmpeg -nostdin -loglevel error -stats -y \
   -ss "$VS" -t "$DUR" -i "$IN" \
   -ss "$S" -t "$DUR" -i "$IN" \
