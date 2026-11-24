@@ -112,10 +112,14 @@ class TrimServer(ThreadingHTTPServer):
 
     def layouts(self):
         """({name: {"pan": [lo, hi], "x": default x} or None}, default name),
-        from stream-shorts' layouts.json overlaid with shorts/layouts.json."""
+        from stream-shorts' layouts.json overlaid with the profile's layouts
+        file and then shorts/layouts.json."""
         data, default = {}, None
         for path in (os.path.join(os.path.dirname(self.shorts_py), "layouts.json"),
+                     self.profile.get("layouts_path"),
                      os.path.join(self.shorts_dir, "layouts.json")):
+            if not path:
+                continue
             try:
                 with open(path) as f:
                     more = json.load(f)
@@ -134,7 +138,8 @@ class TrimServer(ThreadingHTTPServer):
         with self.lock:
             render_state = json.loads(json.dumps(self.shorts_status))
         layouts, default = self.layouts()
-        return {"edit": self.edit(), "shift": self.shift, "candidates": clips, "error": error,
+        return {"profile": self.profile["name"], "edit": self.edit(), "shift": self.shift,
+                "candidates": clips, "error": error,
                 "layouts": layouts, "default_layout": default, "render": render_state}
 
     def build_clip(self, pick, require_inside):
@@ -183,13 +188,18 @@ class TrimServer(ThreadingHTTPServer):
             elif os.path.exists(local):
                 os.remove(local)
             manifest = os.path.join(self.work, "manifest.json")
-            write_json(manifest, {"recording": self.raw, "words": words, "clips": [clip]})
+            write_json(manifest, {"recording": self.raw, "words": words,
+                                  **shorts_view.profile_fields(self.profile), "clips": [clip]})
             r = subprocess.run([sys.executable, self.shorts_py, mode, manifest,
-                                str(shorts_view.number(clip))],
+                                str(shorts_view.number(clip))], env=self.shorts_env(),
                                capture_output=True, text=True, timeout=300)
         if r.returncode != 0:
             raise ValueError(error_line(r.stderr) or f"{mode} failed")
         return clip, r.stdout
+
+    def shorts_env(self):
+        """shorts.py's environment: short_audio.py reads the profile from it."""
+        return {**os.environ, "STREAM_TRIM_PROFILE": self.profile["name"]}
 
     def preview_path(self, n, ext=".jpg"):
         """The still (.jpg) or draft (.draft.mp4) for candidate n in the cache."""
@@ -235,7 +245,8 @@ class TrimServer(ThreadingHTTPServer):
                                              "phase": None, "percent": None}
                 for c in clips}}
         os.makedirs(self.shorts_dir, exist_ok=True)
-        write_json(manifest, shorts_view.merge_picks(existing, self.raw, built[0][1], SHORT_AUDIO, clips))
+        write_json(manifest, shorts_view.merge_picks(existing, self.raw, built[0][1], SHORT_AUDIO, clips,
+                                                     self.profile))
         threading.Thread(target=self._render_shorts, args=(manifest, clips), daemon=True).start()
         return 202, {"ok": True}
 
@@ -244,7 +255,7 @@ class TrimServer(ThreadingHTTPServer):
         ffmpeg's -stats lines ("time=HH:MM:SS.ss", ended by \\r) give the
         encoding percent. Returns (exit code, stdout, stderr)."""
         dur = shorts_view.to_secs(clip["end"]) - shorts_view.to_secs(clip["start"]) + 0.6
-        p = subprocess.Popen([sys.executable, self.shorts_py, manifest, key],
+        p = subprocess.Popen([sys.executable, self.shorts_py, manifest, key], env=self.shorts_env(),
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         err, buf = [], b""
         while True:
@@ -339,7 +350,8 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/api/state":
             out = render.final_path(s.raw)
             self.send_json(200, {**s.analysis, "peaks": s.peaks["peaks"], "per_s": s.peaks["per_s"],
-                                 "name": os.path.basename(s.raw), "render": s.render_status(),
+                                 "name": os.path.basename(s.raw), "profile": s.profile["name"],
+                                 "render": s.render_status(),
                                  "output": out, "exists": os.path.exists(out), "edit": s.edit()})
         elif self.path == "/api/shorts":
             self.send_json(200, s.shorts_state())
@@ -464,7 +476,8 @@ if __name__ == "__main__":
         sys.exit("usage: server.py <raw.mp4> [--profile NAME]")
     try:
         profile = profiles.load(name)
-    except profiles.ProfileError as e:
+        profiles.check_recording(profile, audio_chain.probe(args[0], video=False)[0])
+    except (profiles.ProfileError, OSError, subprocess.CalledProcessError) as e:
         sys.exit(f"ERROR: {e}")
     try:
         srv = make_server(args[0], profile)

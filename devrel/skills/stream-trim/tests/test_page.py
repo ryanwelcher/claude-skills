@@ -18,6 +18,9 @@ class PageTest(unittest.TestCase):
         self.assertIn('id="shorts-progress"', page)
         self.assertIn("st.percent", page)
         self.assertIn("Making the audio", page)
+        # The profile name shows next to the recording.
+        self.assertIn('id="profile"', page)
+        self.assertIn("S.profile", page)
         # Suggested caption fixes start ticked and applied.
         self.assertIn('class="sugg" data-i="${i}" checked', page)
         self.assertIn("accepted: Object.fromEntries(sugg)", page)

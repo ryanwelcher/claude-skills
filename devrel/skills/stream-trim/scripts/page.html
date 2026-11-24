@@ -51,7 +51,7 @@
 <body>
 <main>
   <header>
-    <h1 id="name">Loading...</h1>
+    <h1><span id="name">Loading...</span> <span id="profile" class="note"></span></h1>
     <div class="tabs"><button id="tab-trim" class="on">Trim</button><button id="tab-shorts" disabled>Shorts</button></div>
   </header>
   <section id="trim-view">
@@ -245,6 +245,7 @@ $('stop').addEventListener('click', () => fetch('/api/stop', { method: 'POST' })
   if (S.edit) enableShorts();
   S.peakMax = Math.max(1e-4, ...S.peaks.filter((p) => p > 0).sort((a, b) => a - b).slice(-Math.max(1, Math.floor(S.peaks.length / 200))).slice(0, 1));
   $('name').textContent = S.name;
+  $('profile').textContent = '(' + S.profile + ' profile)';
   video.addEventListener('loadedmetadata', () => seekFrame(Math.round(inT * S.fps)), { once: true });
   showRender(S.render);
   requestAnimationFrame(tick);

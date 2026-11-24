@@ -60,11 +60,22 @@ def load_candidates(path, edit, shift):
     return out
 
 
-def merge_picks(existing, recording, words, mix_audio, picks):
+def profile_fields(profile):
+    """The profile's recording setup, as stream-shorts' shorts.json fields."""
+    out = {"mic_track": int(profile["mic"]), "mic_lag_frames": profile["mic_lag_frames"],
+           "transcript_lag_frames": profile["transcript_lag_frames"],
+           "caption_font": profile["caption_font"]}
+    if profile.get("layouts_path"):
+        out["layouts"] = profile["layouts_path"]
+    return out
+
+
+def merge_picks(existing, recording, words, mix_audio, picks, profile):
     if isinstance(existing, list):
         existing = {"clips": existing}
     kept = [c for c in (existing or {}).get("clips", [])
             if c.get("file") not in {p["file"] for p in picks}]
     clips = sorted(kept + list(picks), key=lambda c: (number(c) is None, number(c) or 0))
-    return {**(existing or {}), "recording": recording, "words": words,
-            "mix_audio": mix_audio, "clips": clips}
+    existing = {k: v for k, v in (existing or {}).items() if k != "layouts"}
+    return {**existing, "recording": recording, "words": words,
+            "mix_audio": mix_audio, **profile_fields(profile), "clips": clips}

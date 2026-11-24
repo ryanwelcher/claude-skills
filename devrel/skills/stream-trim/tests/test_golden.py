@@ -107,7 +107,8 @@ def shell_commands(tmp):
     manifest = os.path.join(tmp, "shorts.json")
     with open(manifest, "w") as f:
         json.dump(shorts_view.merge_picks(None, raw, words, "/x/short_audio.py",
-                                          [{"file": "01-x.mp4", "start": "00:00:01.00", "end": "00:00:03.00"}]), f)
+                                          [{"file": "01-x.mp4", "start": "00:00:01.00", "end": "00:00:03.00"}],
+                                          profiles.load("ryan-obs")), f)
     r = subprocess.run([sys.executable, os.path.join(SHORTS_SCRIPTS, "shorts.py"), "--dry-run", manifest, "1"],
                        capture_output=True, text=True, check=True)
     got["shorts_py"] = r.stdout

@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import threading
@@ -15,12 +16,16 @@ sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
 import prepare  # noqa: E402
 import profiles  # noqa: E402
 import server  # noqa: E402
+from test_measure import make_mp4  # noqa: E402
 
 
 STUB = """import json, os, sys, time
 args = sys.argv[1:]
 with open(os.environ["STUB_LOG"], "a") as f:
     f.write(json.dumps(args) + "\\n")
+if os.environ.get("STUB_PROFILE_LOG"):
+    with open(os.environ["STUB_PROFILE_LOG"], "a") as f:
+        f.write(os.environ.get("STREAM_TRIM_PROFILE", "-") + "\\n")
 mode = args.pop(0) if args[0].startswith("--") else None
 manifest, n = args
 m = json.load(open(manifest))
@@ -319,6 +324,80 @@ class ServerTest(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.shorts, "01-one.draft.mp4")))
         code, body = self.post("/api/shorts/draft", {"n": 9, "start": 20, "end": 30})
         self.assertEqual(code, 400)
+
+    def test_state_has_profile(self):
+        self.assertEqual(self.state()["profile"], "ryan-obs")
+        self.write_edit()
+        self.assertEqual(self.shorts_state()["profile"], "ryan-obs")
+
+    def test_shorts_json_has_profile_fields(self):
+        self.write_edit()
+        self.write_candidates()
+        self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 20, "end": 30}]})
+        self.wait_shorts("done")
+        with open(os.path.join(self.shorts, "shorts.json")) as f:
+            m = json.load(f)
+        self.assertEqual((m["mic_track"], m["mic_lag_frames"], m["transcript_lag_frames"]), (2, 9, 9))
+        self.assertEqual(m["caption_font"], {"name": "Jost SemiBold", "file": "Jost-SemiBold.ttf"})
+        self.assertNotIn("layouts", m)
+
+    def test_work_manifest_has_profile_fields(self):
+        self.write_edit()
+        self.write_candidates()
+        self.post("/api/shorts/preview", {"n": 1, "start": 20, "end": 30})
+        with open(self.stub_calls()[-1][1]) as f:
+            m = json.load(f)
+        self.assertEqual(m["mic_track"], 2)
+        self.assertEqual(m["caption_font"]["name"], "Jost SemiBold")
+
+    def test_shorts_env_profile(self):
+        log = os.path.join(self.tmp.name, "profile.log")
+        self.write_edit()
+        self.write_candidates()
+        with mock.patch.dict(os.environ, {"STUB_PROFILE_LOG": log}):
+            self.post("/api/shorts/preview", {"n": 1, "start": 20, "end": 30})
+            self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 20, "end": 30}]})
+            self.wait_shorts("done")
+        with open(log) as f:
+            self.assertEqual(set(f.read().split()), {"ryan-obs"})
+
+    def test_profile_layouts_overlay(self):
+        config = os.path.join(self.tmp.name, "config", "profiles")
+        os.makedirs(config)
+        band = {"bands": [{"name": "a", "crop": [10, 10, 300, 0], "height": 1920, "pan": [0, 900]}]}
+        with open(os.path.join(config, "mate-layouts.json"), "w") as f:
+            json.dump({"default": "cam", "layouts": {"cam": band}}, f)
+        with open(profiles.find("ryan-obs")) as f:
+            mate = json.load(f)
+        mate.update(name="mate", layouts="mate-layouts.json", chain=os.path.abspath(
+            os.path.join(HERE, "..", "scripts", "chain.json")))
+        with open(os.path.join(config, "mate.json"), "w") as f:
+            json.dump(mate, f)
+        with mock.patch.dict(os.environ, {"STREAM_TRIM_CONFIG": os.path.dirname(config)}):
+            p = profiles.load("mate")
+        srv = server.make_server(self.raw, p, port=0, shorts_py=self.stub)
+        self.addCleanup(srv.server_close)
+        layouts, default = srv.layouts()
+        self.assertEqual((layouts["cam"]["x"], default), (300, "cam"))
+        os.makedirs(self.shorts, exist_ok=True)
+        band2 = {"bands": [{"name": "a", "crop": [10, 10, 500, 0], "height": 1920, "pan": [0, 900]}]}
+        with open(os.path.join(self.shorts, "layouts.json"), "w") as f:
+            json.dump({"layouts": {"cam": band2}}, f)
+        self.assertEqual(srv.layouts()[0]["cam"]["x"], 500)
+
+    def test_server_cli_mismatch(self):
+        raw = os.path.join(self.tmp.name, "two.mp4")
+        make_mp4(raw, 2, 2)
+        config = os.path.join(self.tmp.name, "cfg")
+        os.makedirs(config)
+        with open(os.path.join(config, "default"), "w") as f:
+            f.write("ryan-obs\n")
+        r = subprocess.run([sys.executable, os.path.join(HERE, "..", "scripts", "server.py"), raw],
+                           capture_output=True, text=True, timeout=30,
+                           env={**os.environ, "STREAM_TRIM_CONFIG": config})
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("ERROR: this recording has 2 audio tracks", r.stderr)
+        self.assertNotIn("READY", r.stdout)
 
     def test_shorts_render(self):
         self.write_edit()

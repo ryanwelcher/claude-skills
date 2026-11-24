@@ -6,6 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
+import profiles  # noqa: E402
 import shorts_view as sv  # noqa: E402
 
 EDIT = {"in": 100, "out": 200}
@@ -14,6 +15,9 @@ SHIFT = 0.375
 
 def clip(n, start, end, **extra):
     return {"file": f"{n:02d}-c{n}.mp4", "start": start, "end": end, **extra}
+
+
+RYAN = profiles.load("ryan-obs")
 
 
 class ShortsViewTest(unittest.TestCase):
@@ -52,13 +56,13 @@ class ShortsViewTest(unittest.TestCase):
     def test_merge_keeps_and_replaces(self):
         existing = {"recording": "old", "words": "w", "clips": [clip(1, 1, 2), clip(2, 3, 4)]}
         new2 = clip(2, 30, 40, hook="new")
-        got = sv.merge_picks(existing, "/raw.mp4", "/words.json", "/sa.py", [clip(3, 5, 6), new2])
+        got = sv.merge_picks(existing, "/raw.mp4", "/words.json", "/sa.py", [clip(3, 5, 6), new2], RYAN)
         self.assertEqual([c["file"] for c in got["clips"]], ["01-c1.mp4", "02-c2.mp4", "03-c3.mp4"])
         self.assertEqual(got["clips"][1], new2)
         self.assertEqual((got["recording"], got["words"], got["mix_audio"]), ("/raw.mp4", "/words.json", "/sa.py"))
-        bare = sv.merge_picks([clip(1, 1, 2)], "/raw.mp4", "/w", "/sa.py", [clip(2, 3, 4)])
+        bare = sv.merge_picks([clip(1, 1, 2)], "/raw.mp4", "/w", "/sa.py", [clip(2, 3, 4)], RYAN)
         self.assertEqual([c["file"] for c in bare["clips"]], ["01-c1.mp4", "02-c2.mp4"])
-        self.assertEqual(sv.merge_picks(None, "/r", "/w", "/s", [clip(1, 1, 2)])["clips"], [clip(1, 1, 2)])
+        self.assertEqual(sv.merge_picks(None, "/r", "/w", "/s", [clip(1, 1, 2)], RYAN)["clips"], [clip(1, 1, 2)])
 
 
 if __name__ == "__main__":
