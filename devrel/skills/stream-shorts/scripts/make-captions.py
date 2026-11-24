@@ -36,6 +36,7 @@ GLOSSARY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "glossary.js
 ap = argparse.ArgumentParser()
 ap.add_argument("--caption-y", type=int, default=900)
 ap.add_argument("--fixes", default="{}")
+ap.add_argument("--font", default=FONT)
 ap.add_argument("--text", action="store_true")
 ap.add_argument("words_path")
 ap.add_argument("start", type=float)
@@ -155,5 +156,5 @@ Style: Face,{font},{size},&H00FFFFFF,&H00FFFFFF,&H00FFFFFF,&H00000000,0,0,0,0,10
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-""".format(font=FONT, size=SIZE))
+""".format(font=args.font, size=SIZE))
     fh.write("\n".join(events) + "\n")

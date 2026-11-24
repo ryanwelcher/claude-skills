@@ -25,6 +25,11 @@ unless it's asked for by number. "screen_x" is the old name for "pan_x".
 A layouts.json next to shorts.json adds layouts for this recording only.
 A top-level "mix_audio" (a path to stream-trim's short_audio.py) renders the
 audio through the stream-trim mix and voice chain instead of the mic alone.
+stream-trim also writes its profile's setup as top-level fields: "mic_track"
+(1-based OBS track), "mic_lag_frames", "transcript_lag_frames",
+"caption_font" ({"name", "file"}) and "layouts" (a layouts file, applied
+before the layouts.json next to shorts.json). Without them render-short.sh
+uses its defaults.
 """
 import json, os, subprocess, sys
 
@@ -60,7 +65,15 @@ for key in ("recording", "words"):
     if not manifest.get(key):
         fail("%s has no \"%s\"" % (manifest_path, key))
 out_dir = os.path.dirname(manifest_path)
-os.environ["SHORTS_LAYOUTS"] = os.path.join(out_dir, "layouts.json")
+os.environ["SHORTS_LAYOUTS"] = os.pathsep.join(
+    ([manifest["layouts"]] if manifest.get("layouts") else []) + [os.path.join(out_dir, "layouts.json")])
+SETUP = []
+for key, flag in (("mic_track", "--mic-track"), ("mic_lag_frames", "--mic-lag-frames"),
+                  ("transcript_lag_frames", "--transcript-lag-frames")):
+    if manifest.get(key) is not None:
+        SETUP += [flag, str(manifest[key])]
+if manifest.get("caption_font"):
+    SETUP += ["--font-name", manifest["caption_font"]["name"], "--font-file", manifest["caption_font"]["file"]]
 
 def number(clip):
     head = clip["file"].split("-", 1)[0]
@@ -99,6 +112,8 @@ for clip in chosen:
         cmd += ["--pan-x", str(pan)]
     if manifest.get("mix_audio") and not mode:
         cmd += ["--mix-audio", manifest["mix_audio"]]
+    if mode != "--captions":
+        cmd += SETUP
     if clip.get("fixes"):
         cmd += ["--fixes", json.dumps(clip["fixes"])]
     cmd += [manifest["recording"], manifest["words"], str(clip["start"]), str(clip["end"]), out]

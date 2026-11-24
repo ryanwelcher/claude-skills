@@ -20,6 +20,14 @@
 #                  use SCRIPT (stream-trim's short_audio.py) to render the
 #                  audio: the stream-trim mix and voice chain instead of the
 #                  mic track alone. Raw OBS recordings only. Render mode only.
+#   --mic-track N, --mic-lag-frames F, --transcript-lag-frames F
+#                  the recording setup, from a stream-trim profile: the mic's
+#                  OBS track (1-based), how many frames late the mic runs, and
+#                  how late the track the transcript came from runs. Without
+#                  them: the raw OBS layout (mic on track 2, both 9 frames)
+#                  for 6+ tracks, else mic on track 1 and no lag.
+#   --font-name NAME, --font-file FILE
+#                  caption font (default Jost SemiBold, Jost-SemiBold.ttf).
 #   --draft        a quick look at the clip: 540x960, mic audio only (ignores
 #                  --mix-audio), same cut, crop and captions.
 #   --preview      write the layout frame instead of the clip.
@@ -41,6 +49,11 @@ LAYOUT_NAME=""
 PAN_X=""
 FIXES="{}"
 MIX_AUDIO=""
+MIC_TRACK=""
+MIC_LAG=""
+TRANSCRIPT_LAG=""
+FONT_NAME=""
+FONT_FILE="Jost-SemiBold.ttf"
 DRAFT=0
 MODE=render
 DRY=0
@@ -50,6 +63,11 @@ while [ $# -gt 0 ]; do
     --pan-x|--screen-x) PAN_X="$2"; shift 2 ;;
     --fixes) FIXES="$2"; shift 2 ;;
     --mix-audio) MIX_AUDIO="$2"; shift 2 ;;
+    --mic-track) MIC_TRACK="$2"; shift 2 ;;
+    --mic-lag-frames) MIC_LAG="$2"; shift 2 ;;
+    --transcript-lag-frames) TRANSCRIPT_LAG="$2"; shift 2 ;;
+    --font-name) FONT_NAME="$2"; shift 2 ;;
+    --font-file) FONT_FILE="$2"; shift 2 ;;
     --draft) DRAFT=1; shift ;;
     --preview) MODE=preview; shift ;;
     --captions) MODE=captions; shift ;;
@@ -98,12 +116,26 @@ AUDIO_TRACKS="$(ffprobe -v error -select_streams a -show_entries stream=index -o
 FPS="$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "$IN")"
 if [ "$AUDIO_TRACKS" -ge 6 ]; then
   MIC=1
-  OFFSET="$(awk -v r="$FPS" 'BEGIN { split(r, f, "/"); print 9 * f[2] / f[1] }')"
+  DEFAULT_LAG=9
 else
   MIC=0
-  OFFSET=0
+  DEFAULT_LAG=0
 fi
+[ -z "$MIC_TRACK" ] || MIC=$((MIC_TRACK - 1))
+TRANSCRIPT_LAG="${TRANSCRIPT_LAG:-$DEFAULT_LAG}"
+MIC_LAG="${MIC_LAG:-$DEFAULT_LAG}"
+frames() { awk -v r="$FPS" -v n="$1" 'BEGIN { split(r, f, "/"); print n * f[2] / f[1] }'; }
+# Transcript times are on the clock of the track the transcript came from;
+# the video is cut that much earlier.
+OFFSET="$(frames "$TRANSCRIPT_LAG")"
 VS="$(awk -v s="$S" -v o="$OFFSET" 'BEGIN { v = s - o; print (v < 0 ? 0 : v) }')"
+# The mic plays MIC_LAG frames after the picture, so its cut starts that much
+# after the video's. With the same lag as the transcript that's S itself.
+if [ "$MIC_LAG" = "$TRANSCRIPT_LAG" ]; then
+  AS="$S"
+else
+  AS="$(awk -v v="$VS" -v l="$(frames "$MIC_LAG")" 'BEGIN { printf "%.6f", v + l }')"
+fi
 
 if [ "$MODE" = preview ]; then
   MID="$(awk -v v="$VS" -v d="$DUR" 'BEGIN { print v + d / 2 }')"
@@ -123,8 +155,12 @@ if ! grep -qw ass <<< "$FILTERS"; then
 fi
 
 # Without the brand font libass silently swaps in another one.
-if [ ! -f "$HOME/Library/Fonts/Jost-SemiBold.ttf" ] && [ ! -f "/Library/Fonts/Jost-SemiBold.ttf" ]; then
-  echo "ERROR: caption font missing. Install the static Jost-SemiBold.ttf (Google Fonts, Jost) into ~/Library/Fonts." >&2
+if [ ! -f "$HOME/Library/Fonts/$FONT_FILE" ] && [ ! -f "/Library/Fonts/$FONT_FILE" ]; then
+  if [ "$FONT_FILE" = "Jost-SemiBold.ttf" ]; then
+    echo "ERROR: caption font missing. Install the static Jost-SemiBold.ttf (Google Fonts, Jost) into ~/Library/Fonts." >&2
+  else
+    echo "ERROR: caption font missing. Install $FONT_FILE into ~/Library/Fonts." >&2
+  fi
   exit 1
 fi
 
@@ -133,7 +169,9 @@ fi
 TMP="$(mktemp -d)"
 # A dry run keeps the captions file so the printed command can be checked.
 [ "$DRY" -eq 1 ] || trap 'rm -rf "$TMP"' EXIT
-python3 "$SCRIPT_DIR/make-captions.py" --caption-y "$CAPTION_Y" --fixes "$FIXES" "$WORDS" "$S" "$E" "$TMP/captions.ass"
+FONT_ARGS=()
+[ -z "$FONT_NAME" ] || FONT_ARGS=(--font "$FONT_NAME")
+python3 "$SCRIPT_DIR/make-captions.py" --caption-y "$CAPTION_Y" --fixes "$FIXES" ${FONT_ARGS[@]+"${FONT_ARGS[@]}"} "$WORDS" "$S" "$E" "$TMP/captions.ass"
 
 mkdir -p "$(dirname "$OUT")"
 VSCALE=""
@@ -144,7 +182,8 @@ if [ "$DRAFT" -eq 1 ]; then
   VRATE=3M
 fi
 if [ -n "$MIX_AUDIO" ]; then
-  if [ "$AUDIO_TRACKS" -lt 6 ]; then
+  # With a profile's --mic-track, short_audio.py checks the tracks itself.
+  if [ -z "$MIC_TRACK" ] && [ "$AUDIO_TRACKS" -lt 6 ]; then
     echo "ERROR: --mix-audio needs the raw OBS recording (6 audio tracks)" >&2
     exit 1
   fi
@@ -163,7 +202,7 @@ if [ -n "$MIX_AUDIO" ]; then
 fi
 run ffmpeg -nostdin -loglevel error -stats -y \
   -ss "$VS" -t "$DUR" -i "$IN" \
-  -ss "$S" -t "$DUR" -i "$IN" \
+  -ss "$AS" -t "$DUR" -i "$IN" \
   -filter_complex "${LAYOUT},ass=$TMP/captions.ass${VSCALE}[v];[1:a:${MIC}]loudnorm=I=-14:TP=-1.5:LRA=11[a]" \
   -map "[v]" -map "[a]" \
   -c:v h264_videotoolbox -b:v "$VRATE" -profile:v high \

@@ -44,6 +44,12 @@ Everything about a clip lives in `shorts/shorts.json` next to the recording, and
    - `fixes`: caption fixes for this clip, `{"heard": "meant"}`.
    - `skip`: the reason a clip isn't rendered. Clips with `skip` set are left out of `all`.
 
+   When `stream-trim` writes this file, it also adds top-level fields from its profile. Keep them if you edit the file:
+   - `mix_audio`: the path to stream-trim's `short_audio.py`. Renders use the stream-trim mix and voice chain instead of the mic alone.
+   - `mic_track`, `mic_lag_frames`, `transcript_lag_frames`: the recording setup. The mic's OBS track (1-based), how many frames late the mic runs, and how late the transcript's track runs.
+   - `caption_font`: `{"name", "file"}` for the captions.
+   - `layouts`: a layouts file from the profile. A `layouts.json` next to `shorts.json` still wins over it.
+
 4. **Preview the layout** for each pick, then look at each jpg with Read:
    ```bash
    python3 ${CLAUDE_SKILL_DIR}/scripts/shorts.py --preview "<recording dir>/shorts/shorts.json" all

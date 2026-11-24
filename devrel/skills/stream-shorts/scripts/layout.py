@@ -13,9 +13,11 @@ scales it to 1080 wide by its height. Heights add up to 1920. One band may have
 a "pan" range: pan_x replaces that band's crop x, so a clip can slide the crop
 toward what's being talked about.
 
-If SHORTS_LAYOUTS names a JSON file of the same shape, its layouts are added
-to (and override) the built-in ones. shorts.py points it at a layouts.json
-next to shorts.json, so a one-off scene doesn't need a plugin change.
+If SHORTS_LAYOUTS names JSON files of the same shape (joined with ":"), their
+layouts are added to (and override) the built-in ones, in order, so a later
+file wins; "default" too. shorts.py points it at a profile's layouts file and
+then a layouts.json next to shorts.json, so a one-off scene doesn't need a
+plugin change.
 """
 import json, os, sys
 
@@ -29,8 +31,9 @@ if len(sys.argv) not in (2, 3):
     fail("usage: layout.py <name> [pan_x]")
 
 data = json.load(open(LAYOUTS))
-extra = os.environ.get("SHORTS_LAYOUTS")
-if extra and os.path.exists(extra):
+for extra in (os.environ.get("SHORTS_LAYOUTS") or "").split(os.pathsep):
+    if not extra or not os.path.exists(extra):
+        continue
     try:
         more = json.load(open(extra))
     except ValueError as err:
