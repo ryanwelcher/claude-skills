@@ -12,11 +12,11 @@ The audio settings (mix and voice chain) live in `scripts/chain.json`. They were
 
 ## Steps
 
-1. **Check ffmpeg** has the Mac hardware encoder. Read the list into a variable first, because `grep -q` on a pipe fails under pipefail:
+1. **Check ffmpeg** has the Mac hardware encoder (for the preview) and libx265 (for the final). Read the list into a variable first, because `grep -q` on a pipe fails under pipefail:
    ```bash
-   enc=$(ffmpeg -hide_banner -encoders 2>/dev/null); case "$enc" in *h264_videotoolbox*) echo OK ;; *) echo MISSING ;; esac
+   enc=$(ffmpeg -hide_banner -encoders 2>/dev/null); case "$enc" in *h264_videotoolbox*libx265*) echo OK ;; *) echo MISSING ;; esac
    ```
-   If it prints `MISSING`, stop and tell Ryan. This needs an ffmpeg built for macOS with VideoToolbox.
+   If it prints `MISSING`, stop and tell Ryan. This needs an ffmpeg built for macOS with VideoToolbox and libx265.
 
 2. **Prepare** with `run_in_background`, quoting the path:
    ```bash

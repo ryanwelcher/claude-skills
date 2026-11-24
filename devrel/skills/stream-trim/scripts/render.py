@@ -1,5 +1,5 @@
 """Render the final video: frame-accurate In/Out on the raw OBS file, 4K
-H.264, the stream-trim mix and voice chain, two-pass loudness on the whole
+HEVC (software x265), the stream-trim mix and voice chain, two-pass loudness on the whole
 mix. Writes <name>-final.mp4 next to the recording, never over an existing one."""
 import os
 import subprocess
@@ -8,7 +8,10 @@ import tempfile
 import audio_chain
 import measure
 
-VIDEO = ["-c:v", "h264_videotoolbox", "-b:v", "5M", "-tag:v", "avc1"]
+# x265 beat VideoToolbox in a test on the Nov 12 stream: SSIM 0.997 at 1.9 Mbps,
+# against 0.995 at 5.5 Mbps for h264_videotoolbox, at about 2.5x realtime.
+VIDEO = ["-c:v", "libx265", "-preset", "fast", "-crf", "24", "-tag:v", "hvc1",
+         "-x265-params", "log-level=error"]
 AUDIO = ["-c:a", "aac", "-b:a", "320k", "-ar", "48000"]
 
 

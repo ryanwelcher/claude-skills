@@ -136,8 +136,11 @@ Ryan picked A.
 - Input: the original 4K recording, trimmed to In/Out (frame-accurate,
   so re-encoded, not stream-copied).
 - Video: 4K (same as the recording, which is what Ryan uploads), HEVC
-  through VideoToolbox. Bitrate or quality level is the builder's call,
-  aimed at YouTube 4K upload quality.
+  through software x265 (`-preset fast -crf 24`, tag hvc1). Ryan asked for
+  the smallest file at the highest quality. On a 20 s clip of the Nov 12
+  stream it measured SSIM 0.997 at 1.9 Mbps, against 0.995 at 5.5 Mbps for
+  h264_videotoolbox and 0.993 at 4.1 Mbps for hevc_videotoolbox, at about
+  2.5x realtime.
 - Audio (Ryan confirmed): one stereo mix of mic (2), guest +
   StreamElements (3), theme song (5) and Firebot (6). Full Mix (1) and
   Spotify (4) are dropped. The mic goes through the voice chain.

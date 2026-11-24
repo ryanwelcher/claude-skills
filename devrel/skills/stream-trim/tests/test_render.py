@@ -18,7 +18,7 @@ CHAIN = audio_chain.load_chain(os.path.join(HERE, "..", "scripts", "chain.json")
 
 def streams(path):
     out = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
-                          "stream=codec_type,codec_name,channels,sample_rate:format=duration",
+                          "stream=codec_type,codec_name,codec_tag_string,channels,sample_rate:format=duration",
                           "-of", "json", path], capture_output=True, text=True, check=True).stdout
     import json
     return json.loads(out)
@@ -56,7 +56,7 @@ class RenderTest(unittest.TestCase):
         audio = next(s for s in info["streams"] if s["codec_type"] == "audio")
         video = next(s for s in info["streams"] if s["codec_type"] == "video")
         self.assertEqual((audio["codec_name"], audio["channels"], audio["sample_rate"]), ("aac", 2, "48000"))
-        self.assertEqual(video["codec_name"], "h264")
+        self.assertEqual((video["codec_name"], video.get("codec_tag_string")), ("hevc", "hvc1"))
         self.assertFalse(os.path.exists(self.partial))
 
     def test_render_final_refuses_existing(self):
