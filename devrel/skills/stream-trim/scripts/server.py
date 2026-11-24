@@ -1,6 +1,6 @@
 """Local server for the stream-trim page: the page, the ranged preview, and
 a small JSON API to read state and start/stop the final render, and the
-Shorts view: previews, captions and renders through stream-shorts.
+Shorts view: previews, drafts, captions and renders through stream-shorts.
 
   python3 server.py <raw.mp4>     prints: READY http://127.0.0.1:<port>/
 Run prepare.py on the recording first."""
@@ -169,7 +169,7 @@ class TrimServer(ThreadingHTTPServer):
         return clip, words
 
     def run_work(self, mode, pick):
-        """Run shorts.py --preview or --captions on a one-clip manifest in
+        """Run shorts.py --preview, --draft or --captions on a one-clip manifest in
         the cache. Returns (clip, stdout). Raises ValueError on a failure."""
         clip, words = self.build_clip(pick, require_inside=False)
         with self.work_lock:
@@ -189,10 +189,11 @@ class TrimServer(ThreadingHTTPServer):
             raise ValueError(error_line(r.stderr) or f"{mode} failed")
         return clip, r.stdout
 
-    def preview_path(self, n):
+    def preview_path(self, n, ext=".jpg"):
+        """The still (.jpg) or draft (.draft.mp4) for candidate n in the cache."""
         clips, _, _ = self.candidates()
         cand = next((c for c in clips or [] if c["n"] == n), None)
-        return cand and os.path.join(self.work, os.path.splitext(cand["file"])[0] + ".jpg")
+        return cand and os.path.join(self.work, os.path.splitext(cand["file"])[0] + ext)
 
     def start_shorts(self, picks):
         """Returns (http code, body)."""
@@ -290,7 +291,14 @@ class Handler(BaseHTTPRequestHandler):
         s = self.server
         path = self.path.split("?", 1)[0]
         m = re.fullmatch(r"/shorts/preview/(\d+)\.jpg", path)
-        if m:
+        d = re.fullmatch(r"/shorts/draft/(\d+)\.mp4", path)
+        if d:
+            mp4 = s.preview_path(int(d.group(1)), ".draft.mp4")
+            if mp4 and os.path.exists(mp4):
+                self.send_ranged(mp4)
+            else:
+                self.send_json(404, {"error": "no such draft"})
+        elif m:
             jpg = s.preview_path(int(m.group(1)))
             if jpg:
                 self.send_file(jpg, "image/jpeg")
@@ -329,7 +337,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(400, {"error": str(e) or "bad request"})
                 return
             self.send_json(*s.start_render(float(in_s), float(out_s)))
-        elif self.path in ("/api/shorts/preview", "/api/shorts/captions", "/api/shorts/render"):
+        elif self.path in ("/api/shorts/preview", "/api/shorts/draft", "/api/shorts/captions",
+                           "/api/shorts/render"):
             try:
                 body = json.loads(raw_body)
                 if not isinstance(body, dict):
@@ -340,7 +349,7 @@ class Handler(BaseHTTPRequestHandler):
             if self.path == "/api/shorts/render":
                 self.send_json(*s.start_shorts(body.get("picks")))
                 return
-            mode = "--preview" if self.path.endswith("preview") else "--captions"
+            mode = "--" + self.path.rsplit("/", 1)[1]
             try:
                 clip, stdout = s.run_work(mode, body)
             except ValueError as e:
@@ -349,6 +358,10 @@ class Handler(BaseHTTPRequestHandler):
             if mode == "--captions":
                 text = "\n".join(l for l in stdout.splitlines() if not l.startswith("== "))
                 self.send_json(200, {"text": text})
+            elif mode == "--draft":
+                n = shorts_view.number(clip)
+                mtime = os.path.getmtime(s.preview_path(n, ".draft.mp4"))
+                self.send_json(200, {"url": f"/shorts/draft/{n}.mp4?v={mtime}"})
             else:
                 n = shorts_view.number(clip)
                 mtime = os.path.getmtime(s.preview_path(n))

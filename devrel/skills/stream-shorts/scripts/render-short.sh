@@ -20,6 +20,8 @@
 #                  use SCRIPT (stream-trim's short_audio.py) to render the
 #                  audio: the stream-trim mix and voice chain instead of the
 #                  mic track alone. Raw OBS recordings only. Render mode only.
+#   --draft        a quick look at the clip: 540x960, mic audio only (ignores
+#                  --mix-audio), same cut, crop and captions.
 #   --preview      write the layout frame instead of the clip.
 #   --captions     print the caption text instead of rendering (no ffmpeg).
 #   --dry-run      print the ffmpeg command instead of running it.
@@ -39,6 +41,7 @@ LAYOUT_NAME=""
 PAN_X=""
 FIXES="{}"
 MIX_AUDIO=""
+DRAFT=0
 MODE=render
 DRY=0
 while [ $# -gt 0 ]; do
@@ -47,6 +50,7 @@ while [ $# -gt 0 ]; do
     --pan-x|--screen-x) PAN_X="$2"; shift 2 ;;
     --fixes) FIXES="$2"; shift 2 ;;
     --mix-audio) MIX_AUDIO="$2"; shift 2 ;;
+    --draft) DRAFT=1; shift ;;
     --preview) MODE=preview; shift ;;
     --captions) MODE=captions; shift ;;
     --dry-run) DRY=1; shift ;;
@@ -55,7 +59,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ $# -ne 5 ]; then
-  echo "ERROR: usage: render-short.sh [--layout NAME] [--pan-x PX] [--fixes JSON] [--mix-audio SCRIPT] [--preview|--captions] [--dry-run] <recording> <words.json> <start> <end> <out>" >&2
+  echo "ERROR: usage: render-short.sh [--layout NAME] [--pan-x PX] [--fixes JSON] [--mix-audio SCRIPT] [--draft|--preview|--captions] [--dry-run] <recording> <words.json> <start> <end> <out>" >&2
   exit 1
 fi
 IN="$1"; WORDS="$2"; OUT="$5"
@@ -132,6 +136,13 @@ TMP="$(mktemp -d)"
 python3 "$SCRIPT_DIR/make-captions.py" --caption-y "$CAPTION_Y" --fixes "$FIXES" "$WORDS" "$S" "$E" "$TMP/captions.ass"
 
 mkdir -p "$(dirname "$OUT")"
+VSCALE=""
+VRATE=12M
+if [ "$DRAFT" -eq 1 ]; then
+  MIX_AUDIO=""
+  VSCALE=",scale=540:960"
+  VRATE=3M
+fi
 if [ -n "$MIX_AUDIO" ]; then
   if [ "$AUDIO_TRACKS" -lt 6 ]; then
     echo "ERROR: --mix-audio needs the raw OBS recording (6 audio tracks)" >&2
@@ -153,9 +164,9 @@ fi
 run ffmpeg -nostdin -loglevel error -stats -y \
   -ss "$VS" -t "$DUR" -i "$IN" \
   -ss "$S" -t "$DUR" -i "$IN" \
-  -filter_complex "${LAYOUT},ass=$TMP/captions.ass[v];[1:a:${MIC}]loudnorm=I=-14:TP=-1.5:LRA=11[a]" \
+  -filter_complex "${LAYOUT},ass=$TMP/captions.ass${VSCALE}[v];[1:a:${MIC}]loudnorm=I=-14:TP=-1.5:LRA=11[a]" \
   -map "[v]" -map "[a]" \
-  -c:v h264_videotoolbox -b:v 12M -profile:v high \
+  -c:v h264_videotoolbox -b:v "$VRATE" -profile:v high \
   -c:a aac -b:a 192k -ar 48000 \
   -movflags +faststart "$OUT"
 

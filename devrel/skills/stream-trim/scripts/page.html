@@ -35,7 +35,9 @@
   .card .times { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin: 10px 0; font: 600 14px ui-monospace, Menlo, monospace; }
   .card .times button { padding: 3px 9px; font-size: 12px; background: #34314a; }
   .card .body { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
-  .card img { width: 200px; aspect-ratio: 9 / 16; object-fit: cover; background: #000; border-radius: 6px; }
+  .card img, .card video { width: 200px; aspect-ratio: 9 / 16; object-fit: cover; background: #000; border-radius: 6px; display: block; }
+  .card video[hidden], .card img[hidden] { display: none; }
+  .card .play { margin-top: 8px; width: 200px; }
   .card pre { white-space: pre-wrap; font: 13px/1.5 ui-monospace, Menlo, monospace; background: var(--bg); padding: 8px 10px; border-radius: 6px; max-height: 220px; overflow: auto; margin: 6px 0; }
   .card textarea { width: 100%; min-height: 48px; background: var(--bg); color: var(--text); border: 1px solid #34314a; border-radius: 6px; font: 13px ui-monospace, Menlo, monospace; padding: 6px 8px; }
   .card input[type=range] { width: 100%; }
@@ -331,7 +333,11 @@ function drawCards() {
         <span class="warn"></span>
       </div>
       <div class="body">
-        <img class="pv" alt="">
+        <div>
+          <img class="pv" alt="">
+          <video class="dv" controls playsinline hidden></video>
+          <button class="play" title="A quick 540x960 draft with the mic audio only">Play</button>
+        </div>
         <div>
           ${pan ? `<label class="note">Screen crop <input type="range" class="pan" min="${pan.pan[0]}" max="${pan.pan[1]}" value="${k.pan_x}"></label>` : ''}
           <div class="note">Captions</div><pre class="cap">Loading...</pre>
@@ -358,6 +364,7 @@ function drawCards() {
     let typing = null;
     el.querySelector('.fixes').addEventListener('input', () => { clearTimeout(typing); typing = setTimeout(() => captions(c.n), 600); });
     el.querySelector('.pick').addEventListener('change', countPicks);
+    el.querySelector('.play').addEventListener('click', (e) => { e.currentTarget.blur(); play(c.n); });
     drawTimes(k);
     refresh(c.n, true);
   }
@@ -390,9 +397,39 @@ async function post(url, data) {
   return [res.status, json];
 }
 
+// Back to the still: the draft no longer matches the card.
+function dropDraft(k) {
+  const v = k.el.querySelector('.dv');
+  if (!k.draft) return;
+  k.draft = null;
+  v.pause(); v.removeAttribute('src'); v.load();
+  v.hidden = true; k.el.querySelector('.pv').hidden = false;
+}
+
+// A quick draft of the short, made on the same queue as the stills.
+function play(n) {
+  const k = cards[n];
+  if (k.end <= k.start) return;
+  const want = JSON.stringify(body(k));
+  const v = k.el.querySelector('.dv'), btn = k.el.querySelector('.play');
+  if (k.draft === want) { v.currentTime = 0; v.play(); return; }
+  btn.disabled = true; btn.textContent = 'Making draft...';
+  queue = queue.then(async () => {
+    const [code, r] = await post('/api/shorts/draft', JSON.parse(want));
+    btn.disabled = false; btn.textContent = 'Play';
+    if (code !== 200) { k.el.querySelector('.state').textContent = r.error; return; }
+    if (JSON.stringify(body(k)) !== want) return;  // changed while it was rendering
+    k.draft = want;
+    k.el.querySelector('.state').textContent = '';
+    v.src = r.url; v.hidden = false; k.el.querySelector('.pv').hidden = true;
+    v.play().catch(() => {});
+  }).catch(() => { btn.disabled = false; btn.textContent = 'Play'; });
+}
+
 // Previews run one at a time (each one seeks the 4K recording).
 function refresh(n, withCaptions) {
   const k = cards[n];
+  dropDraft(k);
   if (k.end <= k.start) return;
   queue = queue.then(async () => {
     const [code, r] = await post('/api/shorts/preview', body(k));
@@ -404,6 +441,7 @@ function refresh(n, withCaptions) {
 
 async function captions(n) {
   const k = cards[n];
+  if (k.draft && k.draft !== JSON.stringify(body(k))) dropDraft(k);
   if (k.end <= k.start) return;
   const [code, r] = await post('/api/shorts/captions', body(k));
   k.el.querySelector('.cap').textContent = code === 200 ? r.text : r.error;

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Render, preview, or print captions for clips listed in a shorts.json.
 
-Usage: shorts.py [--preview | --captions] [--dry-run] <shorts.json> [CLIP ...]
+Usage: shorts.py [--draft | --preview | --captions] [--dry-run] <shorts.json> [CLIP ...]
 
 CLIP is a clip's number (the NN- prefix of its file) or "all" (the default).
-Outputs go next to shorts.json: <file> for a render, <file>.jpg for a preview.
+Outputs go next to shorts.json: <file> for a render, <file>.jpg for a preview,
+<name>.draft.mp4 for a draft (540x960, mic audio only).
 
 shorts.json:
   {
@@ -38,14 +39,14 @@ mode = None
 dry = False
 while args and args[0].startswith("--"):
     flag = args.pop(0)
-    if flag in ("--preview", "--captions"):
+    if flag in ("--draft", "--preview", "--captions"):
         mode = flag
     elif flag == "--dry-run":
         dry = True
     else:
         fail("unknown option " + flag)
 if not args:
-    fail("usage: shorts.py [--preview | --captions] [--dry-run] <shorts.json> [CLIP ...]")
+    fail("usage: shorts.py [--draft | --preview | --captions] [--dry-run] <shorts.json> [CLIP ...]")
 
 manifest_path = os.path.abspath(args.pop(0))
 picks = args or ["all"]
@@ -84,6 +85,8 @@ for clip in chosen:
     out = os.path.join(out_dir, clip["file"])
     if mode == "--preview":
         out = os.path.splitext(out)[0] + ".jpg"
+    elif mode == "--draft":
+        out = os.path.splitext(out)[0] + ".draft.mp4"
     cmd = ["bash", RENDER]
     if mode:
         cmd.append(mode)

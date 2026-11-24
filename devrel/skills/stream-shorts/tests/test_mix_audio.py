@@ -82,5 +82,39 @@ class MixAudioTest(unittest.TestCase):
         self.assertIn("python3 /x/short_audio.py", r.stdout)
 
 
+    def test_draft_is_small_and_uses_the_mic(self):
+        r = self.run_render("--draft", "--mix-audio", "/x/short_audio.py")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        ff = next(l for l in r.stdout.splitlines() if l.startswith("ffmpeg"))
+        self.assertIn("ass=", ff)
+        self.assertIn("scale=540:960", ff)
+        self.assertIn("[1:a:1]loudnorm=I=-14:TP=-1.5:LRA=11", ff)
+        self.assertIn("-b:v 3M", ff)
+        self.assertNotIn("short_audio.py", r.stdout)
+
+    def test_draft_renders(self):
+        out = os.path.join(self.tmp.name, "draft.mp4")
+        r = subprocess.run(["bash", RENDER, "--draft", self.raw, self.words, "1", "3", out],
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        probe = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                                "stream=width,height", "-of", "csv=p=0", out],
+                               capture_output=True, text=True).stdout.strip()
+        self.assertEqual(probe, "540,960")
+
+    def test_shorts_py_draft(self):
+        manifest = os.path.join(self.tmp.name, "shorts.json")
+        with open(manifest, "w") as f:
+            json.dump({"recording": self.raw, "words": self.words, "mix_audio": "/x/short_audio.py",
+                       "clips": [{"file": "01-x.mp4", "start": 1, "end": 3}]}, f)
+        r = subprocess.run([sys.executable, SHORTS, "--draft", "--dry-run", manifest, "1"],
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        out = r.stdout.replace("\\", "")
+        self.assertIn("scale=540:960", out)
+        self.assertNotIn("short_audio.py", out)
+        self.assertIn(os.path.join(self.tmp.name, "01-x.draft.mp4"), out)
+
+
 if __name__ == "__main__":
     unittest.main()

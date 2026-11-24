@@ -28,6 +28,9 @@ out = os.path.join(os.path.dirname(manifest), clip["file"])
 if mode == "--preview":
     open(os.path.splitext(out)[0] + ".jpg", "wb").write(b"JPG")
     print("PREVIEW: x")
+elif mode == "--draft":
+    open(os.path.splitext(out)[0] + ".draft.mp4", "wb").write(b"DRAFTMP4")
+    print("SHORT: x")
 elif mode == "--captions":
     print("== " + clip["file"])
     print("HELLO WORLD")
@@ -294,6 +297,23 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(body["text"].strip(), "HELLO WORLD")
         with open(self.stub_calls()[-1][1]) as f:
             self.assertEqual(json.load(f)["clips"][0]["fixes"], {"a": "b"})
+
+    def test_shorts_draft(self):
+        self.write_edit()
+        self.write_candidates()
+        self.assertEqual(self.get("/shorts/draft/1.mp4")[0], 404)
+        code, body = self.post("/api/shorts/draft", {"n": 1, "start": 20, "end": 30, "fixes": {"a": "b"}})
+        self.assertEqual(code, 200, body)
+        self.assertRegex(body["url"], r"^/shorts/draft/1\.mp4\?v=")
+        call = self.stub_calls()[-1]
+        self.assertEqual(call[0], "--draft")
+        self.assertTrue(os.path.realpath(call[1]).startswith(os.path.realpath(self.cache)))
+        status, headers, data = self.get(body["url"], {"Range": "bytes=0-4"})
+        self.assertEqual((status, data), (206, b"DRAFT"))
+        self.assertEqual(headers["Content-Type"], "video/mp4")
+        self.assertFalse(os.path.exists(os.path.join(self.shorts, "01-one.draft.mp4")))
+        code, body = self.post("/api/shorts/draft", {"n": 9, "start": 20, "end": 30})
+        self.assertEqual(code, 400)
 
     def test_shorts_render(self):
         self.write_edit()
