@@ -25,7 +25,8 @@ unless it's asked for by number. "screen_x" is the old name for "pan_x".
 A layouts.json next to shorts.json adds layouts for this recording only.
 A top-level "mix_audio" (a path to stream-trim's short_audio.py) renders the
 audio through the stream-trim mix and voice chain instead of the mic alone.
-stream-trim also writes its profile's setup as top-level fields: "mic_track"
+stream-trim also writes its profile's setup as top-level fields: "profile"
+(passed to short_audio.py as STREAM_TRIM_PROFILE), "mic_track"
 (1-based OBS track), "mic_lag_frames", "transcript_lag_frames",
 "caption_font" ({"name", "file"}) and "layouts" (a layouts file, applied
 before the layouts.json next to shorts.json). Without them render-short.sh
@@ -67,6 +68,8 @@ for key in ("recording", "words"):
 out_dir = os.path.dirname(manifest_path)
 os.environ["SHORTS_LAYOUTS"] = os.pathsep.join(
     ([manifest["layouts"]] if manifest.get("layouts") else []) + [os.path.join(out_dir, "layouts.json")])
+if manifest.get("profile"):
+    os.environ["STREAM_TRIM_PROFILE"] = manifest["profile"]
 SETUP = []
 for key, flag in (("mic_track", "--mic-track"), ("mic_lag_frames", "--mic-lag-frames"),
                   ("transcript_lag_frames", "--transcript-lag-frames")):

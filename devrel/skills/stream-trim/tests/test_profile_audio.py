@@ -68,6 +68,16 @@ class ProfileAudioTest(unittest.TestCase):
         self.assertTrue(popen.called)
         self.assertEqual(b["profile"], "six-other")
 
+    def test_cache_rebuilt_when_profile_edited(self):
+        raw = os.path.join(self.tmp.name, "two.mp4")
+        make_mp4(raw, 2, 4)
+        prepare.prepare(raw, self.add_profile(two_track()))
+        edited = self.add_profile(two_track(tracks={"1": {"role": "theme"}, "2": {"role": "mic", "voice": True}},
+                                            mic="2"))
+        with mock.patch.object(prepare.subprocess, "Popen", wraps=prepare.subprocess.Popen) as popen:
+            prepare.prepare(raw, edited)
+        self.assertTrue(popen.called)
+
     def test_legacy_cache_is_ryan(self):
         os.makedirs(self.cache)
         legacy = {"raw": "x", "duration": 4.0, "fps": 23.976, "silences": [], "in": 0, "out": 4}

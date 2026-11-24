@@ -128,6 +128,52 @@ class ProfilesTest(unittest.TestCase):
         self.write(two_track(layouts="test-two-layouts.json"))
         self.assertEqual(profiles.load("test-two")["layouts_path"], os.path.join(d, "test-two-layouts.json"))
 
+    def test_name_matches_file(self):
+        p = two_track()
+        p["name"] = "ryan-obs"
+        os.makedirs(os.path.join(self.config, "profiles"), exist_ok=True)
+        with open(os.path.join(self.config, "profiles", "laptop.json"), "w") as f:
+            json.dump(p, f)
+        with self.assertRaises(profiles.ProfileError) as cm:
+            profiles.load("laptop")
+        self.assertIn("laptop.json", str(cm.exception))
+        self.assertIn('"name"', str(cm.exception))
+
+    def test_wrong_types(self):
+        for field, value in (("mic_lag_frames", "9"), ("transcript_lag_frames", None),
+                             ("shorts_loudness", -14), ("shorts_loudness", {"I": -14}),
+                             ("caption_font", "Jost SemiBold"), ("caption_font", {"name": "Jost"}),
+                             ("voice_pass", 3)):
+            self.write(two_track(**{field: value}))
+            with self.assertRaises(profiles.ProfileError, msg=field) as cm:
+                profiles.load("test-two")
+            self.assertIn(field, str(cm.exception))
+
+    def test_chain_missing_key(self):
+        chain = os.path.join(self.tmp.name, "chain-short.json")
+        with open(PLAIN) as f:
+            c = json.load(f)
+        del c["presence"]
+        with open(chain, "w") as f:
+            json.dump(c, f)
+        self.write(two_track(chain=chain))
+        with self.assertRaises(profiles.ProfileError) as cm:
+            profiles.load("test-two")
+        self.assertIn("presence", str(cm.exception))
+
+    def test_chain_falls_back_to_builtin(self):
+        self.write(two_track(chain="chain-plain.json"))
+        p = profiles.load("test-two")
+        self.assertEqual(p["chain_path"], PLAIN)
+
+    def test_cache_key_follows_content(self):
+        a = profiles.load("ryan-obs")
+        self.write(two_track(name="ryan-obs", audio_tracks=6))
+        b = profiles.load("ryan-obs")
+        self.assertNotEqual(profiles.cache_key(a), profiles.cache_key(b))
+        os.remove(os.path.join(self.config, "profiles", "ryan-obs.json"))
+        self.assertEqual(profiles.cache_key(a), profiles.cache_key(profiles.load("ryan-obs")))
+
     def test_check_recording(self):
         p = profiles.load("ryan-obs")
         profiles.check_recording(p, 6)

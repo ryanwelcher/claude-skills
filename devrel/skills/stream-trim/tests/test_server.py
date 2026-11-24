@@ -338,6 +338,7 @@ class ServerTest(unittest.TestCase):
         with open(os.path.join(self.shorts, "shorts.json")) as f:
             m = json.load(f)
         self.assertEqual((m["mic_track"], m["mic_lag_frames"], m["transcript_lag_frames"]), (2, 9, 9))
+        self.assertEqual(m["profile"], "ryan-obs")
         self.assertEqual(m["caption_font"], {"name": "Jost SemiBold", "file": "Jost-SemiBold.ttf"})
         self.assertNotIn("layouts", m)
 

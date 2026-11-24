@@ -62,7 +62,7 @@ def load_candidates(path, edit, shift):
 
 def profile_fields(profile):
     """The profile's recording setup, as stream-shorts' shorts.json fields."""
-    out = {"mic_track": int(profile["mic"]), "mic_lag_frames": profile["mic_lag_frames"],
+    out = {"profile": profile["name"], "mic_track": int(profile["mic"]), "mic_lag_frames": profile["mic_lag_frames"],
            "transcript_lag_frames": profile["transcript_lag_frames"],
            "caption_font": profile["caption_font"]}
     if profile.get("layouts_path"):

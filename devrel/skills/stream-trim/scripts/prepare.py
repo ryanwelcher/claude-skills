@@ -77,15 +77,16 @@ def peaks_from_pcm(pcm, rate, per_s):
 
 def prepare(raw, profile, progress=None):
     """Write proxy.mp4, peaks.json and analysis.json for `raw`, and return
-    the analysis. Cached: a second call with the same profile just reads
-    analysis.json. A cache from before profiles has no "profile" and was
-    made with Ryan's setup, so it counts as ryan-obs."""
+    the analysis. Cached: a second call with the same profile, unedited,
+    just reads analysis.json. A cache from before profiles has no "profile"
+    and was made with Ryan's setup, so it counts as ryan-obs."""
     out = cache_dir(raw)
     analysis_path = os.path.join(out, "analysis.json")
     if os.path.exists(analysis_path):
         with open(analysis_path) as f:
             cached = json.load(f)
-        if cached.get("profile", "ryan-obs") == profile["name"]:
+        same = cached.get("profile", "ryan-obs") == profile["name"]
+        if same and cached.get("profile_key", profiles.cache_key(profile)) == profiles.cache_key(profile):
             return cached
 
     tracks, duration, fps = audio_chain.probe(raw)
@@ -133,7 +134,8 @@ def prepare(raw, profile, progress=None):
         json.dump({"per_s": PER_S, "peaks": peaks_from_pcm(pcm, PEAK_RATE, PER_S)}, f)
     silences = parse_silences(stderr, duration)
     analysis = {"raw": os.path.realpath(raw), "duration": duration, "fps": fps,
-                "silences": silences, **defaults(silences, duration), "profile": profile["name"]}
+                "silences": silences, **defaults(silences, duration), "profile": profile["name"],
+                "profile_key": profiles.cache_key(profile)}
     with open(analysis_path, "w") as f:
         json.dump(analysis, f, indent=2)
     with open(analysis_path) as f:

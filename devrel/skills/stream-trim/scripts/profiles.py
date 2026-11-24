@@ -12,6 +12,7 @@ default; with no such file there is no default.
   profiles.py samples <raw> <outdir> [--at S] 5 s of each audio track, track-N.wav
   profiles.py set-default <name>
 """
+import hashlib
 import json
 import os
 import subprocess
@@ -21,6 +22,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BUILTIN = os.path.normpath(os.path.join(HERE, "..", "profiles"))
 REQUIRED = ("name", "audio_tracks", "tracks", "mic", "mic_lag_frames", "transcript_lag_frames",
             "chain", "shorts_loudness", "caption_font", "voice_pass")
+CHAIN_KEYS = ("mic_gain_db", "rumble_hz", "compand", "deesser", "eq_db", "presence", "levels_db", "loudness")
+
+
+def _number(x):
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
 
 
 class ProfileError(ValueError):
@@ -72,6 +78,21 @@ def load(name=None):
     for key in REQUIRED:
         if key not in p:
             raise bad(f'missing "{key}"')
+    # Everything downstream uses this name (the cache, short_audio.py), so
+    # a copied file that kept another profile's name would quietly use it.
+    if p["name"] != name:
+        raise bad(f'"name" is {p["name"]!r}, but the file is {name}.json; they must match')
+    for key in ("mic_lag_frames", "transcript_lag_frames"):
+        if not _number(p[key]) or p[key] < 0:
+            raise bad(f'"{key}" must be a number of frames, 0 or more')
+    sl = p["shorts_loudness"]
+    if not isinstance(sl, dict) or not all(_number(sl.get(k)) for k in ("I", "TP")):
+        raise bad('"shorts_loudness" must be {"I": <LUFS>, "TP": <dBTP>}')
+    cf = p["caption_font"]
+    if not isinstance(cf, dict) or not all(isinstance(cf.get(k), str) and cf[k] for k in ("name", "file")):
+        raise bad('"caption_font" must be {"name": <font name>, "file": <font file name>}')
+    if p["voice_pass"] is not None and not isinstance(p["voice_pass"], str):
+        raise bad('"voice_pass" must be "sounds-like-me" or null')
     n = p["audio_tracks"]
     if not isinstance(n, int) or n < 1:
         raise bad('"audio_tracks" must be a whole number of tracks')
@@ -91,12 +112,21 @@ def load(name=None):
     if mic is None or not mic.get("voice"):
         raise bad(f'"mic" must name a kept track with "voice": true')
     p["path"] = path
-    p["chain_path"] = os.path.normpath(os.path.join(where, p["chain"]))
+    chain_path = os.path.normpath(os.path.join(where, p["chain"]))
+    # A bare file name not found next to a personal profile means a built-in
+    # chain (chain-plain.json), which moves with every plugin update.
+    builtin = os.path.join(BUILTIN, p["chain"])
+    if not os.path.exists(chain_path) and os.path.basename(p["chain"]) == p["chain"] and os.path.exists(builtin):
+        chain_path = builtin
+    p["chain_path"] = chain_path
     try:
         with open(p["chain_path"]) as f:
             p["chain"] = json.load(f)
     except (OSError, ValueError) as e:
         raise bad(f"can't read its chain file {p['chain_path']}: {e}")
+    missing = [k for k in CHAIN_KEYS if k not in p["chain"]]
+    if missing:
+        raise bad(f"its chain file {p['chain_path']} is missing {', '.join(missing)}")
     extra = set(p["chain"].get("levels_db", {})) - seen
     if extra:
         raise bad(f"its chain sets levels for {', '.join(sorted(extra))}, which no track has as a role")
@@ -129,6 +159,13 @@ def mic_shift(p, fps):
 
 def transcript_shift(p, fps):
     return round(p["transcript_lag_frames"] / fps, 6)
+
+
+def cache_key(p):
+    """A hash of the parts of a profile that shape the prepared cache (the
+    preview mix, the waveform and the default In/Out)."""
+    parts = {k: p[k] for k in ("tracks", "mic", "mic_lag_frames", "chain")}
+    return hashlib.sha1(json.dumps(parts, sort_keys=True).encode()).hexdigest()[:16]
 
 
 def check_recording(p, tracks):

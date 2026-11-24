@@ -126,6 +126,22 @@ class ProfileFlagsTest(unittest.TestCase):
         r = subprocess.run([sys.executable, SHORTS, "--dry-run", manifest, "1"], capture_output=True, text=True)
         self.assertIn("iw*500/1920", r.stdout.replace("\\", ""))
 
+    def test_shorts_py_exports_profile(self):
+        d = os.path.join(self.tmp.name, "rec2")
+        os.makedirs(d, exist_ok=True)
+        seen = os.path.join(d, "seen.txt")
+        stub = os.path.join(d, "stub_audio.py")
+        with open(stub, "w") as f:
+            f.write("import os, sys\nopen(%r, 'w').write(os.environ.get('STREAM_TRIM_PROFILE', '-'))\nsys.exit(1)\n" % seen)
+        manifest = os.path.join(d, "shorts.json")
+        with open(manifest, "w") as f:
+            json.dump({"recording": self.two, "words": self.words, "mix_audio": stub, "profile": "laptop",
+                       "mic_track": 1, "clips": [{"file": "01-x.mp4", "start": 1, "end": 3}]}, f)
+        env = {k: v for k, v in os.environ.items() if k != "STREAM_TRIM_PROFILE"}
+        subprocess.run([sys.executable, SHORTS, manifest, "1"], capture_output=True, text=True, env=env)
+        with open(seen) as f:
+            self.assertEqual(f.read(), "laptop")
+
     def test_mix_audio_with_profile_flags(self):
         r = self.dry(self.two, "--mic-track", "1", "--mic-lag-frames", "0", "--transcript-lag-frames", "0",
                      "--mix-audio", "/x/short_audio.py")

@@ -94,7 +94,7 @@ For someone with their own OBS setup, when `profiles.py check` says `NO_DEFAULT`
 3. Ask how many frames late their mic runs against the video. If they don't know, use 0 and tell them how to check: in the Shorts tab, press Play on a draft and watch the lips. Ask the same for track 1 (`transcript_lag_frames`), since the transcript and shortlist come from track 1. If it's their mic, it's the same number.
 4. If track 1 has no voice on it, warn them: the shortlist will be poor, because the transcript comes from track 1.
 5. Build their short layout with the "Adding a layout" steps in `stream-shorts`: grab a frame from their usual scene, work out the facecam and screen boxes with them, and preview it. Save it to `~/.config/stream-trim/profiles/<name>-layouts.json` with `"default"` set to that layout.
-6. Write `~/.config/stream-trim/profiles/<name>.json`. Copy the shape of `profiles/ryan-obs.json`, with their tracks, `"mic"`, the two lag values, `"chain"` set to the absolute path of `profiles/chain-plain.json` (voice processing off, unless they tune their own), Ryan's `shorts_loudness` and `caption_font`, `"layouts": "<name>-layouts.json"` and `"voice_pass": null`.
+6. Write `~/.config/stream-trim/profiles/<name>.json`. Copy the shape of `profiles/ryan-obs.json`, with their tracks, `"mic"`, the two lag values, `"chain": "chain-plain.json"` (the built-in plain chain, voice processing off, unless they tune their own), `"name"` equal to `<name>` (it must match the file name), Ryan's `shorts_loudness` and `caption_font`, `"layouts": "<name>-layouts.json"` and `"voice_pass": null`.
 7. Check it, and make it the default if the machine has none:
    ```bash
    python3 ${CLAUDE_SKILL_DIR}/scripts/profiles.py check "<raw>" --profile <name>
