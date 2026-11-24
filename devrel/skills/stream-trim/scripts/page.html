@@ -318,12 +318,13 @@ function drawCards() {
   for (const c of SH.candidates) {
     if (cards[c.n]) continue;
     const pan = layoutOf(c);
+    const sugg = Object.entries(c.suggested_fixes || {});
+    // Suggested fixes start ticked: easier to untick a wrong one than to miss a right one.
     const k = cards[c.n] = { c, start: secs(c.start), end: secs(c.end),
-      pan_x: c.pan_x ?? (pan ? pan.x : null), panMoved: c.pan_x != null, accepted: {} };
+      pan_x: c.pan_x ?? (pan ? pan.x : null), panMoved: c.pan_x != null, accepted: Object.fromEntries(sugg) };
     const off = c.skip ? 'Skipped: ' + c.skip : (!c.inside ? 'Runs outside the edit' : '');
     const el = k.el = document.createElement('div');
     el.className = 'card' + (off ? ' off' : '');
-    const sugg = Object.entries(c.suggested_fixes || {});
     el.innerHTML = `
       <label class="head"><input type="checkbox" class="pick" ${off ? 'disabled' : ''}>
         <span>${String(c.n).padStart(2, '0')}</span><span>${escapeHtml(c.hook || c.file)}</span></label>
@@ -343,8 +344,8 @@ function drawCards() {
         <div>
           ${pan ? `<label class="note">Screen crop <input type="range" class="pan" min="${pan.pan[0]}" max="${pan.pan[1]}" value="${k.pan_x}"></label>` : ''}
           <div class="note">Captions</div><pre class="cap">Loading...</pre>
-          ${sugg.length ? '<div class="note">Suggested fixes</div>' + sugg.map(([h, m], i) =>
-            `<label><input type="checkbox" class="sugg" data-i="${i}"> ${escapeHtml(h)} &rarr; ${escapeHtml(m)}</label><br>`).join('') : ''}
+          ${sugg.length ? '<div class="note">Suggested fixes (untick any that are wrong)</div>' + sugg.map(([h, m], i) =>
+            `<label><input type="checkbox" class="sugg" data-i="${i}" checked> ${escapeHtml(h)} &rarr; ${escapeHtml(m)}</label><br>`).join('') : ''}
           <div class="note">More fixes, one per line: heard = meant</div>
           <textarea class="fixes"></textarea>
         </div>

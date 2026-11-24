@@ -55,12 +55,12 @@ The audio settings (mix and voice chain) live in `scripts/chain.json`. They were
      ```bash
      python3 ${CLAUDE_SKILL_DIR}/../stream-shorts/scripts/shorts.py --preview "<recording dir>/shorts/candidates.draft.json" all
      ```
-   - Run the same command with `--captions` instead of `--preview`. Put likely mishearings on the clip as `"suggested_fixes": {"heard": "meant"}`. The page shows them as checkboxes.
+   - Run the same command with `--captions` instead of `--preview`. Put mishearings on the clip as `"suggested_fixes": {"heard": "meant"}`. The page shows them as checkboxes that start ticked, so they go into the render unless Ryan unticks them. Only suggest a fix you're sure of; mention a doubtful one to Ryan instead.
    - Delete the preview jpgs, then rename the draft so the page never reads a half-written file:
      ```bash
      mv "<recording dir>/shorts/candidates.draft.json" "<recording dir>/shorts/candidates.json"
      ```
-   - Tell Ryan the shortlist is in the Shorts tab, how many clips, and any you skipped with the reasons. On each card he can nudge start and end by 0.5 s, move the screen crop, tick suggested fixes or type more, press Play to watch a quick 540x960 draft (mic audio only, a few seconds to make), and pick. Render selected writes the picks to `shorts/`.
+   - Tell Ryan the shortlist is in the Shorts tab, how many clips, and any you skipped with the reasons. On each card he can nudge start and end by 0.5 s, move the screen crop, untick a wrong suggested fix or type more, press Play to watch a quick 540x960 draft (mic audio only, a few seconds to make), and pick. Render selected writes the picks to `shorts/`.
 
 7. **When the shorts are rendered**, write the titles and descriptions. Wait with Monitor and an until-loop (check every 30 s) on `/api/shorts` until `render.state` is `done` or `error`. Then:
    - Read the picks from `shorts/shorts.json` and get each one's caption text with `shorts.py --captions` on that file.

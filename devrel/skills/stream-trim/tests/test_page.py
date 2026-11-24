@@ -18,6 +18,9 @@ class PageTest(unittest.TestCase):
         self.assertIn('id="shorts-progress"', page)
         self.assertIn("st.percent", page)
         self.assertIn("Making the audio", page)
+        # Suggested caption fixes start ticked and applied.
+        self.assertIn('class="sugg" data-i="${i}" checked', page)
+        self.assertIn("accepted: Object.fromEntries(sugg)", page)
 
 
 if __name__ == "__main__":
