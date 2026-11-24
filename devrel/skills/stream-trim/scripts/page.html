@@ -381,7 +381,7 @@ function fixesOf(k) {
   return out;
 }
 
-function body(k) { return { n: k.c.n, start: k.start, end: k.end, pan_x: k.panMoved ? k.pan_x : null, fixes: fixesOf(k) }; }
+function body(k) { return { n: k.c.n, file: k.c.file, start: k.start, end: k.end, pan_x: k.panMoved ? k.pan_x : null, fixes: fixesOf(k) }; }
 
 async function post(url, data) {
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });

@@ -148,6 +148,8 @@ class TrimServer(ThreadingHTTPServer):
         cand = next((c for c in clips if c["n"] == pick.get("n")), None)
         if cand is None:
             raise ValueError(f"no candidate numbered {pick.get('n')}")
+        if "file" in pick and pick["file"] != cand["file"]:
+            raise ValueError("the shortlist changed since the page loaded it. Reload the page.")
         try:
             start, end = (shorts_view.to_secs(pick.get(k, cand[k])) for k in ("start", "end"))
         except (TypeError, ValueError):
@@ -210,6 +212,15 @@ class TrimServer(ThreadingHTTPServer):
                     existing = json.load(f)
             except ValueError as e:
                 return 400, {"error": f"shorts/shorts.json can't be read, so it isn't overwritten: {e}"}
+        # shorts.py picks clips by number, so a kept clip with the same
+        # number would be rendered (and overwritten) too.
+        kept = existing.get("clips", []) if isinstance(existing, dict) else existing or []
+        for clip, _ in built:
+            clash = next((k.get("file") for k in kept if shorts_view.number(k) == shorts_view.number(clip)
+                          and k.get("file") != clip["file"]), None)
+            if clash:
+                return 400, {"error": f"{clip['file']} has the same number as {clash} in shorts/shorts.json. "
+                                      "Ask Claude to renumber the shortlist."}
         with self.lock:
             if self.status["state"] == "running":
                 return 409, {"error": "the final render is still running"}
@@ -253,8 +264,12 @@ def write_json(path, data):
 
 
 def error_line(stderr):
+    """The line that says what went wrong. shorts.py ends with its own
+    "ERROR: failed: <file>" summary after the real error, so skip that."""
     lines = [l for l in stderr.strip().splitlines() if l.strip()]
-    return next((l for l in reversed(lines) if l.startswith("ERROR:")), lines[-1] if lines else "")
+    errors = [l for l in lines if l.startswith("ERROR:")]
+    real = [l for l in errors if not l.startswith("ERROR: failed:")]
+    return (real or errors or lines or [""])[-1]
 
 
 class Handler(BaseHTTPRequestHandler):

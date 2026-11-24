@@ -37,7 +37,11 @@ The audio settings (mix and voice chain) live in `scripts/chain.json`. They were
    - the keys: Space, J/K/L, I/O, arrows (1 frame), Shift+arrows (1 s), Q/W to jump to In/Out, drag the markers
    - that Render writes `<name>-final.mp4` next to the recording and never overwrites one
 
-5. **Find the shorts while he trims.** Right after telling him about the page, invoke the `find-stream-shorts` skill with the raw path. Transcription doesn't depend on In/Out, so it runs while he trims and renders. If it returns an `ERROR:` line, tell him and skip the shorts. The page still works for the trim.
+5. **Find the shorts while he trims.** First delete any `shorts/candidates.json` left next to the recording from an earlier session, so the page doesn't show an old shortlist:
+   ```bash
+   rm -f "<recording dir>/shorts/candidates.json"
+   ```
+   Then, right after telling him about the page, invoke the `find-stream-shorts` skill with the raw path. Transcription doesn't depend on In/Out, so it runs while he trims and renders. If it returns an `ERROR:` line, tell him and skip the shorts. The page still works for the trim.
 
 6. **Wait for the edit**, then write the shortlist to the page. Wait with Monitor and an until-loop (check every 30 s) on:
    ```bash
@@ -46,7 +50,7 @@ The audio settings (mix and voice chain) live in `scripts/chain.json`. They were
    until `edit` isn't `null`. If he asks about the render meanwhile, check `/api/render` as in step 8. Then:
    - Keep only the clips that sit inside the edit, with the render's padding. On the transcript clock (the shortlist's times), a clip is inside when `start - 0.2 - shift >= in` and `end + 0.4 - shift <= out`, using `edit.in`, `edit.out` and `shift` from `/api/shorts`.
    - Fix dangling-word starts and ends with the rules in `stream-shorts` step 5, using the `Words` file.
-   - Write the clips to `shorts/candidates.draft.json` next to the recording, in the `shorts.json` shape from `stream-shorts` step 3, with `"recording"` (the raw path) and `"words"`. Number the files in timestamp order.
+   - Write the clips to `shorts/candidates.draft.json` next to the recording, in the `shorts.json` shape from `stream-shorts` step 3, with `"recording"` (the raw path) and `"words"`. Number the files in timestamp order, starting after the highest number already in `shorts/shorts.json` if that file exists. `shorts.py` picks clips by number, so a repeated number would re-render the older clip, and the page refuses it.
    - Preview the layouts and look at each jpg with Read, as in `stream-shorts` step 4. Set `layout`, `pan_x` or `skip` (with the reason) on each clip:
      ```bash
      python3 ${CLAUDE_SKILL_DIR}/../stream-shorts/scripts/shorts.py --preview "<recording dir>/shorts/candidates.draft.json" all

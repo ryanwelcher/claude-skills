@@ -33,6 +33,7 @@ elif mode == "--captions":
     print("HELLO WORLD")
 elif clip.get("hook") == "fail":
     print("ERROR: render broke", file=sys.stderr)
+    print("ERROR: failed: " + clip["file"], file=sys.stderr)
     sys.exit(1)
 else:
     time.sleep(float(os.environ.get("STUB_SLEEP", "0")))
@@ -323,6 +324,24 @@ class ServerTest(unittest.TestCase):
         self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 20, "end": 30}]})
         s = self.wait_shorts("error")
         self.assertEqual(s["clips"]["1"]["error"], "ERROR: render broke")
+
+    def test_shorts_render_number_collision(self):
+        self.write_edit()
+        self.write_candidates()
+        with open(os.path.join(self.shorts, "shorts.json"), "w") as f:
+            json.dump({"recording": self.raw, "words": "/w.json",
+                       "clips": [{"file": "01-older.mp4", "start": 1, "end": 2}]}, f)
+        code, body = self.post("/api/shorts/render", {"picks": [{"n": 1, "file": "01-one.mp4", "start": 20, "end": 30}]})
+        self.assertEqual(code, 400)
+        self.assertIn("01-older.mp4", body["error"])
+        self.assertEqual(self.stub_calls(), [])
+
+    def test_shorts_render_file_mismatch(self):
+        self.write_edit()
+        self.write_candidates()
+        code, body = self.post("/api/shorts/render", {"picks": [{"n": 1, "file": "01-stale.mp4", "start": 20, "end": 30}]})
+        self.assertEqual(code, 400)
+        self.assertIn("changed", body["error"])
 
     def test_shorts_render_rejects_outside(self):
         self.write_candidates()
