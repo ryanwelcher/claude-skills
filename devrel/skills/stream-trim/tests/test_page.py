@@ -14,6 +14,10 @@ class PageTest(unittest.TestCase):
         for ref in ("/api/state", "/api/render", "/api/stop", "/proxy.mp4", "/api/shorts",
                     "/api/shorts/preview", "/api/shorts/draft", "/api/shorts/captions", "/api/shorts/render"):
             self.assertIn(ref, page)
+        # Shorts render progress: per clip and overall.
+        self.assertIn('id="shorts-progress"', page)
+        self.assertIn("st.percent", page)
+        self.assertIn("Making the audio", page)
 
 
 if __name__ == "__main__":

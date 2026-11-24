@@ -39,6 +39,10 @@ elif clip.get("hook") == "fail":
     print("ERROR: failed: " + clip["file"], file=sys.stderr)
     sys.exit(1)
 else:
+    if os.environ.get("STUB_PROGRESS"):
+        time.sleep(float(os.environ["STUB_PROGRESS"]))
+        sys.stderr.write("frame=  10 fps=0.0 q=-0.0 size=       0KiB time=00:00:05.30 bitrate=N/A speed=0x\\r")
+        sys.stderr.flush()
     time.sleep(float(os.environ.get("STUB_SLEEP", "0")))
     open(out, "wb").write(b"MP4")
     print("SHORT: " + out)
@@ -336,6 +340,27 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(m["words"], "/w.json")
         with open(self.cand_path, "rb") as f:
             self.assertEqual(f.read(), before)
+
+    def test_shorts_render_progress(self):
+        self.write_edit()
+        self.write_candidates()
+        with mock.patch.dict(os.environ, {"STUB_PROGRESS": "0.6", "STUB_SLEEP": "1.5"}):
+            self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 20, "end": 30}]})
+            seen = []
+            stop = time.time() + 10
+            while time.time() < stop:
+                c = self.shorts_state()["render"]["clips"]["1"]
+                if c["state"] == "rendering":
+                    seen.append((c.get("phase"), c.get("percent")))
+                if c["state"] == "done":
+                    break
+                time.sleep(0.02)
+        # 5.3 s into a 10.6 s clip (0.2 s before, 0.4 s after the words).
+        self.assertIn(("audio", None), seen)
+        enc = [p for ph, p in seen if ph == "encoding"]
+        self.assertTrue(enc, seen)
+        self.assertAlmostEqual(enc[-1], 50.0, delta=0.5)
+        self.assertEqual(c["state"], "done")
 
     def test_shorts_render_error_reported(self):
         self.write_edit()

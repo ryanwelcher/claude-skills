@@ -43,6 +43,8 @@
   .card input[type=range] { width: 100%; }
   .card .warn { color: var(--out); }
   .card .state { margin-top: 8px; }
+  .card .state progress { width: 200px; }
+  #shorts-bar progress { width: 240px; margin: 0; }
   #shorts-bar { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; display: flex; gap: 16px; align-items: center; }
 </style>
 </head>
@@ -77,7 +79,7 @@
   <section id="shorts-view" hidden>
     <div id="shorts-note" class="note"></div>
     <div id="cards"></div>
-    <div id="shorts-bar"><button id="render-shorts" disabled>Render selected</button><span id="shorts-status" class="note"></span></div>
+    <div id="shorts-bar"><button id="render-shorts" disabled>Render selected</button><progress id="shorts-progress" max="100" hidden></progress><span id="shorts-status" class="note"></span></div>
   </section>
 </main>
 <script>
@@ -455,20 +457,35 @@ function countPicks() {
   $('render-shorts').disabled = !n || (SH && SH.render.state === 'running');
 }
 
+function stepLabel(st) {
+  return st.phase === 'encoding' && st.percent != null ? `Encoding ${Math.floor(st.percent)}%` : 'Making the audio';
+}
+
 function showShortsRender(r) {
   const running = r.state === 'running';
   const states = Object.entries(r.clips || {});
+  let current = null, finished = 0;
   for (const [n, st] of states) {
+    if (st.state === 'done' || st.state === 'error') finished++;
+    if (st.state === 'rendering') current = st;
     const k = cards[n];
     if (!k) continue;
-    const text = st.state === 'done' ? 'Rendered: ' + st.output.split('/').pop()
-      : st.state === 'error' ? 'Failed: ' + st.error
-      : st.state === 'rendering' ? 'Rendering...' : 'Queued';
-    k.el.querySelector('.state').textContent = text;
+    const box = k.el.querySelector('.state');
+    if (st.state === 'rendering') {
+      // No value = the moving bar: the audio step can't report a percent.
+      box.innerHTML = '<progress max="100"></progress> ' + escapeHtml(stepLabel(st));
+      if (st.percent != null) box.querySelector('progress').value = st.percent;
+    } else {
+      box.textContent = st.state === 'done' ? 'Rendered: ' + st.output.split('/').pop()
+        : st.state === 'error' ? 'Failed: ' + st.error : 'Queued';
+    }
   }
   const done = states.filter(([, st]) => st.state === 'done').length;
+  const bar = $('shorts-progress');
+  bar.hidden = !running;
+  if (running) bar.value = (finished + (current && current.percent != null ? current.percent / 100 : 0)) / states.length * 100;
   $('shorts-status').textContent = !states.length ? ''
-    : running ? `Rendering ${done + 1} of ${states.length}`
+    : running ? `Rendering ${Math.min(finished + 1, states.length)} of ${states.length}` + (current ? ': ' + stepLabel(current) : '')
     : r.state === 'done' ? `Rendered ${done} shorts into the shorts folder. Claude writes the titles and descriptions next.`
     : `${states.length - done} of ${states.length} failed. See the cards above.`;
   countPicks();

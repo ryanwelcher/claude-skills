@@ -229,25 +229,51 @@ class TrimServer(ThreadingHTTPServer):
                 return 409, {"error": "shorts are already rendering"}
             clips = [c for c, _ in built]
             self.shorts_status = {"state": "running", "clips": {
-                str(shorts_view.number(c)): {"state": "queued", "output": None, "error": None}
+                str(shorts_view.number(c)): {"state": "queued", "output": None, "error": None,
+                                             "phase": None, "percent": None}
                 for c in clips}}
         os.makedirs(self.shorts_dir, exist_ok=True)
         write_json(manifest, shorts_view.merge_picks(existing, self.raw, built[0][1], SHORT_AUDIO, clips))
         threading.Thread(target=self._render_shorts, args=(manifest, clips), daemon=True).start()
         return 202, {"ok": True}
 
+    def _run_short(self, manifest, key, clip):
+        """Run shorts.py for one clip. The audio step prints nothing; then
+        ffmpeg's -stats lines ("time=HH:MM:SS.ss", ended by \\r) give the
+        encoding percent. Returns (exit code, stdout, stderr)."""
+        dur = shorts_view.to_secs(clip["end"]) - shorts_view.to_secs(clip["start"]) + 0.6
+        p = subprocess.Popen([sys.executable, self.shorts_py, manifest, key],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        err, buf = [], b""
+        while True:
+            chunk = p.stderr.read1(4096)
+            if not chunk:
+                break
+            err.append(chunk)
+            buf = (buf + chunk)[-4096:]
+            times = re.findall(rb"time=(\d+):(\d+):(\d+(?:\.\d+)?)", buf)
+            if times:
+                h, m, s = times[-1]
+                t = int(h) * 3600 + int(m) * 60 + float(s)
+                with self.lock:
+                    self.shorts_status["clips"][key].update(
+                        phase="encoding", percent=round(min(99.9, max(0.0, t / dur * 100)), 1))
+        stdout = p.stdout.read().decode(errors="replace")
+        p.wait()
+        stderr = b"".join(err).decode(errors="replace").replace("\r", "\n")
+        return p.returncode, stdout, stderr
+
     def _render_shorts(self, manifest, clips):
         failed = False
         for clip in clips:
             key = str(shorts_view.number(clip))
             with self.lock:
-                self.shorts_status["clips"][key]["state"] = "rendering"
+                self.shorts_status["clips"][key].update(state="rendering", phase="audio", percent=None)
             try:
-                r = subprocess.run([sys.executable, self.shorts_py, manifest, key],
-                                   capture_output=True, text=True)
-                out = next((l[len("SHORT: "):] for l in r.stdout.splitlines() if l.startswith("SHORT: ")), None)
-                update = ({"state": "done", "output": out} if r.returncode == 0 and out else
-                          {"state": "error", "error": error_line(r.stderr) or "render failed"})
+                code, stdout, stderr = self._run_short(manifest, key, clip)
+                out = next((l[len("SHORT: "):] for l in stdout.splitlines() if l.startswith("SHORT: ")), None)
+                update = ({"state": "done", "output": out} if code == 0 and out else
+                          {"state": "error", "error": error_line(stderr) or "render failed"})
             except Exception as e:  # report anything to the page
                 update = {"state": "error", "error": str(e)}
             failed = failed or update["state"] == "error"
