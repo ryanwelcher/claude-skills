@@ -288,3 +288,30 @@ Real run on the Nov 12 stream (95 min raw):
 - Prepare took 84 min of wall clock at 35% CPU, likely reading the raw from
   Google Drive. That needs fixing before this is a weekly tool.
 - The final is written next to the raw, not in `renders/`.
+
+## Stage 3 result (2026-11-24)
+
+Real run on the Nov 12 stream, from the 4K final above:
+
+- The first shortlist was empty: Whisper guessed the language from the
+  opening music and transcribed the stream as Welsh. The transcriber now
+  forces English (`--language en`, cache settings `v5-words-en`). The
+  re-transcribed stream gave 8 candidates, all inside the edit.
+- Ryan picked 3 (contributor day setup, Xdebug on one site, Pantera
+  confession). All three are 1080x1920 H.264 with AAC 48 kHz stereo. Audio
+  lengths are exactly end minus start plus 0.6 s (50.72, 21.14, 22.28 s), and
+  loudness is I -13.9, -14.7 and -14.7 LUFS against the -14 target.
+- The first render went out without the suggested caption fixes ticked, so
+  "Goonberg", "XDBUG" and "Trenkill" were burned in. They were re-rendered
+  with the fixes. Unticked suggestions are easy to miss.
+- Added after the plan, at Ryan's request:
+  - A Play button on each card. It plays a 540x960 draft with mic audio only
+    and the real cut, crop and captions. A 31 s clip takes 3.6 s to make.
+  - Progress for the shorts render: a moving bar while the audio is made,
+    then the encoding percent from ffmpeg's `-stats`, on the card and for
+    the whole batch. A 51 s short renders in about 8 s.
+- Titles and descriptions went through `sounds-like-me`; Ryan approved both
+  fixes.
+- Next: profiles (track roles, mic delay, voice chain, loudness, caption
+  font) so the skill can be shared. Today those are hardcoded in about six
+  places.
