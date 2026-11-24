@@ -37,6 +37,7 @@ while read -r START END; do
     -vn -ac 1 -ar 16000 -c:a pcm_s16le "$WORK/range.wav" >> "$DIR/log" 2>&1 || continue
   mlx_whisper "$WORK/range.wav" \
     --model "$MODEL" \
+    --language en \
     --condition-on-previous-text False \
     --temperature 0.2 \
     --word-timestamps True \

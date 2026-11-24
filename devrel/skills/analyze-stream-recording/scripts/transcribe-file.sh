@@ -79,7 +79,7 @@ PROMPT="${WHISPER_PROMPT:-Ryan Welcher, WordPress, Gutenberg, block editor, bloc
 # decoder settings gives the same transcript. Bump SETTINGS whenever the
 # mlx_whisper flags or the repair step change. The bucket size only
 # affects condensing, which is cheap, so it is not part of the key.
-SETTINGS="v4-words"
+SETTINGS="v5-words-en"
 ABS_FILE="$(cd "$(dirname "$FILE")" && pwd)/$(basename "$FILE")"
 FILE_STAT="$(stat -f '%z %m' "$ABS_FILE" 2>/dev/null || stat -c '%s %Y' "$ABS_FILE")"
 KEY="$(printf '%s\n%s\n%s\n%s\n%s\n' "$ABS_FILE" "$FILE_STAT" "$MODEL" "$PROMPT" "$SETTINGS" | shasum -a 256 | cut -c1-16)"

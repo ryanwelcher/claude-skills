@@ -39,8 +39,11 @@ echo "Transcribing with $MODEL..." >> "$DIR/log"
 # Without --condition-on-previous-text False, one misheard window feeds the
 # next and Whisper can repeat a single phrase for half an hour. The silence
 # threshold skips quiet stretches where it would otherwise invent text.
+# Whisper guesses the language from the first 30 s, which is the
+# starting-soon music, and once guessed Welsh for a whole stream.
 mlx_whisper "$DIR/audio.wav" \
   --model "$MODEL" \
+  --language en \
   --initial-prompt "$PROMPT" \
   --condition-on-previous-text False \
   --word-timestamps True \
