@@ -19,6 +19,7 @@ sys.path.insert(0, HERE)
 import audio_chain  # noqa: E402
 import measure  # noqa: E402
 import prepare  # noqa: E402
+import profiles  # noqa: E402
 import render  # noqa: E402
 import short_audio  # noqa: E402
 import shorts_view  # noqa: E402
@@ -48,7 +49,7 @@ class Stop(Exception):
 
 
 def chain():
-    return audio_chain.load_chain(os.path.join(SCRIPTS, "chain.json"))
+    return profiles.load("ryan-obs")
 
 
 def python_commands(tmp):
@@ -83,7 +84,8 @@ def python_commands(tmp):
     runs.clear()
     with mock.patch.object(audio_chain, "probe", return_value=NOV12), \
             mock.patch.object(measure, "run_ffmpeg", side_effect=run):
-        audio_chain.render_stretch(RAW, 463.0, 50.72, short_audio.shorts_chain(chain()), "/out/a.wav")
+        p = chain()
+        audio_chain.render_stretch(RAW, 463.0, 50.72, p, "/out/a.wav", loudness=p["shorts_loudness"])
     got["stretch_pass1"], got["stretch_pass2"] = runs
     return {k: [s.replace(os.path.join(tmp, "cache"), "<CACHE>") for s in v] for k, v in got.items()}
 

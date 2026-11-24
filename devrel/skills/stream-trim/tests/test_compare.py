@@ -64,7 +64,7 @@ class CliTest(unittest.TestCase):
         out = os.path.join(self.tmp.name, "two-tracks")
         code, err = self.run_cli(self.args(out, "1:3", raw=self.two))
         self.assertEqual(code, 1)
-        self.assertIn("ERROR: expected 6 audio tracks, found 2\n", err)
+        self.assertIn("ERROR: this recording has 2 audio tracks; profile ryan-obs expects 6\n", err)
         self.assertFalse(os.path.exists(out))
 
     def test_silent_mic_refused(self):

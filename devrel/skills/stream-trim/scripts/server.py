@@ -16,6 +16,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import audio_chain
 import prepare
+import profiles
 import render
 import shorts_view
 
@@ -28,13 +29,13 @@ SHORT_AUDIO = os.path.join(HERE, "short_audio.py")
 class TrimServer(ThreadingHTTPServer):
     daemon_threads = True
 
-    def __init__(self, raw, chain, port, shorts_py=SHORTS_PY):
+    def __init__(self, raw, profile, port, shorts_py=SHORTS_PY):
         if not os.path.exists(shorts_py):
             raise FileNotFoundError(f"stream-shorts not found at {shorts_py}")
         self.raw = raw
         self.shorts_py = shorts_py
         self.shorts_dir = os.path.join(os.path.dirname(os.path.abspath(raw)), "shorts")
-        self.chain = chain
+        self.profile = profile
         self.cache = prepare.cache_dir(raw)
         with open(os.path.join(self.cache, "analysis.json")) as f:
             self.analysis = json.load(f)
@@ -42,7 +43,8 @@ class TrimServer(ThreadingHTTPServer):
             self.peaks = json.load(f)
         self.work = os.path.join(self.cache, "shorts-work")
         self.edit_path = os.path.join(self.cache, "edit.json")
-        self.shift = round(audio_chain.MIC_LAG_FRAMES / self.analysis["fps"], 6)
+        # Transcript clock -> video clock (the shortlist's times are transcript times).
+        self.shift = profiles.transcript_shift(profile, self.analysis["fps"])
         self.lock = threading.Lock()
         self.work_lock = threading.Lock()  # one preview/captions run at a time
         self.shorts_status = {"state": "idle", "clips": {}}
@@ -73,7 +75,7 @@ class TrimServer(ThreadingHTTPServer):
                 self.status.update(percent=round(percent, 1), phase=phase)
 
         try:
-            out = render.render_final(self.raw, in_s, out_s, self.chain,
+            out = render.render_final(self.raw, in_s, out_s, self.profile,
                                       progress=progress, stop=self.stop_event)
             a = self.analysis
             snapped = render.snap_range(in_s, out_s, a["fps"], a["duration"])
@@ -447,16 +449,25 @@ class Handler(BaseHTTPRequestHandler):
             pass  # the browser cancels range requests while seeking
 
 
-def make_server(raw, chain, port=0, shorts_py=SHORTS_PY):
-    return TrimServer(raw, chain, port, shorts_py)
+def make_server(raw, profile, port=0, shorts_py=SHORTS_PY):
+    return TrimServer(raw, profile, port, shorts_py)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit("usage: server.py <raw.mp4>")
-    chain = audio_chain.load_chain(os.path.join(HERE, "chain.json"))
+    args = sys.argv[1:]
+    name = None
+    if "--profile" in args:
+        i = args.index("--profile")
+        name = args[i + 1] if i + 1 < len(args) else ""
+        del args[i:i + 2]
+    if len(args) != 1 or name == "":
+        sys.exit("usage: server.py <raw.mp4> [--profile NAME]")
     try:
-        srv = make_server(sys.argv[1], chain)
+        profile = profiles.load(name)
+    except profiles.ProfileError as e:
+        sys.exit(f"ERROR: {e}")
+    try:
+        srv = make_server(args[0], profile)
     except FileNotFoundError as e:
         if "stream-shorts" in str(e):
             sys.exit(f"ERROR: {e}")

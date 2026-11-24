@@ -13,6 +13,7 @@ CHAIN_PATH = os.path.join(SCRIPTS, "chain.json")
 # Fixed values for the string tests, so tuning chain.json doesn't break them.
 FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixture_chain.json")
 INPUTS = {"mic": "0:a:1", "guest": "0:a:2", "theme": "0:a:4", "firebot": "0:a:5"}
+VOICE = {"mic", "guest"}
 
 
 def branch(graph, role_input):
@@ -51,7 +52,7 @@ class BuildFiltergraphTest(unittest.TestCase):
         self.chain = audio_chain.load_chain(FIXTURE_PATH)
 
     def test_build_filtergraph_shift_and_mix(self):
-        g = audio_chain.build_filtergraph(self.chain, INPUTS, 0.375375)
+        g = audio_chain.build_filtergraph(self.chain, INPUTS, 0.375375, VOICE, "mic")
         voice = audio_chain.voice_filters(self.chain)
         mic, guest = branch(g, "0:a:1"), branch(g, "0:a:2")
         theme, firebot = branch(g, "0:a:4"), branch(g, "0:a:5")
@@ -70,15 +71,15 @@ class BuildFiltergraphTest(unittest.TestCase):
         chain = copy.deepcopy(self.chain)
         del chain["compand"]
         with self.assertRaises(KeyError) as cm:
-            audio_chain.build_filtergraph(chain, INPUTS, 0.375375)
+            audio_chain.build_filtergraph(chain, INPUTS, 0.375375, VOICE, "mic")
         self.assertIn("compand", str(cm.exception))
 
     def test_zero_level_omits_volume(self):
-        g = audio_chain.build_filtergraph(self.chain, INPUTS, 0.375375)
+        g = audio_chain.build_filtergraph(self.chain, INPUTS, 0.375375, VOICE, "mic")
         self.assertNotIn("volume=", branch(g, "0:a:4"))
         chain = copy.deepcopy(self.chain)
         chain["levels_db"]["theme"] = -3
-        g = audio_chain.build_filtergraph(chain, INPUTS, 0.375375)
+        g = audio_chain.build_filtergraph(chain, INPUTS, 0.375375, VOICE, "mic")
         self.assertIn("volume=-3dB", branch(g, "0:a:4"))
 
 

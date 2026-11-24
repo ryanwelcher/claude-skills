@@ -13,7 +13,9 @@ import audio_chain  # noqa: E402
 import render  # noqa: E402
 from test_measure import make_mp4  # noqa: E402
 
-CHAIN = audio_chain.load_chain(os.path.join(HERE, "..", "scripts", "chain.json"))
+import profiles  # noqa: E402
+
+CHAIN = profiles.load("ryan-obs")  # the profile; the name is kept from before profiles
 
 
 def streams(path):

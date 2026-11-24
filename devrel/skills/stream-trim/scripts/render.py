@@ -7,6 +7,7 @@ import tempfile
 
 import audio_chain
 import measure
+import profiles
 
 # x265 beat VideoToolbox in a test on the Nov 12 stream: SSIM 0.997 at 1.9 Mbps,
 # against 0.995 at 5.5 Mbps for h264_videotoolbox, at about 2.5x realtime.
@@ -61,13 +62,13 @@ def snap_range(in_s, out_s, fps, duration):
     return round(in_s * fps) / fps, min(duration, round(out_s * fps) / fps)
 
 
-def render_final(raw, in_s, out_s, chain, progress=None, stop=None):
+def render_final(raw, in_s, out_s, profile, progress=None, stop=None):
     out = final_path(raw)
     if os.path.exists(out):
         raise FileExistsError(f"{out} already exists")
     tracks, duration, fps = audio_chain.probe(raw)
-    if tracks != 6:
-        raise ValueError(f"expected 6 audio tracks, found {tracks}")
+    profiles.check_recording(profile, tracks)
+    chain = profile["chain"]
     if not (0 <= in_s < out_s <= duration):
         raise ValueError(f"bad In/Out {in_s}/{out_s} for a {duration:.2f} s recording")
 
@@ -75,7 +76,7 @@ def render_final(raw, in_s, out_s, chain, progress=None, stop=None):
     if out_s <= in_s:
         raise ValueError(f"In/Out {in_s}/{out_s} are less than a frame apart")
 
-    graph, shift = audio_chain.mix_graph(chain, fps)
+    graph, shift = audio_chain.mix_graph(profile, fps)
     length = out_s - in_s
     graph += f";[mix]atrim=duration={length}[cut]"
     # The mic needs `shift` more seconds of input than the cut, but never

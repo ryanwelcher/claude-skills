@@ -4,30 +4,23 @@ uses in place of the mic track (its --mix-audio flag).
 
   python3 short_audio.py <raw.mp4> <video_start_s> <seconds> <out.wav>
 
-video_start_s is on the video clock, the time render-short.sh cuts the video at."""
-import copy
+video_start_s is on the video clock, the time render-short.sh cuts the video at.
+The profile is $STREAM_TRIM_PROFILE, or this machine's default; its
+shorts_loudness sets the level (Ryan's: -14 LUFS, where Shorts, Reels and
+TikTok play)."""
 import os
 import sys
 
 import audio_chain
-
-HERE = os.path.dirname(os.path.abspath(__file__))
-# Shorts, Reels and TikTok play at about -14 LUFS; stream-shorts used the same.
-SHORTS_LOUDNESS = {"I": -14, "TP": -1.5}
-
-
-def shorts_chain(chain):
-    out = copy.deepcopy(chain)
-    out["loudness"].update(SHORTS_LOUDNESS)
-    return out
+import profiles
 
 
 def main(argv):
     if len(argv) != 4:
         raise ValueError("usage: short_audio.py <raw.mp4> <video_start_s> <seconds> <out.wav>")
     raw, start, seconds, out = argv[0], float(argv[1]), float(argv[2]), argv[3]
-    chain = audio_chain.load_chain(os.path.join(HERE, "chain.json"))
-    audio_chain.render_stretch(raw, start, seconds, shorts_chain(chain), out)
+    p = profiles.load(os.environ.get("STREAM_TRIM_PROFILE") or None)
+    audio_chain.render_stretch(raw, start, seconds, p, out, loudness=p["shorts_loudness"])
 
 
 if __name__ == "__main__":

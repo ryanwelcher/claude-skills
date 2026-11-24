@@ -9,6 +9,7 @@ SCRIPTS = os.path.join(os.path.dirname(__file__), "..", "scripts")
 sys.path.insert(0, SCRIPTS)
 
 import audio_chain  # noqa: E402
+import profiles  # noqa: E402
 import measure  # noqa: E402
 
 EBUR128 = """[Parsed_ebur128_0 @ 0x79d7448c00] Summary:
@@ -81,7 +82,7 @@ class RenderTest(unittest.TestCase):
         cls.six = os.path.join(cls.tmp.name, "six  tracks, x.mp4")
         make_mp4(cls.two, 2, 10)
         make_mp4(cls.six, 6, 10)
-        cls.chain = audio_chain.load_chain(os.path.join(SCRIPTS, "chain.json"))
+        cls.chain = profiles.load("ryan-obs")
         cls.out = os.path.join(cls.tmp.name, "out.wav")
         audio_chain.render_stretch(cls.six, 2, 5, cls.chain, cls.out)
 
@@ -92,7 +93,7 @@ class RenderTest(unittest.TestCase):
     def test_render_stretch_rejects_wrong_track_count(self):
         with self.assertRaises(ValueError) as cm:
             audio_chain.render_stretch(self.two, 2, 5, self.chain, os.path.join(self.tmp.name, "x.wav"))
-        self.assertEqual(str(cm.exception), "expected 6 audio tracks, found 2")
+        self.assertEqual(str(cm.exception), "this recording has 2 audio tracks; profile ryan-obs expects 6")
 
     def test_render_stretch_rejects_out_of_range(self):
         with self.assertRaises(ValueError) as cm:
@@ -104,7 +105,7 @@ class RenderTest(unittest.TestCase):
             self.assertEqual(w.getframerate(), 48000)
             self.assertEqual(w.getnchannels(), 2)
             self.assertAlmostEqual(w.getnframes() / 48000, 5, delta=0.05)
-        self.assertAlmostEqual(measure.measure(self.out)["I"], self.chain["loudness"]["I"], delta=1.5)
+        self.assertAlmostEqual(measure.measure(self.out)["I"], self.chain["chain"]["loudness"]["I"], delta=1.5)
 
     def test_measure_bands_peak_at_1k(self):
         bands = measure.measure(self.out)["bands"]

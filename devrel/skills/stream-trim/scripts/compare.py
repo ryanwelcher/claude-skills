@@ -16,6 +16,10 @@ import sys
 
 import audio_chain
 import measure
+import profiles
+
+# The A/B against Premiere is for Ryan's setup; --chain swaps only the chain.
+PROFILE = "ryan-obs"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,7 +44,7 @@ MIN_LOUDNESS = -70  # a cut quieter than this is treated as silence
 def mic_peak_db(raw, start_s, seconds):
     """Loudest sample (dB) on the mic track over the given raw stretch."""
     err = measure.run_ffmpeg(["-ss", str(start_s), "-t", str(seconds), "-i", raw,
-                              "-map", f"0:a:{audio_chain.TRACKS['mic'] - 1}",
+                              "-map", f"0:a:{profiles.mic_index(profiles.load(PROFILE))}",
                               "-af", "volumedetect", "-f", "null", "-"])
     m = re.search(r"max_volume:\s+(-?[\d.]+|-inf)", err)
     return float(m.group(1)) if m else float("-inf")
@@ -50,9 +54,9 @@ def check_inputs(raw, reference, offset, stretches):
     """Raise ValueError for anything that would give a wrong or empty
     comparison, before any output is written."""
     tracks, raw_duration, fps = audio_chain.probe(raw)
-    if tracks != 6:
-        raise ValueError(f"expected 6 audio tracks, found {tracks}")
-    shift = audio_chain.MIC_LAG_FRAMES / fps
+    p = profiles.load(PROFILE)
+    profiles.check_recording(p, tracks)
+    shift = p["mic_lag_frames"] / fps
     _, ref_duration, _ = audio_chain.probe(reference, video=False)
     for i, (start, seconds) in enumerate(stretches, 1):
         if start + seconds > ref_duration:
@@ -116,7 +120,8 @@ def main(argv=None):
     try:
         stretches = [parse_stretch(s) for s in a.stretches]
         chain = audio_chain.load_chain(a.chain)
-        audio_chain.build_filtergraph(chain, {r: "x" for r in audio_chain.ROLES}, 0)
+        profile = {**profiles.load(PROFILE), "chain": chain}
+        audio_chain.mix_graph(profile, 24)  # a chain with a missing key fails here
         if os.path.exists(a.out) and not a.force:
             raise ValueError(f"{a.out} exists, pass --force to overwrite")
         check_inputs(a.raw, a.reference, a.offset, stretches)
@@ -142,7 +147,7 @@ def main(argv=None):
             # this stretch.
             matched = copy.deepcopy(chain)
             matched["loudness"]["I"] = max(-70.0, ref_m["I"])
-            audio_chain.render_stretch(a.raw, start + a.offset, seconds, matched, ours_wav)
+            audio_chain.render_stretch(a.raw, start + a.offset, seconds, {**profile, "chain": matched}, ours_wav)
         except (ValueError, RuntimeError) as e:
             print(f"ERROR: stretch {i + 1}: {e}", file=sys.stderr)
             return 1

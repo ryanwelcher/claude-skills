@@ -13,6 +13,7 @@ HERE = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
 
 import prepare  # noqa: E402
+import profiles  # noqa: E402
 import server  # noqa: E402
 
 
@@ -77,7 +78,7 @@ class ServerTest(unittest.TestCase):
         env.start()
         self.addCleanup(env.stop)
         self.shorts = os.path.join(self.tmp.name, "shorts")
-        self.srv = server.make_server(self.raw, {"loudness": {}}, port=0, shorts_py=self.stub)
+        self.srv = server.make_server(self.raw, profiles.load("ryan-obs"), port=0, shorts_py=self.stub)
         threading.Thread(target=self.srv.serve_forever, daemon=True).start()
         self.base = f"http://127.0.0.1:{self.srv.server_address[1]}"
 
@@ -237,7 +238,7 @@ class ServerTest(unittest.TestCase):
     def test_edit_survives_restart(self):
         self.assertIsNone(self.state()["edit"])
         self.write_edit()
-        srv = server.make_server(self.raw, {"loudness": {}}, port=0, shorts_py=self.stub)
+        srv = server.make_server(self.raw, profiles.load("ryan-obs"), port=0, shorts_py=self.stub)
         threading.Thread(target=srv.serve_forever, daemon=True).start()
         self.addCleanup(srv.server_close)
         self.addCleanup(srv.shutdown)

@@ -13,6 +13,7 @@ import sys
 import threading
 
 import audio_chain
+import profiles
 
 LEAD_IN = 0.5   # s before the first word
 TAIL = 1.0      # s after the last word
@@ -74,21 +75,25 @@ def peaks_from_pcm(pcm, rate, per_s):
     return peaks
 
 
-def prepare(raw, chain, progress=None):
+def prepare(raw, profile, progress=None):
     """Write proxy.mp4, peaks.json and analysis.json for `raw`, and return
-    the analysis. Cached: a second call just reads analysis.json."""
+    the analysis. Cached: a second call with the same profile just reads
+    analysis.json. A cache from before profiles has no "profile" and was
+    made with Ryan's setup, so it counts as ryan-obs."""
     out = cache_dir(raw)
     analysis_path = os.path.join(out, "analysis.json")
     if os.path.exists(analysis_path):
         with open(analysis_path) as f:
-            return json.load(f)
+            cached = json.load(f)
+        if cached.get("profile", "ryan-obs") == profile["name"]:
+            return cached
 
     tracks, duration, fps = audio_chain.probe(raw)
-    if tracks != 6:
-        raise ValueError(f"expected 6 audio tracks, found {tracks}")
+    profiles.check_recording(profile, tracks)
     os.makedirs(out, exist_ok=True)
-    graph, shift = audio_chain.mix_graph(chain, fps)
-    mic = audio_chain.TRACKS["mic"] - 1
+    chain = profile["chain"]
+    graph, shift = audio_chain.mix_graph(profile, fps)
+    mic = profiles.mic_index(profile)
     graph += (f";[0:a:{mic}]atrim=start={shift},asetpts=PTS-STARTPTS,asplit[m1][m2]"
               f";[m1]{SILENCE},anullsink"
               f";[m2]aresample={PEAK_RATE},aformat=sample_fmts=s16:channel_layouts=mono[pk]"
@@ -128,7 +133,7 @@ def prepare(raw, chain, progress=None):
         json.dump({"per_s": PER_S, "peaks": peaks_from_pcm(pcm, PEAK_RATE, PER_S)}, f)
     silences = parse_silences(stderr, duration)
     analysis = {"raw": os.path.realpath(raw), "duration": duration, "fps": fps,
-                "silences": silences, **defaults(silences, duration)}
+                "silences": silences, **defaults(silences, duration), "profile": profile["name"]}
     with open(analysis_path, "w") as f:
         json.dump(analysis, f, indent=2)
     with open(analysis_path) as f:
@@ -136,12 +141,17 @@ def prepare(raw, chain, progress=None):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit("usage: prepare.py <raw.mp4>")
-    here = os.path.dirname(os.path.abspath(__file__))
+    args = sys.argv[1:]
+    name = None
+    if "--profile" in args:
+        i = args.index("--profile")
+        name = args[i + 1] if i + 1 < len(args) else ""
+        del args[i:i + 2]
+    if len(args) != 1 or name == "":
+        sys.exit("usage: prepare.py <raw.mp4> [--profile NAME]")
     try:
-        a = prepare(sys.argv[1], audio_chain.load_chain(os.path.join(here, "chain.json")))
+        a = prepare(args[0], profiles.load(name))
     except (ValueError, RuntimeError, OSError) as e:
         sys.exit(f"ERROR: {e}")
     print(f"In {a['in']:.2f} s, Out {a['out']:.2f} s, duration {a['duration']:.2f} s")
-    print(f"CACHE {cache_dir(sys.argv[1])}")
+    print(f"CACHE {cache_dir(args[0])}")
