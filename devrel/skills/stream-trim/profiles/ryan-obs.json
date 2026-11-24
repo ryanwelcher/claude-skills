@@ -1,0 +1,18 @@
+{
+  "name": "ryan-obs",
+  "audio_tracks": 6,
+  "tracks": {
+    "2": {"role": "mic", "voice": true},
+    "3": {"role": "guest", "voice": true},
+    "5": {"role": "theme"},
+    "6": {"role": "firebot"}
+  },
+  "mic": "2",
+  "mic_lag_frames": 9,
+  "transcript_lag_frames": 9,
+  "chain": "../scripts/chain.json",
+  "shorts_loudness": {"I": -14, "TP": -1.5},
+  "caption_font": {"name": "Jost SemiBold", "file": "Jost-SemiBold.ttf"},
+  "layouts": null,
+  "voice_pass": "sounds-like-me"
+}

@@ -1,0 +1,10 @@
+{
+  "mic_gain_db": 0,
+  "rumble_hz": 0,
+  "compand": null,
+  "deesser": null,
+  "eq_db": {},
+  "presence": null,
+  "levels_db": {},
+  "loudness": {"I": -17, "TP": -1, "LRA": 20}
+}
