@@ -274,3 +274,17 @@ on stretch 1. Ours peaks at -1 dBTP; Premiere's render reaches +0.1.
 
 Not yet checked: the guest + StreamElements track (3) through the voice
 chain. Stage 2 should include one stretch with a guest or an alert.
+
+## Stage 2 result (2026-11-24)
+
+Real run on the Nov 12 stream (95 min raw):
+
+- Default In 343.83 s, within 1 s of the Premiere render's 344.06. Ryan
+  moved it to 344.594 s (0:05:44:14), about a frame from Premiere's start.
+- Final: 4K HEVC (x265 fast, crf 24, hvc1), AAC 48 kHz stereo, 1:29:14.93
+  for both streams (exactly Out minus In), 1.56 GB at 2.3 Mbps.
+- Loudness on the whole file: I -17.1 LUFS, LRA 12.8 LU, TP -0.9 dBTP.
+- Ryan listened and approved the audio: "The audio sounds fantastic."
+- Prepare took 84 min of wall clock at 35% CPU, likely reading the raw from
+  Google Drive. That needs fixing before this is a weekly tool.
+- The final is written next to the raw, not in `renders/`.
