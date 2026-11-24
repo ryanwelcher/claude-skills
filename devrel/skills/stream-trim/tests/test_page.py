@@ -11,7 +11,8 @@ class PageTest(unittest.TestCase):
             page = f.read()
         self.assertNotIn("—", page)
         self.assertEqual(re.findall(r'(?:src|href)\s*=\s*["\']https?:', page), [])
-        for ref in ("/api/state", "/api/render", "/api/stop", "/proxy.mp4"):
+        for ref in ("/api/state", "/api/render", "/api/stop", "/proxy.mp4", "/api/shorts",
+                    "/api/shorts/preview", "/api/shorts/captions", "/api/shorts/render"):
             self.assertIn(ref, page)
 
 

@@ -24,11 +24,33 @@
   progress { width: 320px; height: 10px; vertical-align: middle; margin-right: 10px; accent-color: var(--accent); }
   .error { color: var(--out); white-space: pre-wrap; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
   .note { color: var(--muted); }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  header h1 { margin: 0; }
+  .tabs button { background: transparent; color: var(--muted); padding: 6px 16px; }
+  .tabs button.on { background: var(--panel); color: var(--text); }
+  .card { background: var(--panel); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
+  .card.off { opacity: 0.55; }
+  .card .head { display: flex; gap: 10px; align-items: baseline; font-weight: 600; }
+  .card .head input { transform: scale(1.3); }
+  .card .times { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin: 10px 0; font: 600 14px ui-monospace, Menlo, monospace; }
+  .card .times button { padding: 3px 9px; font-size: 12px; background: #34314a; }
+  .card .body { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
+  .card img { width: 200px; aspect-ratio: 9 / 16; object-fit: cover; background: #000; border-radius: 6px; }
+  .card pre { white-space: pre-wrap; font: 13px/1.5 ui-monospace, Menlo, monospace; background: var(--bg); padding: 8px 10px; border-radius: 6px; max-height: 220px; overflow: auto; margin: 6px 0; }
+  .card textarea { width: 100%; min-height: 48px; background: var(--bg); color: var(--text); border: 1px solid #34314a; border-radius: 6px; font: 13px ui-monospace, Menlo, monospace; padding: 6px 8px; }
+  .card input[type=range] { width: 100%; }
+  .card .warn { color: var(--out); }
+  .card .state { margin-top: 8px; }
+  #shorts-bar { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; display: flex; gap: 16px; align-items: center; }
 </style>
 </head>
 <body>
 <main>
-  <h1 id="name">Loading...</h1>
+  <header>
+    <h1 id="name">Loading...</h1>
+    <div class="tabs"><button id="tab-trim" class="on">Trim</button><button id="tab-shorts" disabled>Shorts</button></div>
+  </header>
+  <section id="trim-view">
   <video id="video" src="/proxy.mp4" preload="auto"></video>
   <canvas id="wave"></canvas>
   <div class="row">
@@ -49,6 +71,12 @@
     <kbd>Q</kbd> <kbd>W</kbd> jump to In / Out &nbsp; drag the green and red markers
   </div>
   <div id="status"></div>
+  </section>
+  <section id="shorts-view" hidden>
+    <div id="shorts-note" class="note"></div>
+    <div id="cards"></div>
+    <div id="shorts-bar"><button id="render-shorts" disabled>Render selected</button><span id="shorts-status" class="note"></span></div>
+  </section>
 </main>
 <script>
 const video = document.getElementById('video');
@@ -59,6 +87,7 @@ let S = null;          // state from /api/state
 let inT = 0, outT = 0; // seconds, video clock
 let dragging = null;   // 'in' | 'out' | 'seek'
 let polling = null;
+let view = 'trim';
 
 // Non-drop timecode from the frame count, like Premiere shows 23.976:
 // 24 frames per timecode second.
@@ -138,7 +167,8 @@ function move(e) {
 }
 
 document.addEventListener('keydown', (e) => {
-  if (!S || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!S || view !== 'trim' || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.target.closest && e.target.closest('input, textarea')) return;
   // A focused button would also take Space/Enter (a stray Render).
   if (e.target instanceof HTMLButtonElement) e.target.blur();
   const step = e.shiftKey ? Math.round(S.fps) : 1;
@@ -171,8 +201,10 @@ function showRender(r) {
     const label = r.phase === 'measuring' ? 'Measuring loudness' : 'Encoding 4K';
     $('status').innerHTML = `<progress max="100" value="${r.percent}"></progress>${label}: ${r.percent.toFixed(1)}%`;
   } else if (r.state === 'done') {
+    const first = !S.exists || !S.edit;
     S.exists = true;
-    $('status').innerHTML = `Done: <b>${escapeHtml(r.output)}</b><br><span class="note">Shorts from this edit come next.</span>`;
+    $('status').innerHTML = `Done: <b>${escapeHtml(r.output)}</b><br><span class="note">Shorts from this edit are in the Shorts tab.</span>`;
+    if (first) refreshEdit(true);
   } else if (r.state === 'error') {
     $('status').innerHTML = `<div class="error">${escapeHtml(r.error)}</div>`;
   } else if (S.exists) {
@@ -204,13 +236,213 @@ $('stop').addEventListener('click', () => fetch('/api/stop', { method: 'POST' })
 
 (async () => {
   S = await (await fetch('/api/state')).json();
-  inT = snap(S.in); outT = snap(S.out);
+  const start = S.edit || S;
+  inT = snap(start.in); outT = snap(start.out);
+  if (S.edit) enableShorts();
   S.peakMax = Math.max(1e-4, ...S.peaks.filter((p) => p > 0).sort((a, b) => a - b).slice(-Math.max(1, Math.floor(S.peaks.length / 200))).slice(0, 1));
   $('name').textContent = S.name;
   video.addEventListener('loadedmetadata', () => seekFrame(Math.round(inT * S.fps)), { once: true });
   showRender(S.render);
   requestAnimationFrame(tick);
 })();
+
+// ---- Views ----
+
+function showView(name) {
+  view = name;
+  $('trim-view').hidden = name !== 'trim';
+  $('shorts-view').hidden = name !== 'shorts';
+  $('tab-trim').classList.toggle('on', name === 'trim');
+  $('tab-shorts').classList.toggle('on', name === 'shorts');
+  if (name === 'shorts') { video.pause(); loadShorts(); }
+}
+$('tab-trim').addEventListener('click', (e) => { e.target.blur(); showView('trim'); });
+$('tab-shorts').addEventListener('click', (e) => { e.target.blur(); showView('shorts'); });
+
+function enableShorts() { $('tab-shorts').disabled = false; }
+
+async function refreshEdit(switchView) {
+  const st = await (await fetch('/api/state')).json();
+  S.edit = st.edit;
+  if (S.edit) { enableShorts(); if (switchView) showView('shorts'); }
+}
+
+// ---- Shorts ----
+
+let SH = null;          // /api/shorts
+const cards = {};       // n -> card state
+let shortsTimer = null;
+let queue = Promise.resolve();
+
+function secs(t) {
+  if (typeof t === 'number') return t;
+  return String(t).split(':').reduce((a, p) => a * 60 + parseFloat(p), 0);
+}
+function editTc(t) { return tc(Math.max(0, t - SH.shift - SH.edit.in)); }
+function insideEdit(c) {
+  return c.start - 0.2 - SH.shift >= SH.edit.in && c.end + 0.4 - SH.shift <= SH.edit.out;
+}
+
+async function loadShorts() {
+  try {
+    SH = await (await fetch('/api/shorts')).json();
+  } catch (err) {
+    $('shorts-note').textContent = 'Lost the server: ' + err.message;
+    return schedule(3000);
+  }
+  if (!SH.edit) {
+    $('shorts-note').textContent = 'Render the final edit first. Shorts come from inside it.';
+  } else if (!SH.candidates) {
+    $('shorts-note').textContent = SH.error
+      ? "Claude is still writing the shortlist (" + SH.error + ")."
+      : "Claude is finding shorts in this edit. They'll show up here.";
+  } else {
+    $('shorts-note').textContent = SH.candidates.length + ' shorts from this edit. Tick the ones to render.';
+    drawCards();
+  }
+  showShortsRender(SH.render);
+  const waiting = !SH.candidates || SH.render.state === 'running';
+  if (waiting && view === 'shorts') schedule(SH.render.state === 'running' ? 1000 : 3000);
+}
+
+function schedule(ms) { clearTimeout(shortsTimer); shortsTimer = setTimeout(loadShorts, ms); }
+
+function layoutOf(c) { return SH.layouts[c.layout || SH.default_layout] || null; }
+
+function drawCards() {
+  const box = $('cards');
+  for (const c of SH.candidates) {
+    if (cards[c.n]) continue;
+    const pan = layoutOf(c);
+    const k = cards[c.n] = { c, start: secs(c.start), end: secs(c.end),
+      pan_x: c.pan_x ?? (pan ? pan.x : null), panMoved: c.pan_x != null, accepted: {} };
+    const off = c.skip ? 'Skipped: ' + c.skip : (!c.inside ? 'Runs outside the edit' : '');
+    const el = k.el = document.createElement('div');
+    el.className = 'card' + (off ? ' off' : '');
+    const sugg = Object.entries(c.suggested_fixes || {});
+    el.innerHTML = `
+      <label class="head"><input type="checkbox" class="pick" ${off ? 'disabled' : ''}>
+        <span>${String(c.n).padStart(2, '0')}</span><span>${escapeHtml(c.hook || c.file)}</span></label>
+      ${off ? `<div class="note">${escapeHtml(off)}</div>` : ''}
+      <div class="times">
+        <span>Start <button data-k="start" data-d="-0.5">-0.5 s</button> <b class="st"></b> <button data-k="start" data-d="0.5">+0.5 s</button></span>
+        <span>End <button data-k="end" data-d="-0.5">-0.5 s</button> <b class="en"></b> <button data-k="end" data-d="0.5">+0.5 s</button></span>
+        <span>Length <b class="ln"></b></span>
+        <span class="warn"></span>
+      </div>
+      <div class="body">
+        <img class="pv" alt="">
+        <div>
+          ${pan ? `<label class="note">Screen crop <input type="range" class="pan" min="${pan.pan[0]}" max="${pan.pan[1]}" value="${k.pan_x}"></label>` : ''}
+          <div class="note">Captions</div><pre class="cap">Loading...</pre>
+          ${sugg.length ? '<div class="note">Suggested fixes</div>' + sugg.map(([h, m], i) =>
+            `<label><input type="checkbox" class="sugg" data-i="${i}"> ${escapeHtml(h)} &rarr; ${escapeHtml(m)}</label><br>`).join('') : ''}
+          <div class="note">More fixes, one per line: heard = meant</div>
+          <textarea class="fixes"></textarea>
+        </div>
+      </div>
+      <div class="state note"></div>`;
+    box.appendChild(el);
+    el.querySelectorAll('.times button').forEach((b) => b.addEventListener('click', () => {
+      b.blur();
+      k[b.dataset.k] = Math.round((k[b.dataset.k] + parseFloat(b.dataset.d)) * 100) / 100;
+      drawTimes(k); refresh(c.n, true);
+    }));
+    const slider = el.querySelector('.pan');
+    if (slider) slider.addEventListener('change', () => { k.pan_x = parseInt(slider.value, 10); k.panMoved = true; refresh(c.n, false); });
+    el.querySelectorAll('.sugg').forEach((box) => box.addEventListener('change', () => {
+      const [h, m] = sugg[box.dataset.i];
+      if (box.checked) k.accepted[h] = m; else delete k.accepted[h];
+      captions(c.n);
+    }));
+    let typing = null;
+    el.querySelector('.fixes').addEventListener('input', () => { clearTimeout(typing); typing = setTimeout(() => captions(c.n), 600); });
+    el.querySelector('.pick').addEventListener('change', countPicks);
+    drawTimes(k);
+    refresh(c.n, true);
+  }
+}
+
+function drawTimes(k) {
+  k.el.querySelector('.st').textContent = editTc(k.start);
+  k.el.querySelector('.en').textContent = editTc(k.end);
+  k.el.querySelector('.ln').textContent = (k.end - k.start).toFixed(1) + ' s';
+  const warn = k.end <= k.start ? 'Start has to be before end'
+    : (!insideEdit(k) && k.c.inside ? 'Now runs outside the edit' : '');
+  k.el.querySelector('.warn').textContent = warn;
+}
+
+function fixesOf(k) {
+  const out = { ...k.accepted };
+  for (const line of k.el.querySelector('.fixes').value.split('\n')) {
+    const i = line.indexOf('=');
+    if (i > 0 && line.slice(0, i).trim() && line.slice(i + 1).trim()) out[line.slice(0, i).trim()] = line.slice(i + 1).trim();
+  }
+  return out;
+}
+
+function body(k) { return { n: k.c.n, start: k.start, end: k.end, pan_x: k.panMoved ? k.pan_x : null, fixes: fixesOf(k) }; }
+
+async function post(url, data) {
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  let json = {};
+  try { json = await res.json(); } catch (e) { json = { error: 'bad reply from the server' }; }
+  return [res.status, json];
+}
+
+// Previews run one at a time (each one seeks the 4K recording).
+function refresh(n, withCaptions) {
+  const k = cards[n];
+  if (k.end <= k.start) return;
+  queue = queue.then(async () => {
+    const [code, r] = await post('/api/shorts/preview', body(k));
+    if (code === 200) { k.el.querySelector('.pv').src = r.url; k.el.querySelector('.state').textContent = ''; }
+    else k.el.querySelector('.state').textContent = r.error;
+  }).catch(() => {});
+  if (withCaptions) captions(n);
+}
+
+async function captions(n) {
+  const k = cards[n];
+  if (k.end <= k.start) return;
+  const [code, r] = await post('/api/shorts/captions', body(k));
+  k.el.querySelector('.cap').textContent = code === 200 ? r.text : r.error;
+}
+
+function picked() { return Object.values(cards).filter((k) => k.el.querySelector('.pick').checked); }
+
+function countPicks() {
+  const n = picked().length;
+  $('render-shorts').textContent = n ? `Render selected (${n})` : 'Render selected';
+  $('render-shorts').disabled = !n || (SH && SH.render.state === 'running');
+}
+
+function showShortsRender(r) {
+  const running = r.state === 'running';
+  const states = Object.entries(r.clips || {});
+  for (const [n, st] of states) {
+    const k = cards[n];
+    if (!k) continue;
+    const text = st.state === 'done' ? 'Rendered: ' + st.output.split('/').pop()
+      : st.state === 'error' ? 'Failed: ' + st.error
+      : st.state === 'rendering' ? 'Rendering...' : 'Queued';
+    k.el.querySelector('.state').textContent = text;
+  }
+  const done = states.filter(([, st]) => st.state === 'done').length;
+  $('shorts-status').textContent = !states.length ? ''
+    : running ? `Rendering ${done + 1} of ${states.length}`
+    : r.state === 'done' ? `Rendered ${done} shorts into the shorts folder. Claude writes the titles and descriptions next.`
+    : `${states.length - done} of ${states.length} failed. See the cards above.`;
+  countPicks();
+}
+
+$('render-shorts').addEventListener('click', async () => {
+  $('render-shorts').blur();
+  $('render-shorts').disabled = true;
+  const [code, r] = await post('/api/shorts/render', { picks: picked().map(body) });
+  if (code !== 202) { $('shorts-status').textContent = r.error; countPicks(); return; }
+  loadShorts();
+});
 </script>
 </body>
 </html>

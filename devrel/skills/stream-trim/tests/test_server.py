@@ -263,6 +263,14 @@ class ServerTest(unittest.TestCase):
         self.assertEqual([x["n"] for x in c], [1, 2, 3])
         self.assertEqual([x["inside"] for x in c], [True, True, False])
         self.assertAlmostEqual(c[0]["edit_start"], 20 - self.SHIFT - 10)
+        with open(os.path.join(self.shorts, "layouts.json"), "w") as f:
+            json.dump({"default": "wide", "layouts": {
+                "wide": {"bands": [{"name": "a", "crop": [10, 10, 300, 0], "height": 1920, "pan": [0, 900]}]},
+                "fixed": {"bands": [{"name": "a", "crop": [10, 10, 0, 0], "height": 1920}]}}}, f)
+        s = self.shorts_state()
+        self.assertEqual(s["layouts"]["wide"], {"pan": [0, 900], "x": 300})
+        self.assertIsNone(s["layouts"]["fixed"])
+        self.assertEqual(s["default_layout"], "wide")
 
     def test_shorts_preview_and_captions(self):
         self.write_edit()

@@ -109,23 +109,31 @@ class TrimServer(ThreadingHTTPServer):
         return clips, words, None
 
     def layouts(self):
-        data = {}
+        """({name: {"pan": [lo, hi], "x": default x} or None}, default name),
+        from stream-shorts' layouts.json overlaid with shorts/layouts.json."""
+        data, default = {}, None
         for path in (os.path.join(os.path.dirname(self.shorts_py), "layouts.json"),
                      os.path.join(self.shorts_dir, "layouts.json")):
             try:
                 with open(path) as f:
-                    data.update(json.load(f).get("layouts", {}))
+                    more = json.load(f)
             except (OSError, ValueError):
-                pass
-        return {name: next((b["pan"] for b in l.get("bands", []) if "pan" in b), None)
-                for name, l in data.items()}
+                continue
+            data.update(more.get("layouts", {}))
+            default = more.get("default", default)
+        out = {}
+        for name, layout in data.items():
+            band = next((b for b in layout.get("bands", []) if "pan" in b), None)
+            out[name] = band and {"pan": band["pan"], "x": band["crop"][2]}
+        return out, default
 
     def shorts_state(self):
         clips, _, error = self.candidates()
         with self.lock:
             render_state = json.loads(json.dumps(self.shorts_status))
+        layouts, default = self.layouts()
         return {"edit": self.edit(), "shift": self.shift, "candidates": clips, "error": error,
-                "layouts": self.layouts(), "render": render_state}
+                "layouts": layouts, "default_layout": default, "render": render_state}
 
     def build_clip(self, pick, require_inside):
         """The shorts.json clip for one pick from the page, and the words path.
