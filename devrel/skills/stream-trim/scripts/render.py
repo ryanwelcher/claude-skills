@@ -54,6 +54,13 @@ def _run(args, total_s, phase, progress, stop):
     return stderr
 
 
+def snap_range(in_s, out_s, fps, duration):
+    """In/Out on the frame grid. With -ss on the input, audio starts exactly
+    at in_s but video at the next frame, so an off-grid In would put the
+    video up to a frame early against the audio."""
+    return round(in_s * fps) / fps, min(duration, round(out_s * fps) / fps)
+
+
 def render_final(raw, in_s, out_s, chain, progress=None, stop=None):
     out = final_path(raw)
     if os.path.exists(out):
@@ -64,11 +71,7 @@ def render_final(raw, in_s, out_s, chain, progress=None, stop=None):
     if not (0 <= in_s < out_s <= duration):
         raise ValueError(f"bad In/Out {in_s}/{out_s} for a {duration:.2f} s recording")
 
-    # Snap to the frame grid. With -ss on the input, audio starts exactly at
-    # in_s but video at the next frame, so an off-grid In would put the
-    # video up to a frame early against the audio.
-    in_s = round(in_s * fps) / fps
-    out_s = min(duration, round(out_s * fps) / fps)
+    in_s, out_s = snap_range(in_s, out_s, fps, duration)
     if out_s <= in_s:
         raise ValueError(f"In/Out {in_s}/{out_s} are less than a frame apart")
 

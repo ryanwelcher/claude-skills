@@ -36,6 +36,16 @@ class PureTest(unittest.TestCase):
         self.assertIsNone(render.parse_progress("garbage", 10))
 
 
+class SnapRangeTest(unittest.TestCase):
+    def test_snap_range(self):
+        fps, dur = 24000 / 1001, 5706.45
+        i, o = render.snap_range(343.83, 5699.66, fps, dur)
+        for t, want in ((i, 343.83), (o, 5699.66)):
+            self.assertAlmostEqual(t * fps, round(t * fps), places=6)
+            self.assertLessEqual(abs(t - want), 0.5 / fps)
+        self.assertEqual(render.snap_range(10, dur, fps, dur)[1], dur)
+
+
 class RenderTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
