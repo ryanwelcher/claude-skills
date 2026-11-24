@@ -1,5 +1,6 @@
 """Local server for the stream-trim page: the page, the ranged preview, and
-a small JSON API to read state and start/stop the final render.
+a small JSON API to read state and start/stop the final render, and the
+Shorts view: previews, captions and renders through stream-shorts.
 
   python3 server.py <raw.mp4>     prints: READY http://127.0.0.1:<port>/
 Run prepare.py on the recording first."""
@@ -7,6 +8,8 @@ import json
 import math
 import os
 import re
+import shutil
+import subprocess
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -14,23 +17,35 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import audio_chain
 import prepare
 import render
+import shorts_view
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CHUNK = 1 << 20
+SHORTS_PY = os.path.normpath(os.path.join(HERE, "..", "..", "stream-shorts", "scripts", "shorts.py"))
+SHORT_AUDIO = os.path.join(HERE, "short_audio.py")
 
 
 class TrimServer(ThreadingHTTPServer):
     daemon_threads = True
 
-    def __init__(self, raw, chain, port):
+    def __init__(self, raw, chain, port, shorts_py=SHORTS_PY):
+        if not os.path.exists(shorts_py):
+            raise FileNotFoundError(f"stream-shorts not found at {shorts_py}")
         self.raw = raw
+        self.shorts_py = shorts_py
+        self.shorts_dir = os.path.join(os.path.dirname(os.path.abspath(raw)), "shorts")
         self.chain = chain
         self.cache = prepare.cache_dir(raw)
         with open(os.path.join(self.cache, "analysis.json")) as f:
             self.analysis = json.load(f)
         with open(os.path.join(self.cache, "peaks.json")) as f:
             self.peaks = json.load(f)
+        self.work = os.path.join(self.cache, "shorts-work")
+        self.edit_path = os.path.join(self.cache, "edit.json")
+        self.shift = round(audio_chain.MIC_LAG_FRAMES / self.analysis["fps"], 6)
         self.lock = threading.Lock()
+        self.work_lock = threading.Lock()  # one preview/captions run at a time
+        self.shorts_status = {"state": "idle", "clips": {}}
         self.stop_event = threading.Event()
         self.status = {"state": "idle", "phase": None, "percent": 0, "output": None, "error": None}
         super().__init__(("127.0.0.1", port), Handler)
@@ -60,11 +75,178 @@ class TrimServer(ThreadingHTTPServer):
         try:
             out = render.render_final(self.raw, in_s, out_s, self.chain,
                                       progress=progress, stop=self.stop_event)
+            a = self.analysis
+            snapped = render.snap_range(in_s, out_s, a["fps"], a["duration"])
+            write_json(self.edit_path, {"in": snapped[0], "out": snapped[1], "output": out})
             update = {"state": "done", "percent": 100, "output": out}
         except Exception as e:  # report anything to the page
             update = {"state": "error", "error": str(e)}
         with self.lock:
             self.status.update(update)
+
+
+    # -- shorts --
+
+    def edit(self):
+        try:
+            with open(self.edit_path) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return None
+
+    def candidates(self):
+        """(candidate list or None, words path or None, error or None)."""
+        path = os.path.join(self.shorts_dir, "candidates.json")
+        edit = self.edit()
+        if edit is None or not os.path.exists(path):
+            return None, None, None
+        try:
+            clips = shorts_view.load_candidates(path, edit, self.shift)
+            with open(path) as f:
+                words = json.load(f).get("words")
+        except (OSError, ValueError) as e:
+            return None, None, str(e)
+        return clips, words, None
+
+    def layouts(self):
+        data = {}
+        for path in (os.path.join(os.path.dirname(self.shorts_py), "layouts.json"),
+                     os.path.join(self.shorts_dir, "layouts.json")):
+            try:
+                with open(path) as f:
+                    data.update(json.load(f).get("layouts", {}))
+            except (OSError, ValueError):
+                pass
+        return {name: next((b["pan"] for b in l.get("bands", []) if "pan" in b), None)
+                for name, l in data.items()}
+
+    def shorts_state(self):
+        clips, _, error = self.candidates()
+        with self.lock:
+            render_state = json.loads(json.dumps(self.shorts_status))
+        return {"edit": self.edit(), "shift": self.shift, "candidates": clips, "error": error,
+                "layouts": self.layouts(), "render": render_state}
+
+    def build_clip(self, pick, require_inside):
+        """The shorts.json clip for one pick from the page, and the words path.
+        Raises ValueError with a reason for the page."""
+        clips, words, error = self.candidates()
+        if clips is None:
+            raise ValueError(error or "no candidates yet")
+        if not words:
+            raise ValueError("candidates.json has no \"words\"")
+        if not isinstance(pick, dict):
+            raise ValueError("a pick must be an object")
+        cand = next((c for c in clips if c["n"] == pick.get("n")), None)
+        if cand is None:
+            raise ValueError(f"no candidate numbered {pick.get('n')}")
+        try:
+            start, end = (shorts_view.to_secs(pick.get(k, cand[k])) for k in ("start", "end"))
+        except (TypeError, ValueError):
+            raise ValueError("start and end must be times")
+        if not start < end:
+            raise ValueError(f"clip {cand['n']}: start has to be before end")
+        clip = {k: cand[k] for k in ("file", "hook", "layout") if k in cand}
+        clip.update(start=shorts_view.fmt(start), end=shorts_view.fmt(end))
+        if pick.get("pan_x") is not None:
+            clip["pan_x"] = pick["pan_x"]
+        if pick.get("fixes"):
+            if not isinstance(pick["fixes"], dict):
+                raise ValueError("fixes must be {heard: meant}")
+            clip["fixes"] = pick["fixes"]
+        if require_inside and not shorts_view.inside(clip, self.edit(), self.shift):
+            raise ValueError(f"clip {cand['n']} runs outside the edit")
+        return clip, words
+
+    def run_work(self, mode, pick):
+        """Run shorts.py --preview or --captions on a one-clip manifest in
+        the cache. Returns (clip, stdout). Raises ValueError on a failure."""
+        clip, words = self.build_clip(pick, require_inside=False)
+        with self.work_lock:
+            os.makedirs(self.work, exist_ok=True)
+            layouts = os.path.join(self.shorts_dir, "layouts.json")
+            local = os.path.join(self.work, "layouts.json")
+            if os.path.exists(layouts):
+                shutil.copyfile(layouts, local)
+            elif os.path.exists(local):
+                os.remove(local)
+            manifest = os.path.join(self.work, "manifest.json")
+            write_json(manifest, {"recording": self.raw, "words": words, "clips": [clip]})
+            r = subprocess.run([sys.executable, self.shorts_py, mode, manifest,
+                                str(shorts_view.number(clip))],
+                               capture_output=True, text=True, timeout=300)
+        if r.returncode != 0:
+            raise ValueError(error_line(r.stderr) or f"{mode} failed")
+        return clip, r.stdout
+
+    def preview_path(self, n):
+        clips, _, _ = self.candidates()
+        cand = next((c for c in clips or [] if c["n"] == n), None)
+        return cand and os.path.join(self.work, os.path.splitext(cand["file"])[0] + ".jpg")
+
+    def start_shorts(self, picks):
+        """Returns (http code, body)."""
+        if self.edit() is None:
+            return 409, {"error": "render the final edit first"}
+        if not isinstance(picks, list) or not picks:
+            return 400, {"error": "pick at least one clip"}
+        try:
+            built = [self.build_clip(p, require_inside=True) for p in picks]
+        except ValueError as e:
+            return 400, {"error": str(e)}
+        manifest = os.path.join(self.shorts_dir, "shorts.json")
+        existing = None
+        if os.path.exists(manifest):
+            try:
+                with open(manifest) as f:
+                    existing = json.load(f)
+            except ValueError as e:
+                return 400, {"error": f"shorts/shorts.json can't be read, so it isn't overwritten: {e}"}
+        with self.lock:
+            if self.status["state"] == "running":
+                return 409, {"error": "the final render is still running"}
+            if self.shorts_status["state"] == "running":
+                return 409, {"error": "shorts are already rendering"}
+            clips = [c for c, _ in built]
+            self.shorts_status = {"state": "running", "clips": {
+                str(shorts_view.number(c)): {"state": "queued", "output": None, "error": None}
+                for c in clips}}
+        os.makedirs(self.shorts_dir, exist_ok=True)
+        write_json(manifest, shorts_view.merge_picks(existing, self.raw, built[0][1], SHORT_AUDIO, clips))
+        threading.Thread(target=self._render_shorts, args=(manifest, clips), daemon=True).start()
+        return 202, {"ok": True}
+
+    def _render_shorts(self, manifest, clips):
+        failed = False
+        for clip in clips:
+            key = str(shorts_view.number(clip))
+            with self.lock:
+                self.shorts_status["clips"][key]["state"] = "rendering"
+            try:
+                r = subprocess.run([sys.executable, self.shorts_py, manifest, key],
+                                   capture_output=True, text=True)
+                out = next((l[len("SHORT: "):] for l in r.stdout.splitlines() if l.startswith("SHORT: ")), None)
+                update = ({"state": "done", "output": out} if r.returncode == 0 and out else
+                          {"state": "error", "error": error_line(r.stderr) or "render failed"})
+            except Exception as e:  # report anything to the page
+                update = {"state": "error", "error": str(e)}
+            failed = failed or update["state"] == "error"
+            with self.lock:
+                self.shorts_status["clips"][key].update(update)
+        with self.lock:
+            self.shorts_status["state"] = "error" if failed else "done"
+
+
+def write_json(path, data):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp, path)
+
+
+def error_line(stderr):
+    lines = [l for l in stderr.strip().splitlines() if l.strip()]
+    return next((l for l in reversed(lines) if l.startswith("ERROR:")), lines[-1] if lines else "")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -83,7 +265,15 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         s = self.server
-        if self.path == "/":
+        path = self.path.split("?", 1)[0]
+        m = re.fullmatch(r"/shorts/preview/(\d+)\.jpg", path)
+        if m:
+            jpg = s.preview_path(int(m.group(1)))
+            if jpg:
+                self.send_file(jpg, "image/jpeg")
+            else:
+                self.send_json(404, {"error": "no such preview"})
+        elif self.path == "/":
             self.send_file(os.path.join(HERE, "page.html"), "text/html; charset=utf-8")
         elif self.path == "/proxy.mp4":
             self.send_ranged(os.path.join(s.cache, "proxy.mp4"))
@@ -91,7 +281,9 @@ class Handler(BaseHTTPRequestHandler):
             out = render.final_path(s.raw)
             self.send_json(200, {**s.analysis, "peaks": s.peaks["peaks"], "per_s": s.peaks["per_s"],
                                  "name": os.path.basename(s.raw), "render": s.render_status(),
-                                 "output": out, "exists": os.path.exists(out)})
+                                 "output": out, "exists": os.path.exists(out), "edit": s.edit()})
+        elif self.path == "/api/shorts":
+            self.send_json(200, s.shorts_state())
         elif self.path == "/api/render":
             self.send_json(200, s.render_status())
         else:
@@ -114,6 +306,30 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(400, {"error": str(e) or "bad request"})
                 return
             self.send_json(*s.start_render(float(in_s), float(out_s)))
+        elif self.path in ("/api/shorts/preview", "/api/shorts/captions", "/api/shorts/render"):
+            try:
+                body = json.loads(raw_body)
+                if not isinstance(body, dict):
+                    raise ValueError("expected a JSON object")
+            except ValueError as e:
+                self.send_json(400, {"error": str(e) or "bad request"})
+                return
+            if self.path == "/api/shorts/render":
+                self.send_json(*s.start_shorts(body.get("picks")))
+                return
+            mode = "--preview" if self.path.endswith("preview") else "--captions"
+            try:
+                clip, stdout = s.run_work(mode, body)
+            except ValueError as e:
+                self.send_json(400, {"error": str(e)})
+                return
+            if mode == "--captions":
+                text = "\n".join(l for l in stdout.splitlines() if not l.startswith("== "))
+                self.send_json(200, {"text": text})
+            else:
+                n = shorts_view.number(clip)
+                mtime = os.path.getmtime(s.preview_path(n))
+                self.send_json(200, {"url": f"/shorts/preview/{n}.jpg?v={mtime}"})
         elif self.path == "/api/stop":
             if s.render_status()["state"] != "running":
                 self.send_json(409, {"error": "no render is running"})
@@ -169,8 +385,8 @@ class Handler(BaseHTTPRequestHandler):
             pass  # the browser cancels range requests while seeking
 
 
-def make_server(raw, chain, port=0):
-    return TrimServer(raw, chain, port)
+def make_server(raw, chain, port=0, shorts_py=SHORTS_PY):
+    return TrimServer(raw, chain, port, shorts_py)
 
 
 if __name__ == "__main__":
@@ -179,7 +395,9 @@ if __name__ == "__main__":
     chain = audio_chain.load_chain(os.path.join(HERE, "chain.json"))
     try:
         srv = make_server(sys.argv[1], chain)
-    except FileNotFoundError:
+    except FileNotFoundError as e:
+        if "stream-shorts" in str(e):
+            sys.exit(f"ERROR: {e}")
         sys.exit("ERROR: no prepared cache for this recording, run prepare.py first")
     print(f"READY http://127.0.0.1:{srv.server_address[1]}/", flush=True)
     try:
