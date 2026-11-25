@@ -115,6 +115,7 @@ For someone with their own OBS setup, when `profiles.py check` says `NO_DEFAULT`
 
 ## Notes
 
+- `SETUP.md` is the overview for anyone setting this up: what's required, what's optional (viDIQ), what only runs for Ryan, and what first-run setup asks. Point a new user to it.
 - Titles picked on the page: `:` becomes ` -` and `/` becomes `-` in the file name, since Finder won't take them. Picking again renames from the current name, and a name that's already taken is refused. The cache's `edit.json` and `shorts/shorts.json` follow each rename, so the page, the Streams tab and re-renders all find the renamed files.
 - The page's Streams tab lists every recording with a cache, newest first: whether the raw is local, the final, shorts and description, and the cache size, with Show in Finder buttons and a Copy command button for `/stream-trim` on that recording. It's built from the caches, so deleting a cache folder takes its stream off the list. Show in Finder is also next to Render once the final exists, and in the Shorts tab.
 - The cache (preview, waveform, analysis) is in `~/Library/Caches/stream-trim/`, never next to the recording. That keeps a 1 GB preview out of Google Drive. Deleting the folder is safe.
