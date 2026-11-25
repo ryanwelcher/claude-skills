@@ -72,6 +72,13 @@
   .card .acts button[hidden] { display: none; }
   .card.done { border-left: 4px solid #3ccf8e; }
   #sec-gone .card { opacity: 0.6; }
+  .card .thumb { width: 36px; height: 64px; object-fit: cover; border-radius: 4px; background: #000; display: none; }
+  .card .summary { display: none; margin-top: 6px; }
+  .card.collapsed { padding: 10px 16px; }
+  .card.collapsed .head { align-items: center; }
+  .card.collapsed .thumb { display: block; }
+  .card.collapsed .summary { display: block; }
+  .card.collapsed .times, .card.collapsed .body, .card.collapsed .state { display: none; }
   .card .layouts { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
   .card .layouts button { padding: 4px 12px; font-size: 13px; background: #34314a; }
   .card .layouts button.on { background: var(--accent); }
@@ -430,11 +437,12 @@ function drawCards() {
     const el = k.el = document.createElement('div');
     el.className = 'card' + (off ? ' off' : '');
     el.innerHTML = `
-      <div class="head"><label><input type="checkbox" class="pick" ${off ? 'disabled' : ''}>
+      <div class="head"><img class="thumb" alt=""><label><input type="checkbox" class="pick" ${off ? 'disabled' : ''}>
         <span>${String(c.n).padStart(2, '0')}</span> <span>${escapeHtml(c.hook || c.file)}</span></label>
         <span class="chip"></span>
-        <span class="acts"><button class="rerender" hidden>Re-render</button><button class="reveal secondary" hidden>Show in Finder</button><button class="dismiss secondary">Not this one</button><button class="restore secondary" hidden>Restore</button></span></div>
+        <span class="acts"><button class="rerender" hidden>Re-render</button><button class="open secondary" hidden>Open</button><button class="reveal secondary" hidden>Show in Finder</button><button class="dismiss secondary">Not this one</button><button class="restore secondary" hidden>Restore</button></span></div>
       ${off ? `<div class="note">${escapeHtml(off)}</div>` : ''}
+      <div class="summary note"></div>
       <div class="times">
         <span>Start <button data-k="start" data-d="-0.5">-0.5 s</button> <b class="st"></b> <button data-k="start" data-d="0.5">+0.5 s</button></span>
         <span>End <button data-k="end" data-d="-0.5">-0.5 s</button> <b class="en"></b> <button data-k="end" data-d="0.5">+0.5 s</button></span>
@@ -477,6 +485,7 @@ function drawCards() {
     el.querySelector('.dismiss').addEventListener('click', (e) => { e.currentTarget.blur(); setDismissed(c.n, true); });
     el.querySelector('.restore').addEventListener('click', (e) => { e.currentTarget.blur(); setDismissed(c.n, false); });
     el.querySelector('.rerender').addEventListener('click', (e) => { e.currentTarget.blur(); renderPicks([k]); });
+    el.querySelector('.open').addEventListener('click', (e) => { e.currentTarget.blur(); k.open = !k.open; placeCards(); });
     el.querySelector('.reveal').addEventListener('click', async (e) => {
       e.currentTarget.blur();
       const [code, r2] = await post('/api/reveal', { target: 'short', n: c.n });
@@ -560,7 +569,7 @@ function refresh(n, withCaptions) {
   if (k.end <= k.start) return;
   queue = queue.then(async () => {
     const [code, r] = await post('/api/shorts/preview', body(k));
-    if (code === 200) { k.el.querySelector('.pv').src = r.url; k.el.querySelector('.state').textContent = ''; }
+    if (code === 200) { k.el.querySelector('.pv').src = r.url; k.el.querySelector('.thumb').src = r.url; k.el.querySelector('.state').textContent = ''; }
     else k.el.querySelector('.state').textContent = r.error;
   }).catch(() => {});
   if (withCaptions) captions(n);
@@ -627,6 +636,21 @@ function placeCards() {
     chip.className = 'chip ' + cls;
     chip.hidden = !label;
     k.el.classList.toggle('done', state === 'rendered');
+    // A rendered short folds to one line until opened; a changed one stays open while it's being edited.
+    const folded = state === 'rendered' && !k.open;
+    k.el.classList.toggle('collapsed', folded);
+    const openBtn = k.el.querySelector('.open');
+    openBtn.hidden = state !== 'rendered';
+    openBtn.textContent = k.open ? 'Close' : 'Open';
+    if (folded) {
+      const r = SH.rendered[String(c.n)];
+      const file = (SH.titles && SH.titles.files[String(c.n)]) || r.file;
+      const L = SH.layouts[k.layout];
+      k.el.querySelector('.summary').textContent =
+        `${file} · ${(k.end - k.start).toFixed(1)} s · ${L && L.label ? L.label : k.layout}`;
+      const pv = k.el.querySelector('.pv');
+      if (pv.getAttribute('src')) k.el.querySelector('.thumb').src = pv.src;
+    }
     k.el.querySelector('.pick').hidden = !['pick', 'list', 'failed'].includes(state);
     k.el.querySelector('.dismiss').hidden = !['pick', 'list', 'failed'].includes(state);
     k.el.querySelector('.restore').hidden = state !== 'dismissed';

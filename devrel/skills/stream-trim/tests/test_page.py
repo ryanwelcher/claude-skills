@@ -34,6 +34,9 @@ class PageTest(unittest.TestCase):
         for ref in ('id="sec-pick"', 'id="sec-list"', 'id="sec-done"', 'id="sec-gone"', "/api/shorts/dismiss",
                     "Not this one", "Re-render", "Changed since render", "/shorts/file/"):
             self.assertIn(ref, page)
+        # Rendered cards fold to one line with a thumbnail; Open shows the rest.
+        for ref in ('class="thumb"', 'class="summary', ".card.collapsed", "k.open"):
+            self.assertIn(ref, page)
         # The "Claude needs you in the terminal" banner.
         for ref in ("/api/attention", 'id="attention"', "document.title"):
             self.assertIn(ref, page)
