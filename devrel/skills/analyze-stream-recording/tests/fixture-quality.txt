@@ -1,0 +1,3 @@
+COVERAGE: 68%
+SUSPECT: 00:03:19-00:05:20 no speech
+SUSPECT: 00:05:20-00:06:30 repeated "thanks for watching"

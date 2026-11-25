@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Flag the parts of a Whisper SRT that are not real transcript.
 
-Usage: check-transcript.py <audio.srt> <duration_seconds>
+Usage: check-transcript.py <audio.srt> <duration_seconds> [--window <start> <end>]
+
+With --window, only [start, end) seconds of the recording are checked, and
+the times printed count from start (see condense.py).
 
 Prints:
   COVERAGE: <n>%                          share of the recording outside any SUSPECT range
@@ -13,7 +16,13 @@ decide what to re-transcribe; transcribe-file.sh reports whatever is left.
 """
 import re, sys
 
-srt_path, duration = sys.argv[1], float(sys.argv[2] or 0)
+args = sys.argv[1:]
+window = None
+if "--window" in args:
+    i = args.index("--window")
+    window = (float(args[i + 1]), float(args[i + 2]))
+    del args[i:i + 3]
+srt_path, duration = args[0], float(args[1] or 0)
 LOOP_MIN, GAP_MIN = 60, 90
 
 TS = re.compile(r"^(\d\d):(\d\d):(\d\d),(\d{3})\s+-->\s+(\d\d):(\d\d):(\d\d),(\d{3})")
@@ -35,6 +44,12 @@ with open(srt_path, encoding="utf-8") as fh:
             cues.append([secs(*g[:4]), secs(*g[4:]), ""])
         elif cues and line and not line.isdigit():
             cues[-1][2] += " " + line
+
+if window:
+    # Clip the cues to the window and count from its start.
+    w0, w1 = window
+    cues = [[max(a, w0) - w0, min(b, w1) - w0, x] for a, b, x in cues if b > w0 and a < w1]
+    duration = w1 - w0
 
 norm = lambda s: re.sub(r"[^a-z0-9 ]", "", s.lower()).strip()
 suspects = []

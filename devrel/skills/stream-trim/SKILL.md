@@ -20,7 +20,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
    ```
    If it prints `MISSING`, stop and tell Ryan. This needs an ffmpeg built for macOS with VideoToolbox and libx265.
 
-   Then run the tool check from `stream-shorts` step 1 (ffmpeg with libass, `mlx_whisper`), and follow its install rules if something is missing. Shorts also need the Jost font, which `render-short.sh` checks for. If Ryan doesn't want shorts this time, skip this check and steps 6 to 8.
+   Then run the tool check from `stream-shorts` step 1 (ffmpeg with libass, `mlx_whisper`), and follow its install rules if something is missing. Shorts also need the Jost font, which `render-short.sh` checks for. If Ryan doesn't want shorts this time, skip this check and steps 6 to 8 (step 9 still runs).
 
 2. **Check the profile** before anything slow runs:
    ```bash
@@ -55,7 +55,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
    ```bash
    curl -s http://127.0.0.1:<port>/api/shorts
    ```
-   until `edit` isn't `null`. If he asks about the render meanwhile, check `/api/render` as in step 9. Then:
+   until `edit` isn't `null`. If he asks about the render meanwhile, check `/api/render` as in step 10. Then:
    - Keep only the clips that sit inside the edit, with the render's padding. On the transcript clock (the shortlist's times), a clip is inside when `start - 0.2 - shift >= in` and `end + 0.4 - shift <= out`, using `edit.in`, `edit.out` and `shift` from `/api/shorts`.
    - Fix dangling-word starts and ends with the rules in `stream-shorts` step 5, using the `Words` file.
    - Write the clips to `shorts/candidates.draft.json` next to the recording, in the `shorts.json` shape from `stream-shorts` step 3, with `"recording"` (the raw path) and `"words"`. If the profile has a `layouts` file, add `"layouts"` with its absolute path (it's relative to the profile file), so the previews use the profile's layouts. Number the files in timestamp order, starting after the highest number already in `shorts/shorts.json` if that file exists. `shorts.py` picks clips by number, so a repeated number would re-render the older clip, and the page refuses it.
@@ -75,7 +75,15 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
    - Follow `stream-shorts` steps 7, 8 and 9 for the clips that rendered (descriptions file, voice pass, em-dash and AI-ism scan, report). Report each failed clip's error from `/api/shorts` as-is.
    - Run the `sounds-like-me` voice pass only when the profile's `voice_pass` is `sounds-like-me`. Read it from the profile file: `~/.config/stream-trim/profiles/<name>.json` if it exists, otherwise `${CLAUDE_SKILL_DIR}/profiles/<name>.json`. With `null`, write the titles and descriptions plain, in the person's own words from the clip. The separate em-dash and AI-ism scan always runs.
 
-9. **When he asks about the final render,** check it:
+9. **Write the full video's title and description** once the final is rendered: after step 8, or without shorts, once `/api/render` says `done`. Get `edit.in`, `edit.out` and `shift` from `/api/shorts`. The transcript runs `shift` seconds behind the video, so the final's 00:00 is `edit.in + shift` on the transcript clock:
+   - With the `ryan-obs` profile, invoke the `youtube-stream-description` skill with:
+     ```
+     <raw path> --window <edit.in + shift> <edit.out + shift> --out <recording dir>/renders
+     ```
+     (seconds, 3 decimals). It writes `renders/youtube-description.txt` next to the final, with chapters that match the final, a viDIQ-scored title, and the voice pass.
+   - With any other profile, that skill's template and voice cards are Ryan's, so don't use it. Offer the chapter list instead: invoke `analyze-stream-recording` with `<raw path> --window <start> <end>` and give them its Chapters section.
+
+10. **When he asks about the final render,** check it:
    ```bash
    curl -s http://127.0.0.1:<port>/api/render
    ```

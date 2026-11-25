@@ -39,6 +39,10 @@
 #   WHISPER_PROMPT             decoder bias terms (see below)
 #   TRANSCRIBE_WAIT            seconds to wait per call (default 540)
 #   STREAM_TRANSCRIPT_CACHE    cache root (default ~/.cache/stream-transcripts)
+#   TRANSCRIPT_WINDOW          "<start> <end>" in seconds: condense and check
+#                              only that part, with start as 00:00:00 (for
+#                              stream-trim's edit). The transcription itself
+#                              is the whole file's, from the same cache.
 
 set -euo pipefail
 
@@ -88,6 +92,18 @@ mkdir -p "$DIR"
 
 SRT="$DIR/audio.srt"
 CONDENSED="$DIR/condensed-${BUCKET}.txt"
+QUALITY="$DIR/quality.txt"
+WINDOW_ARGS=()
+if [ -n "${TRANSCRIPT_WINDOW:-}" ]; then
+  read -r W_START W_END _ <<<"$TRANSCRIPT_WINDOW"
+  if ! python3 -c 'import sys; a, b = map(float, sys.argv[1:3]); sys.exit(not 0 <= a < b)' "${W_START:-}" "${W_END:-}" 2>/dev/null; then
+    echo "ERROR: TRANSCRIPT_WINDOW must be \"<start> <end>\" in seconds with start < end, not \"$TRANSCRIPT_WINDOW\"" >&2
+    exit 1
+  fi
+  WINDOW_ARGS=(--window "$W_START" "$W_END")
+  CONDENSED="$DIR/condensed-${BUCKET}-w${W_START}-${W_END}.txt"
+  QUALITY="$DIR/quality-w${W_START}-${W_END}.txt"
+fi
 
 job_running() {
   [ -f "$DIR/pid" ] && kill -0 "$(cat "$DIR/pid")" 2>/dev/null
@@ -155,32 +171,7 @@ fi
 rm -f "$DIR/attempts"
 
 if [ ! -s "$CONDENSED" ]; then
-python3 - "$SRT" "$BUCKET" > "$CONDENSED" <<'PY'
-import re, sys
-
-srt_path, bucket = sys.argv[1], int(sys.argv[2])
-
-# SRT cue timestamps look like: 00:01:23,456 --> 00:01:27,890
-TS = re.compile(r"^(\d\d):(\d\d):(\d\d),\d{3}\s+-->")
-
-buckets = {}
-current = None
-with open(srt_path, encoding="utf-8") as fh:
-    for line in fh:
-        line = line.rstrip("\n")
-        m = TS.match(line)
-        if m:
-            h, mnt, s = (int(x) for x in m.groups())
-            current = ((h * 3600 + mnt * 60 + s) // bucket) * bucket
-            continue
-        if current is None or not line.strip() or line.strip().isdigit():
-            continue
-        buckets.setdefault(current, []).append(line.strip())
-
-for start in sorted(buckets):
-    stamp = "%02d:%02d:%02d" % (start // 3600, (start % 3600) // 60, start % 60)
-    print("[%s] %s" % (stamp, " ".join(buckets[start])))
-PY
+  python3 "$SCRIPT_DIR/condense.py" "$SRT" "$BUCKET" ${WINDOW_ARGS[@]+"${WINDOW_ARGS[@]}"} > "$CONDENSED"
 fi
 
 if [ ! -s "$CONDENSED" ]; then
@@ -191,10 +182,9 @@ fi
 
 # Quality check: flag repeated-phrase loops and long silences that the worker
 # could not repair, so the chapters never claim content from inside them.
-QUALITY="$DIR/quality.txt"
 if [ ! -s "$QUALITY" ]; then
   DURATION="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$ABS_FILE" 2>/dev/null || echo 0)"
-  python3 "$SCRIPT_DIR/check-transcript.py" "$SRT" "$DURATION" > "$QUALITY"
+  python3 "$SCRIPT_DIR/check-transcript.py" "$SRT" "$DURATION" ${WINDOW_ARGS[@]+"${WINDOW_ARGS[@]}"} > "$QUALITY"
 fi
 
 echo "CONDENSED: $CONDENSED"

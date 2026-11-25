@@ -14,6 +14,10 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
 - **Improve existing** — user provides a video URL and wants the description rewritten
 - **Local recording** — user provides a path to a video file that hasn't been uploaded yet; the `analyze-stream-recording` helper transcribes it and returns the hook material and chapters
 
+## Called from stream-trim
+
+`stream-trim` passes `<raw path> --window <start> <end> --out <folder>`. That's the local-recording scenario, post-stream: pass `<raw path> --window <start> <end>` to `analyze-stream-recording` in step 5 so the chapters match the trimmed final, and write the file to `<folder>` in step 9 instead of the recording's folder. Still ask step 1's questions it doesn't answer (title, links, Stream Together).
+
 ## Workflow
 
 1. **Confirm what's needed.** Ask only the questions the user hasn't already answered:
@@ -59,7 +63,9 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
    - Boilerplate sections from TEMPLATE.md verbatim
    - Hashtag line per the rules in TEMPLATE.md
 
-8. **Save the title and description to a file.** For a local recording, write `youtube-description.txt` in the recording's folder. Don't ask first, and overwrite the file if it already exists. For the other scenarios, write it to the session scratchpad. Use this format:
+8. **Score the title with viDIQ.** Skip this step, and say so, if the `mcp__vidiq__vidiq_score_title` tool isn't available. Otherwise draft 4 or 5 titles from the recap and the recent titles from step 3 (include Ryan's own title if he gave one) and score each with `type: "long"`. Each call costs 5 viDIQ credits, so run at most 3 rounds: after each round, rework the weakest ones using what scored well. Stop once one reaches 80. Show Ryan every title with its score and let him pick, and tell him when none reached 80. If the voice pass in step 10 changes the picked title, score it once more.
+
+9. **Save the title and description to a file.** For a local recording, write `youtube-description.txt` in the recording's folder. Don't ask first, and overwrite the file if it already exists. For the other scenarios, write it to the session scratchpad. Use this format:
    ```
    Title:
    <title>
@@ -68,9 +74,9 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
    <the full description>
    ```
 
-9. **Run a voice pass on the file.** Invoke the `sounds-like-me` skill with the file path, and follow it through to the fixes Ryan approves. Then run a separate em-dash and AI-ism scan on the file, not bundled into the voice pass.
+10. **Run a voice pass on the file.** Invoke the `sounds-like-me` skill with the file path, and follow it through to the fixes Ryan approves. Then run a separate em-dash and AI-ism scan on the file, not bundled into the voice pass.
 
-10. **Output the final title and description** from the file. Put the full description in a single fenced code block so the user can copy-paste it directly into YouTube Studio. Do not add commentary inside the code block. For a local recording, tell the user the file's path.
+11. **Output the final title and description** from the file. Put the full description in a single fenced code block so the user can copy-paste it directly into YouTube Studio. Do not add commentary inside the code block. For a local recording, tell the user the file's path.
 
 ## Defaults & guardrails
 

@@ -14,14 +14,15 @@ You are running in a forked context. The parent conversation will see **only you
 message**, so everything you read here stays here. Your job is to turn a long transcript
 into a few hundred tokens the parent can draft from.
 
-Input: `$ARGUMENTS` is the path to a local video/audio file (mp4/mov/mkv/wav).
+Input: `$ARGUMENTS` is the path to a local video/audio file (mp4/mov/mkv/wav), optionally followed by `--window <start> <end>` (seconds). With a window, the path is everything before `--window`, and the recap, chapters and gaps cover only that part of the recording, with `<start>` as `00:00`. `stream-trim` passes one so the chapters match its trimmed final.
 
 ## Steps
 
 1. **Transcribe.** Run this in the **foreground** with the Bash tool's `timeout` set to `600000`:
    ```bash
-   bash ${CLAUDE_SKILL_DIR}/scripts/transcribe-file.sh "$ARGUMENTS"
+   bash ${CLAUDE_SKILL_DIR}/scripts/transcribe-file.sh "<path>"
    ```
+   With a window, put it in front: `TRANSCRIPT_WINDOW="<start> <end>" bash ${CLAUDE_SKILL_DIR}/scripts/transcribe-file.sh "<path>"`. It reuses the whole recording's cached transcript, and every time it prints already counts from `<start>`.
    - **Never** use `run_in_background`, Monitor, or anything else that waits for a later notification. This fork ends the moment you stop calling tools, and nothing can wake it again. A result that arrives after that is lost, and the parent gets nothing. Do not end your turn until you have the three sections below or an `ERROR:` line.
    - It prints only pointers: `CONDENSED: <path>`, `LINES`, `WORDS`, `SRT: <path>`, `WORDS_JSON: <path>` (for `stream-shorts`; ignore it here), `COVERAGE: <n>%`, and zero or more `SUSPECT: HH:MM:SS-HH:MM:SS <reason>` lines. It never prints the transcript.
    - A `SUSPECT` range is a stretch where Whisper looped on one phrase or heard nothing. Looped ranges were already re-transcribed once, so any that remain are real failures. The transcript there is not real content.

@@ -358,3 +358,13 @@ Follow-ups (2026-11-25, Ryan's picks):
   checks again. While a file is cloud-only Drive reports a wrong size
   (1.2 GB for the 8.5 GB Nov 12 raw), and the cache key uses the size, so
   prepare must only run on the downloaded file.
+- New step 9: after the final (and the shorts text), stream-trim runs
+  `youtube-stream-description` on the raw with a transcript window from
+  In to Out on the transcript clock (`edit.in + shift`, `edit.out +
+  shift`). `transcribe-file.sh` takes `TRANSCRIPT_WINDOW` and condenses
+  and checks just that part of the cached transcript, counting from In, so
+  nothing is transcribed twice and the chapters match the final. The
+  result goes to `renders/youtube-description.txt`. The title is scored
+  with viDIQ (at most 3 rounds of 4 or 5 titles, 5 credits a call, stop
+  at 80). Other profiles get only the chapter list, since the template
+  and voice cards are Ryan's.
