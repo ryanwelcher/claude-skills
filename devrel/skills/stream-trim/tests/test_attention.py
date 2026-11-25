@@ -103,6 +103,17 @@ class AttentionTest(unittest.TestCase):
         attention.register(self.port, os.getpid(), self.raw, session="sess-a")
         self.assertEqual(attention.live_servers()[0]["session"], "sess-a")
 
+    def test_log(self):
+        """Every call leaves a line, so a missing banner can be traced."""
+        attention.register(self.port, os.getpid(), self.raw, session="sess-a")
+        self.cli("set", "x", stdin=json.dumps({"session_id": "sess-a", "hook_event_name": "PreToolUse"}))
+        self.cli("clear", stdin=json.dumps({"session_id": "sess-b", "hook_event_name": "PostToolUse"}))
+        with open(os.path.join(self.servers, "hooks.log")) as f:
+            lines = f.read().splitlines()
+        self.assertEqual(len(lines), 2)
+        self.assertIn("PreToolUse set sess-a sent=1", lines[0])
+        self.assertIn("PostToolUse clear sess-b sent=0", lines[1])
+
     def test_never_fails(self):
         """A hook must never get in Claude's way: no servers, junk input, a dead port."""
         for args, stdin in ((["set", "x"], ""), (["notify"], "not json"), (["clear"], ""), ([], ""), (["bogus"], "")):

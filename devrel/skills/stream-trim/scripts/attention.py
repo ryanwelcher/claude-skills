@@ -80,9 +80,27 @@ def live_servers():
     return out
 
 
+def log(line):
+    """hooks.log in the servers folder: one line per call, trimmed to the last 500."""
+    path = os.path.join(servers_dir(), "hooks.log")
+    try:
+        os.makedirs(servers_dir(), exist_ok=True)
+        with open(path, "a") as f:
+            f.write(line + "\n")
+        if os.path.getsize(path) > 100_000:
+            with open(path) as f:
+                keep = f.readlines()[-500:]
+            with open(path, "w") as f:
+                f.writelines(keep)
+    except OSError:
+        pass
+
+
 def send(body, session=None):
-    """Post to every live server started by this session (or by no known session)."""
+    """Post to every live server started by this session (or by no known session).
+    Returns how many it reached."""
     data = json.dumps(body).encode()
+    sent = 0
     for s in live_servers():
         if session and s.get("session") and s["session"] != session:
             continue
@@ -90,8 +108,10 @@ def send(body, session=None):
                                      headers={"Content-Type": "application/json"})
         try:
             urllib.request.urlopen(req, timeout=1).close()
+            sent += 1
         except Exception:
             pass
+    return sent
 
 
 def main(argv):
@@ -105,14 +125,19 @@ def main(argv):
     if not isinstance(event, dict):
         event = {}
     session = event.get("session_id")
+    sent = None
     if cmd == "set" and len(argv) > 1:
-        send({"waiting": True, "reason": argv[1]}, session)
+        sent = send({"waiting": True, "reason": argv[1]}, session)
     elif cmd == "clear":
-        send({"waiting": False}, session)
+        sent = send({"waiting": False}, session)
     elif cmd == "notify":
         reason = NOTIFY.get(event.get("notification_type"))
         if reason:
-            send({"waiting": True, "reason": reason}, session)
+            sent = send({"waiting": True, "reason": reason}, session)
+    if sent is not None:
+        import time
+        log("%s %s %s %s sent=%d" % (time.strftime("%H:%M:%S"), event.get("hook_event_name") or "-", cmd,
+                                     session or "-", sent))
 
 
 if __name__ == "__main__":
