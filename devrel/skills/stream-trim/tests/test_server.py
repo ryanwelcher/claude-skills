@@ -533,6 +533,44 @@ class ServerTest(unittest.TestCase):
         with open(os.path.join(self.shorts, "shorts.json")) as f:
             self.assertEqual(json.load(f)["clips"][0]["layout"], "me-square")
 
+    # -- the overhauled Shorts tab: rendered, dismissed --
+
+    def test_shorts_rendered_and_dismissed(self):
+        self.write_candidates()
+        st = self.shorts_state()
+        self.assertEqual((st["rendered"], st["dismissed"]), ({}, []))
+        self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 21, "end": 30}]})
+        self.wait_shorts("done")
+        r = self.shorts_state()["rendered"]["1"]
+        self.assertEqual((r["file"], r["start"], r["end"], r["exists"]), ("01-one.mp4", "00:00:21.00", "00:00:30.00", True))
+        self.assertEqual(r["layout"], "center")
+        # Saved across a server restart, like the page reloading.
+        self.assertEqual(self.post("/api/shorts/dismiss", {"n": 2, "dismissed": True})[0], 200)
+        self.assertEqual(self.post("/api/shorts/dismiss", {"n": 3, "dismissed": True})[0], 200)
+        srv = server.make_server(self.raw, profiles.load("ryan-obs"), port=0, shorts_py=self.stub)
+        self.addCleanup(srv.server_close)
+        self.assertEqual(srv.shorts_state()["dismissed"], [2, 3])
+        self.assertEqual(self.post("/api/shorts/dismiss", {"n": 3, "dismissed": False})[0], 200)
+        self.assertEqual(self.shorts_state()["dismissed"], [2])
+        for bad in ({"n": 9, "dismissed": True}, {"n": 1}, {"n": "1", "dismissed": True}, [1]):
+            self.assertEqual(self.post("/api/shorts/dismiss", bad)[0], 400, bad)
+        # A rendered file that's gone (deleted in Finder) shows as not there.
+        os.remove(os.path.join(self.shorts, "01-one.mp4"))
+        self.assertFalse(self.shorts_state()["rendered"]["1"]["exists"])
+
+    def test_rendered_file_served_and_revealed(self):
+        self.write_candidates()
+        self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 21, "end": 30}]})
+        self.wait_shorts("done")
+        code, _, body = self.get("/shorts/file/1.mp4")
+        self.assertEqual((code, body), (200, b"MP4"))
+        self.assertEqual(self.get("/shorts/file/2.mp4")[0], 404)
+        calls = []
+        self.srv.open_cmd = calls.append
+        self.assertEqual(self.post("/api/reveal", {"target": "short", "n": 1})[0], 200)
+        self.assertEqual(calls, [["open", "-R", os.path.join(self.shorts, "01-one.mp4")]])
+        self.assertEqual(self.post("/api/reveal", {"target": "short", "n": 2})[0], 404)
+
     def test_shorts_render_checks(self):
         self.write_edit()
         self.write_candidates()

@@ -433,3 +433,13 @@ Follow-ups (2026-11-25, Ryan's picks):
   Claude's last message ends with a question mark (from
   `last_assistant_message`, else the transcript's tail). A turn that ends
   without a question, like waiting on a render, sets nothing.
+- Shorts tab overhaul (Ryan: a rendered short stayed ticked and asked to
+  render again; unclear what was rendered or queued; no way to drop one).
+  Cards sit in sections by state: To render, Shortlist, Rendered, and a
+  collapsed Dismissed list. Each card has a state chip. Rendered shorts
+  lose the checkbox, play the real file, and get Show in Finder; editing
+  one marks it "Changed since render" with its own Re-render. "Not this
+  one" dismisses, Restore brings it back. Rendered state comes from
+  `shorts/shorts.json` plus the files, and dismissals from the cache's
+  `dismissed.json`, so both survive a reload. A rendered card reopens with
+  the values it was rendered with.

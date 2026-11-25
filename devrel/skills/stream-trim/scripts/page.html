@@ -57,6 +57,21 @@
   #finding { background: var(--panel); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
   #finding progress { width: 360px; }
   .card .outside { color: #f0c36c; }
+  .sec { margin-bottom: 22px; }
+  .sec[hidden] { display: none; }
+  .sec h2 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .sec .count { color: var(--text); }
+  .card .head { flex-wrap: wrap; }
+  .card .chip { font: 600 12px -apple-system, system-ui, sans-serif; padding: 3px 10px; border-radius: 999px; background: #34314a; color: var(--text); margin-left: 12px; }
+  .card .chip[hidden] { display: none; }
+  .card .chip.pick { background: var(--accent); color: #fff; }
+  .card .chip.done { background: #1f5d43; color: #d8f7e8; }
+  .card .chip.changed, .card .chip.failed { background: #6b4a12; color: #ffe9c2; }
+  .card .acts { display: flex; gap: 8px; margin-left: auto; }
+  .card .acts button { padding: 4px 12px; font-size: 13px; }
+  .card .acts button[hidden] { display: none; }
+  .card.done { border-left: 4px solid #3ccf8e; }
+  #sec-gone .card { opacity: 0.6; }
   .card .layouts { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
   .card .layouts button { padding: 4px 12px; font-size: 13px; background: #34314a; }
   .card .layouts button.on { background: var(--accent); }
@@ -103,8 +118,13 @@
   <section id="shorts-view" hidden>
     <div id="finding" hidden></div>
     <div id="shorts-note" class="note"></div>
-    <div id="cards"></div>
-    <div id="shorts-bar"><button id="render-shorts" disabled>Render selected</button><progress id="shorts-progress" max="100" hidden></progress><span id="shorts-status" class="note"></span><button id="reveal-shorts" class="secondary">Open shorts folder</button></div>
+    <div id="cards">
+      <section class="sec" id="sec-pick" hidden><h2>To render <span class="count"></span></h2><div class="list"></div></section>
+      <section class="sec" id="sec-list" hidden><h2>Shortlist <span class="count"></span></h2><div class="list"></div></section>
+      <section class="sec" id="sec-done" hidden><h2>Rendered <span class="count"></span></h2><div class="list"></div></section>
+      <section class="sec" id="sec-gone" hidden><button class="toggle secondary"></button><div class="list" hidden></div></section>
+    </div>
+    <div id="shorts-bar"><button id="render-shorts" disabled>Render</button><progress id="shorts-progress" max="100" hidden></progress><span id="shorts-status" class="note"></span><button id="reveal-shorts" class="secondary">Open shorts folder</button></div>
   </section>
   <section id="streams-view" hidden>
     <div id="streams-note" class="note">Every recording stream-trim has worked on, newest first. To work on another one, copy its command into Claude.</div>
@@ -340,10 +360,11 @@ async function loadShorts() {
     $('shorts-note').textContent = SH.error ? "Claude is still writing the shortlist (" + SH.error + ")." : '';
   } else {
     const outside = SH.candidates.filter((c) => !insideEdit({ start: secs(c.start), end: secs(c.end) })).length;
-    $('shorts-note').textContent = SH.candidates.length + ' shorts. Tick the ones to render.'
-      + (outside ? ` ${outside === 1 ? '1 sits' : outside + ' sit'} outside your trim, at the bottom; they're still fine to pick.` : '');
+    $('shorts-note').textContent = 'Tick a short in the Shortlist to move it to To render. "Not this one" puts it away; you can restore it.'
+      + (outside ? ` ${outside === 1 ? '1 short sits' : outside + ' shorts sit'} outside your trim, flagged; they're still fine to pick.` : '');
     drawCards();
     for (const k of Object.values(cards)) drawTimes(k);
+    placeCards();
   }
   drawShortTitles();
   showShortsRender(SH.render);
@@ -383,7 +404,7 @@ function drawLayout(k) {
 }
 
 function drawCards() {
-  const box = $('cards');
+  const box = $('sec-list').querySelector('.list');
   const order = [...SH.candidates].sort((a, b) =>
     insideEdit({ start: secs(b.start), end: secs(b.end) }) - insideEdit({ start: secs(a.start), end: secs(a.end) }));
   for (const c of order) {
@@ -394,12 +415,25 @@ function drawCards() {
     // Suggested fixes start ticked: easier to untick a wrong one than to miss a right one.
     const k = cards[c.n] = { c, start: secs(c.start), end: secs(c.end), layout,
       pan_x: c.pan_x ?? (pan && pan.pan ? pan.x : null), panMoved: c.pan_x != null, accepted: Object.fromEntries(sugg) };
+    // A short that's been rendered opens as it was rendered, so "changed since render" means a real change.
+    const r = SH.rendered && SH.rendered[c.n];
+    let typedFixes = '';
+    if (r) {
+      k.start = secs(r.start); k.end = secs(r.end);
+      if (r.layout && SH.layouts[r.layout]) k.layout = r.layout;
+      if (r.pan_x != null) { k.pan_x = r.pan_x; k.panMoved = true; }
+      const fx = r.fixes || {};
+      k.accepted = Object.fromEntries(sugg.filter(([h, m]) => fx[h] === m));
+      typedFixes = Object.entries(fx).filter(([h, m]) => k.accepted[h] !== m).map(([h, m]) => h + ' = ' + m).join('\n');
+    }
     const off = c.skip ? 'Skipped: ' + c.skip : '';
     const el = k.el = document.createElement('div');
     el.className = 'card' + (off ? ' off' : '');
     el.innerHTML = `
-      <label class="head"><input type="checkbox" class="pick" ${off ? 'disabled' : ''}>
-        <span>${String(c.n).padStart(2, '0')}</span><span>${escapeHtml(c.hook || c.file)}</span></label>
+      <div class="head"><label><input type="checkbox" class="pick" ${off ? 'disabled' : ''}>
+        <span>${String(c.n).padStart(2, '0')}</span> <span>${escapeHtml(c.hook || c.file)}</span></label>
+        <span class="chip"></span>
+        <span class="acts"><button class="rerender" hidden>Re-render</button><button class="reveal secondary" hidden>Show in Finder</button><button class="dismiss secondary">Not this one</button><button class="restore secondary" hidden>Restore</button></span></div>
       ${off ? `<div class="note">${escapeHtml(off)}</div>` : ''}
       <div class="times">
         <span>Start <button data-k="start" data-d="-0.5">-0.5 s</button> <b class="st"></b> <button data-k="start" data-d="0.5">+0.5 s</button></span>
@@ -418,9 +452,9 @@ function drawCards() {
           <div class="pan-box"></div>
           <div class="note">Captions</div><pre class="cap">Loading...</pre>
           ${sugg.length ? '<div class="note">Suggested fixes (untick any that are wrong)</div>' + sugg.map(([h, m], i) =>
-            `<label><input type="checkbox" class="sugg" data-i="${i}" checked> ${escapeHtml(h)} &rarr; ${escapeHtml(m)}</label><br>`).join('') : ''}
+            `<label><input type="checkbox" class="sugg" data-i="${i}" ${h in k.accepted ? 'checked' : ''}> ${escapeHtml(h)} &rarr; ${escapeHtml(m)}</label><br>`).join('') : ''}
           <div class="note">More fixes, one per line: heard = meant</div>
-          <textarea class="fixes"></textarea>
+          <textarea class="fixes">${escapeHtml(typedFixes)}</textarea>
         </div>
       </div>
       <div class="title-box titles" hidden></div>
@@ -439,7 +473,15 @@ function drawCards() {
     }));
     let typing = null;
     el.querySelector('.fixes').addEventListener('input', () => { clearTimeout(typing); typing = setTimeout(() => captions(c.n), 600); });
-    el.querySelector('.pick').addEventListener('change', countPicks);
+    el.querySelector('.pick').addEventListener('change', () => { placeCards(); countPicks(); });
+    el.querySelector('.dismiss').addEventListener('click', (e) => { e.currentTarget.blur(); setDismissed(c.n, true); });
+    el.querySelector('.restore').addEventListener('click', (e) => { e.currentTarget.blur(); setDismissed(c.n, false); });
+    el.querySelector('.rerender').addEventListener('click', (e) => { e.currentTarget.blur(); renderPicks([k]); });
+    el.querySelector('.reveal').addEventListener('click', async (e) => {
+      e.currentTarget.blur();
+      const [code, r2] = await post('/api/reveal', { target: 'short', n: c.n });
+      if (code !== 200) k.el.querySelector('.state').textContent = r2.error;
+    });
     el.querySelector('.play').addEventListener('click', (e) => { e.currentTarget.blur(); play(c.n); });
     drawTimes(k);
     refresh(c.n, true);
@@ -487,6 +529,13 @@ function dropDraft(k) {
 function play(n) {
   const k = cards[n];
   if (k.end <= k.start) return;
+  if (stateOf(k) === 'rendered') {
+    const v = k.el.querySelector('.dv');
+    v.src = `/shorts/file/${n}.mp4?v=${Date.now()}`; v.hidden = false; k.el.querySelector('.pv').hidden = true;
+    k.draft = null;
+    v.play().catch(() => {});
+    return;
+  }
   const want = JSON.stringify(body(k));
   const v = k.el.querySelector('.dv'), btn = k.el.querySelector('.play');
   if (k.draft === want) { v.currentTime = 0; v.play(); return; }
@@ -506,6 +555,7 @@ function play(n) {
 // Previews run one at a time (each one seeks the 4K recording).
 function refresh(n, withCaptions) {
   const k = cards[n];
+  placeCards();
   dropDraft(k);
   if (k.end <= k.start) return;
   queue = queue.then(async () => {
@@ -518,21 +568,105 @@ function refresh(n, withCaptions) {
 
 async function captions(n) {
   const k = cards[n];
+  placeCards();
   if (k.draft && k.draft !== JSON.stringify(body(k))) dropDraft(k);
   if (k.end <= k.start) return;
   const [code, r] = await post('/api/shorts/captions', body(k));
   k.el.querySelector('.cap').textContent = code === 200 ? r.text : r.error;
 }
 
-function picked() { return Object.values(cards).filter((k) => k.el.querySelector('.pick').checked); }
+function picked() { return Object.values(cards).filter((k) => ['pick', 'failed'].includes(stateOf(k))); }
+
+// ---- Where each short stands ----
+
+function fixesKey(f) { return JSON.stringify(Object.entries(f || {}).sort()); }
+
+function changedSince(k, r) {
+  return Math.abs(secs(r.start) - k.start) > 0.005 || Math.abs(secs(r.end) - k.end) > 0.005
+    || (r.layout || SH.default_layout) !== k.layout
+    || (r.pan_x ?? null) !== (k.panMoved ? k.pan_x : null)
+    || fixesKey(r.fixes) !== fixesKey(fixesOf(k));
+}
+
+function stateOf(k) {
+  const n = String(k.c.n);
+  const st = SH.render.clips && SH.render.clips[n];
+  if (SH.render.state === 'running' && st && (st.state === 'queued' || st.state === 'rendering')) return 'rendering';
+  if ((SH.dismissed || []).includes(k.c.n)) return 'dismissed';
+  const r = SH.rendered && SH.rendered[n];
+  if (r && r.exists) return changedSince(k, r) ? 'changed' : 'rendered';
+  const ticked = k.el.querySelector('.pick').checked;
+  if (st && st.state === 'error' && ticked) return 'failed';
+  return ticked ? 'pick' : 'list';
+}
+
+const SECTION = { pick: 'sec-pick', failed: 'sec-pick', rendering: 'sec-pick', list: 'sec-list',
+  rendered: 'sec-done', changed: 'sec-done', dismissed: 'sec-gone' };
+const CHIP = { pick: ['To render', 'pick'], failed: ['Failed', 'failed'], rendering: ['Rendering', 'pick'], list: ['', ''],
+  rendered: ['Rendered', 'done'], changed: ['Changed since render', 'changed'], dismissed: ['Dismissed', ''] };
+let showGone = false;
+
+// Put every card in the section for its state, in shortlist order, and show only what fits that state.
+function placeCards() {
+  if (!SH || !SH.candidates) return;
+  const counts = {};
+  const order = [...SH.candidates].sort((a, b) =>
+    insideEdit({ start: secs(b.start), end: secs(b.end) }) - insideEdit({ start: secs(a.start), end: secs(a.end) }));
+  for (const c of order) {
+    const k = cards[c.n];
+    if (!k) continue;
+    const state = stateOf(k);
+    if (state === 'rendered' || state === 'changed' || state === 'dismissed') k.el.querySelector('.pick').checked = false;
+    const sec = SECTION[state];
+    counts[sec] = (counts[sec] || 0) + 1;
+    $(sec).querySelector('.list').appendChild(k.el);
+    const [label, cls] = CHIP[state];
+    const st = SH.render.clips && SH.render.clips[String(c.n)];
+    const chip = k.el.querySelector('.chip');
+    chip.textContent = state === 'rendering' && st && st.state === 'queued' ? 'Queued' : label;
+    chip.className = 'chip ' + cls;
+    chip.hidden = !label;
+    k.el.classList.toggle('done', state === 'rendered');
+    k.el.querySelector('.pick').hidden = !['pick', 'list', 'failed'].includes(state);
+    k.el.querySelector('.dismiss').hidden = !['pick', 'list', 'failed'].includes(state);
+    k.el.querySelector('.restore').hidden = state !== 'dismissed';
+    k.el.querySelector('.rerender').hidden = state !== 'changed';
+    k.el.querySelector('.reveal').hidden = !['rendered', 'changed'].includes(state);
+    k.el.querySelector('.play').textContent = state === 'rendered' ? 'Play the short' : 'Play';
+  }
+  for (const id of ['sec-pick', 'sec-list', 'sec-done']) {
+    $(id).hidden = !counts[id];
+    $(id).querySelector('.count').textContent = '(' + (counts[id] || 0) + ')';
+  }
+  const gone = counts['sec-gone'] || 0;
+  $('sec-gone').hidden = !gone;
+  $('sec-gone').querySelector('.toggle').textContent = `${gone} dismissed · ${showGone ? 'Hide' : 'Show'}`;
+  $('sec-gone').querySelector('.list').hidden = !showGone;
+}
+$('sec-gone').querySelector('.toggle').addEventListener('click', (e) => { e.currentTarget.blur(); showGone = !showGone; placeCards(); });
+
+async function setDismissed(n, dismissed) {
+  const [code, r] = await post('/api/shorts/dismiss', { n, dismissed });
+  if (code === 200) { SH.dismissed = r.dismissed; if (dismissed) cards[n].el.querySelector('.pick').checked = false; placeCards(); countPicks(); }
+  else cards[n].el.querySelector('.state').textContent = r.error;
+}
+
+async function renderPicks(list) {
+  $('render-shorts').disabled = true;
+  const [code, r] = await post('/api/shorts/render', { picks: list.map(body) });
+  if (code !== 202) { $('shorts-status').textContent = r.error; countPicks(); return; }
+  loadShorts();
+}
 
 function countPicks() {
   const n = picked().length;
-  $('render-shorts').textContent = n ? `Render selected (${n})` : 'Render selected';
-  $('render-shorts').disabled = !n || (SH && SH.render.state === 'running');
-  if (!n && SH && SH.candidates && SH.render.state !== 'running' && !$('shorts-status').textContent) {
-    $('shorts-status').textContent = 'Tick the shorts you want to render.';
-  } else if (n && $('shorts-status').textContent === 'Tick the shorts you want to render.') {
+  const running = SH && SH.render.state === 'running';
+  $('render-shorts').textContent = n ? `Render ${n} short${n === 1 ? '' : 's'}` : 'Render';
+  $('render-shorts').disabled = !n || running;
+  const hint = 'Tick a short in the Shortlist to render it.';
+  if (!n && !running && SH && SH.candidates && (!$('shorts-status').textContent || $('shorts-status').textContent.startsWith('Rendered'))) {
+    $('shorts-status').textContent = hint;
+  } else if (n && $('shorts-status').textContent === hint) {
     $('shorts-status').textContent = '';
   }
 }
@@ -567,17 +701,16 @@ function showShortsRender(r) {
   if (running) bar.value = (finished + (current && current.percent != null ? current.percent / 100 : 0)) / states.length * 100;
   $('shorts-status').textContent = !states.length ? ''
     : running ? `Rendering ${Math.min(finished + 1, states.length)} of ${states.length}` + (current ? ': ' + stepLabel(current) : '')
-    : r.state === 'done' ? `Rendered ${done} short${done === 1 ? '' : 's'} into the shorts folder. Claude puts title options on the cards next.`
-    : `${states.length - done} of ${states.length} failed. See the cards above.`;
+    : r.state === 'done' ? `Rendered ${done} short${done === 1 ? '' : 's'}: they're under Rendered. Claude puts title options on them next.`
+    : `${states.length - done} of ${states.length} failed. They're under To render, with the reason.`;
+  placeCards();
   countPicks();
 }
 
 $('render-shorts').addEventListener('click', async () => {
   $('render-shorts').blur();
   $('render-shorts').disabled = true;
-  const [code, r] = await post('/api/shorts/render', { picks: picked().map(body) });
-  if (code !== 202) { $('shorts-status').textContent = r.error; countPicks(); return; }
-  loadShorts();
+  renderPicks(picked());
 });
 
 // ---- Streams and Show in Finder ----

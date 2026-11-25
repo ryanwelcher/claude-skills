@@ -73,6 +73,7 @@ class TrimServer(ThreadingHTTPServer):
         self.work = os.path.join(self.cache, "shorts-work")
         self.edit_path = os.path.join(self.cache, "edit.json")
         self.titles_path = os.path.join(self.cache, "titles.json")
+        self.dismissed_path = os.path.join(self.cache, "dismissed.json")
         self._transcript_dir = False  # not looked up yet
         # Transcript clock -> video clock (the shortlist's times are transcript times).
         self.shift = profiles.transcript_shift(profile, self.analysis["fps"])
@@ -86,6 +87,46 @@ class TrimServer(ThreadingHTTPServer):
         self.stop_event = threading.Event()
         self.status = {"state": "idle", "phase": None, "percent": 0, "output": None, "error": None}
         super().__init__(("127.0.0.1", port), Handler)
+
+    # -- the Shorts tab's states: rendered and dismissed survive a reload --
+
+    def rendered(self):
+        """{n: the clip as rendered (shorts.json) and whether its file is there}."""
+        try:
+            with open(os.path.join(self.shorts_dir, "shorts.json")) as f:
+                m = json.load(f)
+        except (OSError, ValueError):
+            return {}
+        clips = m.get("clips", []) if isinstance(m, dict) else m if isinstance(m, list) else []
+        out = {}
+        for c in clips:
+            n = shorts_view.number(c) if isinstance(c, dict) else None
+            if n is None:
+                continue
+            out[str(n)] = {**{k: c.get(k) for k in ("file", "start", "end", "layout", "pan_x", "fixes")},
+                           "exists": os.path.exists(os.path.join(self.shorts_dir, c["file"]))}
+        return out
+
+    def dismissed(self):
+        try:
+            with open(self.dismissed_path) as f:
+                return sorted(n for n in json.load(f) if isinstance(n, int))
+        except (OSError, ValueError, TypeError):
+            return []
+
+    def dismiss(self, body):
+        """Ryan's "Not this one" (dismissed: true) and Restore (false)."""
+        if not isinstance(body, dict) or isinstance(body.get("n"), bool) or not isinstance(body.get("n"), int) \
+                or not isinstance(body.get("dismissed"), bool):
+            return 400, {"error": "expected {\"n\": number, \"dismissed\": true|false}"}
+        clips, _, _ = self.candidates()
+        if not any(c["n"] == body["n"] for c in clips or []):
+            return 400, {"error": f"no short numbered {body['n']}"}
+        with self.lock:
+            now = set(self.dismissed())
+            (now.add if body["dismissed"] else now.discard)(body["n"])
+            write_json(self.dismissed_path, sorted(now))
+        return 200, {"dismissed": sorted(now)}
 
     def set_attention(self, body):
         if not isinstance(body, dict) or not isinstance(body.get("waiting"), bool) \
@@ -109,6 +150,13 @@ class TrimServer(ThreadingHTTPServer):
         The page names the stream and the item, never a path."""
         if not isinstance(body, dict):
             return 400, {"error": "expected a JSON object"}
+        if body.get("target") == "short":
+            r = self.rendered().get(str(body.get("n")))
+            if not r or not r["exists"]:
+                return 404, {"error": "that short isn't rendered"}
+            path = os.path.join(self.shorts_dir, r["file"])
+            self.open_cmd(["open", "-R", path])
+            return 200, {"path": path}
         want = body.get("stream") or os.path.basename(self.cache)
         target = body.get("target")
         if target not in streams.TARGETS:
@@ -362,6 +410,7 @@ class TrimServer(ThreadingHTTPServer):
         layouts, default = self.layouts()
         return {"profile": self.profile["name"], "edit": self.edit(), "shift": self.shift,
                 "candidates": clips, "error": error, "finding": self.finding(), "titles": self.titles(),
+                "rendered": self.rendered(), "dismissed": self.dismissed(),
                 "layouts": layouts, "default_layout": default, "render": render_state}
 
     def build_clip(self, pick):
@@ -558,7 +607,14 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?", 1)[0]
         m = re.fullmatch(r"/shorts/preview/(\d+)\.jpg", path)
         d = re.fullmatch(r"/shorts/draft/(\d+)\.mp4", path)
-        if d:
+        rf = re.fullmatch(r"/shorts/file/(\d+)\.mp4", path)
+        if rf:
+            r = s.rendered().get(str(int(rf.group(1))))
+            if r and r["exists"]:
+                self.send_ranged(os.path.join(s.shorts_dir, r["file"]))
+            else:
+                self.send_json(404, {"error": "no such rendered short"})
+        elif d:
             mp4 = s.preview_path(int(d.group(1)), ".draft.mp4")
             if mp4 and os.path.exists(mp4):
                 self.send_ranged(mp4)
@@ -640,6 +696,13 @@ class Handler(BaseHTTPRequestHandler):
                 n = shorts_view.number(clip)
                 mtime = os.path.getmtime(s.preview_path(n))
                 self.send_json(200, {"url": f"/shorts/preview/{n}.jpg?v={mtime}"})
+        elif self.path == "/api/shorts/dismiss":
+            try:
+                body = json.loads(raw_body)
+            except ValueError:
+                self.send_json(400, {"error": "bad request"})
+                return
+            self.send_json(*s.dismiss(body))
         elif self.path == "/api/attention":
             try:
                 body = json.loads(raw_body)

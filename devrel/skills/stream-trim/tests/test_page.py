@@ -30,6 +30,10 @@ class PageTest(unittest.TestCase):
         # Per-card layout switch (Code + me / Just me).
         for ref in ('class="layouts"', "k.layout", "layout: k.layout"):
             self.assertIn(ref, page)
+        # The overhauled Shorts tab: sections by state, dismiss, re-render.
+        for ref in ('id="sec-pick"', 'id="sec-list"', 'id="sec-done"', 'id="sec-gone"', "/api/shorts/dismiss",
+                    "Not this one", "Re-render", "Changed since render", "/shorts/file/"):
+            self.assertIn(ref, page)
         # The "Claude needs you in the terminal" banner.
         for ref in ("/api/attention", 'id="attention"', "document.title"):
             self.assertIn(ref, page)
@@ -37,7 +41,8 @@ class PageTest(unittest.TestCase):
         self.assertIn('id="profile"', page)
         self.assertIn("S.profile", page)
         # Suggested caption fixes start ticked and applied.
-        self.assertIn('class="sugg" data-i="${i}" checked', page)
+        # (a rendered short reopens with the fixes it was rendered with)
+        self.assertIn('class="sugg" data-i="${i}" ${h in k.accepted ? \'checked\' : \'\'}', page)
         self.assertIn("accepted: Object.fromEntries(sugg)", page)
 
 
