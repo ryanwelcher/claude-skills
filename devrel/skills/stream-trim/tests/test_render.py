@@ -29,7 +29,7 @@ def streams(path):
 class PureTest(unittest.TestCase):
     def test_final_path(self):
         self.assertEqual(render.final_path("/x/Nov 12/2026-11-12 10-24-27.mp4"),
-                         "/x/Nov 12/2026-11-12 10-24-27-final.mp4")
+                         "/x/Nov 12/renders/2026-11-12 10-24-27-final.mp4")
 
     def test_parse_progress(self):
         self.assertEqual(render.parse_progress("out_time_us=5000000", 10), 50.0)

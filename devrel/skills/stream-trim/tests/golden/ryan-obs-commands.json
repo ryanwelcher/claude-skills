@@ -47,7 +47,7 @@
   "-movflags",
   "+faststart",
   "-y",
-  "/rec/Nov 12/2026-11-12 10-24-27-final.partial.mp4"
+  "/rec/Nov 12/renders/2026-11-12 10-24-27-final.partial.mp4"
  ],
  "prepare": [
   "ffmpeg",

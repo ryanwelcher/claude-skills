@@ -1,6 +1,6 @@
 """Render the final video: frame-accurate In/Out on the raw OBS file, 4K
 HEVC (software x265), the stream-trim mix and voice chain, two-pass loudness on the whole
-mix. Writes <name>-final.mp4 next to the recording, never over an existing one."""
+mix. Writes renders/<name>-final.mp4 next to the recording, never over an existing one."""
 import os
 import subprocess
 import tempfile
@@ -17,8 +17,8 @@ AUDIO = ["-c:a", "aac", "-b:a", "320k", "-ar", "48000"]
 
 
 def final_path(raw):
-    stem, _ = os.path.splitext(raw)
-    return f"{stem}-final.mp4"
+    folder, name = os.path.split(raw)
+    return os.path.join(folder, "renders", os.path.splitext(name)[0] + "-final.mp4")
 
 
 def parse_progress(line, total_s):
@@ -89,6 +89,7 @@ def render_final(raw, in_s, out_s, profile, progress=None, stop=None):
                "-map", "[a]", "-f", "null", "-"], length, "measuring", progress, stop))
 
     partial = out.replace("-final.mp4", "-final.partial.mp4")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
     try:
         _run(src + ["-filter_complex",
                     graph + f";[cut]{audio_chain.second_pass(chain, first)},atrim=duration={length}[a]"

@@ -74,7 +74,8 @@ def python_commands(tmp):
         return LOUDNORM
 
     with mock.patch.object(audio_chain, "probe", return_value=NOV12), \
-            mock.patch.object(render, "_run", side_effect=run):
+            mock.patch.object(render, "_run", side_effect=run), \
+            mock.patch.object(render.os, "makedirs"):
         try:
             render.render_final(RAW, 344.59425, 5699.527166666666, chain())
         except FileNotFoundError:

@@ -345,3 +345,16 @@ Profiles, from `2026-11-24-stream-trim-profiles-design.md`:
   in 1.46.1, including the server refusing a cache made with another
   profile.
 - Not tested on a real teammate machine yet.
+
+Follow-ups (2026-11-25, Ryan's picks):
+
+- The final goes to `renders/<name>-final.mp4` next to the recording,
+  matching his older stream folders. Shorts stay in `shorts/`, where
+  stream-shorts expects them. Nov 12's final, made before this change,
+  is still next to the raw.
+- `profiles.py check` prints `CLOUD_ONLY` when the raw isn't downloaded
+  (the macOS dataless flag) and skips reading it, since a read can start
+  the download. The skill asks Ryan to make it available offline and
+  checks again. While a file is cloud-only Drive reports a wrong size
+  (1.2 GB for the 8.5 GB Nov 12 raw), and the cache key uses the size, so
+  prepare must only run on the downloaded file.

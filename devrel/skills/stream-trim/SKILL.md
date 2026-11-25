@@ -1,6 +1,6 @@
 ---
 name: stream-trim
-description: Trim a live-stream recording and export it without Premiere. Opens a local page on the raw OBS file with In and Out already set to the first and last words, applies the recording setup from a profile (Ryan's: drop Full Mix and Spotify, mic 9 frames earlier) and the Podcast Voice replacement, and renders <name>-final.mp4 in 4K next to the recording, then shows a shortlist of shorts from inside the edit and renders the ones Ryan picks with the same audio. Use to trim, edit, export, or render a stream, to make shorts from the finished edit, or to skip Premiere for a stream.
+description: Trim a live-stream recording and export it without Premiere. Opens a local page on the raw OBS file with In and Out already set to the first and last words, applies the recording setup from a profile (Ryan's: drop Full Mix and Spotify, mic 9 frames earlier) and the Podcast Voice replacement, and renders <name>-final.mp4 in 4K to renders/ next to the recording, then shows a shortlist of shorts from inside the edit and renders the ones Ryan picks with the same audio. Use to trim, edit, export, or render a stream, to make shorts from the finished edit, or to skip Premiere for a stream.
 allowed-tools: Bash(python3 *) Bash(bash *) Bash(ffmpeg *) Bash(ffprobe *) Bash(open *) Bash(curl *) Bash(mv *) Bash(rm *) Read Write Edit Skill
 ---
 
@@ -26,13 +26,13 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
    ```bash
    python3 ${CLAUDE_SKILL_DIR}/scripts/profiles.py check "<raw>"
    ```
-   Add `--profile <name>` if one was named. `PROFILE <name>` means go on, and pass `--profile <name>` to `prepare.py` and `server.py` below. On `ERROR: NO_DEFAULT` there's no profile on this machine: ask whether to set one up (see **First-run setup**) or which existing one to use. On a track-count mismatch, report it as-is and ask which profile fits this recording, or offer first-run setup. On any other `ERROR:` line (a profile file that isn't valid JSON, a missing field, a default that names a deleted profile), report it as-is and stop. Don't guess a profile.
+   Add `--profile <name>` if one was named. If it also prints `CLOUD_ONLY`, the recording is only in Google Drive and hasn't been downloaded. Reading it from there made prepare take 84 minutes instead of about 6. Ask Ryan to right-click it in Finder and choose **Make available offline**, wait for him to say it's done, then run the check again. Go on only when `CLOUD_ONLY` is gone. `PROFILE <name>` means go on, and pass `--profile <name>` to `prepare.py` and `server.py` below. On `ERROR: NO_DEFAULT` there's no profile on this machine: ask whether to set one up (see **First-run setup**) or which existing one to use. On a track-count mismatch, report it as-is and ask which profile fits this recording, or offer first-run setup. On any other `ERROR:` line (a profile file that isn't valid JSON, a missing field, a default that names a deleted profile), report it as-is and stop. Don't guess a profile.
 
 3. **Prepare** with `run_in_background`, quoting the path:
    ```bash
    python3 ${CLAUDE_SKILL_DIR}/scripts/prepare.py "<raw>" --profile <name>
    ```
-   Tell Ryan it reads the whole recording once: a 720p preview, the mic waveform, and where his voice starts and stops. From Google Drive this takes 10 minutes or more. Reruns on the same file are instant. Wait for the exit notification. If it prints an `ERROR:` line, report it as-is and stop.
+   Tell Ryan it reads the whole recording once: a 720p preview, the mic waveform, and where his voice starts and stops. With the file downloaded this takes about 6 minutes. Reruns on the same file are instant. Wait for the exit notification. If it prints an `ERROR:` line, report it as-is and stop.
 
 4. **Start the page** with `run_in_background`:
    ```bash
@@ -43,7 +43,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
 5. **Tell Ryan** what prepare printed, as one short list:
    - In, Out and length, as h:mm:ss
    - the keys: Space, J/K/L, I/O, arrows (1 frame), Shift+arrows (1 s), Q/W to jump to In/Out, drag the markers
-   - that Render writes `<name>-final.mp4` next to the recording and never overwrites one
+   - that Render writes `renders/<name>-final.mp4` next to the recording and never overwrites one
 
 6. **Find the shorts while he trims.** First delete any `shorts/candidates.json` left next to the recording from an earlier session, so the page doesn't show an old shortlist:
    ```bash

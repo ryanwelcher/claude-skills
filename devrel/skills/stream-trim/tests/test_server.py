@@ -129,7 +129,7 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(s["peaks"], [0.0, 0.5, 1.0])
         self.assertEqual(s["per_s"], 20)
         self.assertEqual(s["render"]["state"], "idle")
-        self.assertTrue(s["output"].endswith("raw, stream-final.mp4"))
+        self.assertTrue(s["output"].endswith(os.path.join("renders", "raw, stream-final.mp4")))
         self.assertFalse(s["exists"])
 
     def test_proxy_range(self):
@@ -187,7 +187,8 @@ class ServerTest(unittest.TestCase):
             self.assertEqual(self.wait_for("error")["error"], "stopped")
 
     def test_existing_output_conflict(self):
-        open(os.path.join(self.tmp.name, "raw, stream-final.mp4"), "wb").close()
+        os.makedirs(os.path.join(self.tmp.name, "renders"))
+        open(os.path.join(self.tmp.name, "renders", "raw, stream-final.mp4"), "wb").close()
         self.assertTrue(self.state()["exists"])
         self.assertEqual(self.post("/api/render", {"in": 1, "out": 50})[0], 409)
 

@@ -18,7 +18,7 @@ runtime, and cache edits are lost on `/plugin update` — so never hand-edit the
 | Plugin | Version | Visibility | Skills |
 |---|---|---|---|
 | `public` | 1.0.0 | Safe to share with anyone | _(empty — placeholder for future shareable skills)_ |
-| `devrel` | 1.46.2 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `stream-prep`, `stream-trim`, `stream-shorts`, `find-stream-shorts` |
+| `devrel` | 1.47.0 | Personal developer-advocacy work | `wp-workshop-scaffold`, `wp-workshop-deck`, `youtube-script`, `write-article`, `write-social-post`, `youtube-stream-description`, `analyze-stream-recording`, `done`, `wnd-script`, `sounds-like-me`, `ste-pass`, `ste-audit`, `stream-prep`, `stream-trim`, `stream-shorts`, `find-stream-shorts` |
 
 ### `public` skills
 
@@ -41,7 +41,7 @@ _None yet — placeholder for future shareable skills._
 | `ste-pass` | Audit/rewrite existing tutorials, recipes, and workshop steps against Simplified Technical English (STE). Hybrid by default: STE in action zones, Ryan's voice everywhere else. Owns `references/ste-card.md`, which `write-article`, `wp-workshop-scaffold`, and `sounds-like-me` read live. |
 | `ste-audit` | Internal forked helper for `ste-pass`, pinned to Sonnet: maps zones, runs `ste-lint.py`, and returns findings with full rewrites. Not user-invocable. |
 | `stream-prep` | Prep an OBS stream recording for Premiere: drops the Full Mix and Spotify audio tracks, pulls the mic track 9 frames earlier, keeps the other tracks separate, and writes `<name>-edit.mp4` next to the original. |
-| `stream-trim` | Trim and export a stream without Premiere: a local page on the raw OBS file with In/Out pre-set to the first and last words, the stream-prep fixes and a Podcast Voice replacement, rendering `<name>-final.mp4` in 4K next to the recording. Then a Shorts tab with Claude's shortlist from inside the edit: nudge, pan, fix captions, pick, and render through `stream-shorts` with the same audio. Profiles describe each OBS setup (tracks, mic delay, voice chain, caption font, layouts), so teammates on Apple Silicon Macs can use it too. |
+| `stream-trim` | Trim and export a stream without Premiere: a local page on the raw OBS file with In/Out pre-set to the first and last words, the stream-prep fixes and a Podcast Voice replacement, rendering `renders/<name>-final.mp4` in 4K next to the recording. Then a Shorts tab with Claude's shortlist from inside the edit: nudge, pan, fix captions, pick, and render through `stream-shorts` with the same audio. Profiles describe each OBS setup (tracks, mic delay, voice chain, caption font, layouts), so teammates on Apple Silicon Macs can use it too. |
 | `stream-shorts` | Cut vertical 9:16 shorts from a stream recording: facecam on top, screen crop below, all-caps captions (Jost, navy glow, whip-in) burned in. Proposes a shortlist, renders the picks to `shorts/` next to the recording. Needs an ffmpeg built with libass. |
 | `find-stream-shorts` | Internal forked helper for `stream-shorts`: transcribes the recording (shared cache with `analyze-stream-recording`) and returns only a shortlist of standalone clips with exact times. Not user-invocable. |
 

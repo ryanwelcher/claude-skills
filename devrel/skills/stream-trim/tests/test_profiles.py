@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import subprocess
@@ -202,6 +203,25 @@ class ProfilesTest(unittest.TestCase):
         self.assertEqual(profiles.default_name(), "ryan-obs")
         r = subprocess.run([sys.executable, CLI, "set-default", "nope"], capture_output=True, text=True)
         self.assertEqual(r.returncode, 1)
+
+    def test_cloud_only(self):
+        path = os.path.join(self.tmp.name, "f.mp4")
+        open(path, "wb").close()
+        self.assertFalse(profiles.cloud_only(path))
+        fake = mock.Mock(st_flags=os.stat(path).st_flags | 0x40000000)
+        with mock.patch.object(profiles.os, "stat", return_value=fake):
+            self.assertTrue(profiles.cloud_only(path))
+
+    def test_check_reports_cloud_only(self):
+        self.set_default("ryan-obs")
+        for cloud, want in ((True, ["PROFILE ryan-obs", "CLOUD_ONLY"]), (False, ["PROFILE ryan-obs"])):
+            out = io.StringIO()
+            with mock.patch.object(audio_chain, "probe", return_value=(6, 10.0, None)) as probe, \
+                    mock.patch.object(profiles, "cloud_only", return_value=cloud), mock.patch("sys.stdout", out):
+                self.assertEqual(profiles.main(["check", "/r.mp4"]), 0)
+            self.assertEqual(out.getvalue().splitlines(), want)
+            # Reading a cloud-only file's header can start the download.
+            self.assertEqual(probe.called, not cloud)
 
     def test_cli_bad_args(self):
         raw = os.path.join(self.tmp.name, "two.mp4")

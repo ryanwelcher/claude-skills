@@ -8,7 +8,9 @@ live in ~/.config/stream-trim/profiles/<name>.json and win over a built-in
 with the same name. ~/.config/stream-trim/default names this machine's
 default; with no such file there is no default.
 
-  profiles.py check <raw> [--profile NAME]    PROFILE <name>, or ERROR: ... and exit 1
+  profiles.py check <raw> [--profile NAME]    PROFILE <name>, plus CLOUD_ONLY if the raw
+                                              isn't downloaded (tracks not checked yet),
+                                              or ERROR: ... and exit 1
   profiles.py samples <raw> <outdir> [--at S] 5 s of each audio track, track-N.wav
   profiles.py set-default <name>
 """
@@ -174,6 +176,16 @@ def check_recording(p, tracks):
                            f"profile {p['name']} expects {p['audio_tracks']}")
 
 
+SF_DATALESS = 0x40000000  # macOS: the file's data is only in the cloud (Google Drive, iCloud)
+
+
+def cloud_only(path):
+    """True if the file isn't downloaded. Reading a cloud-only raw streams it
+    from the cloud, which made prepare take 84 min instead of about 6. (Its
+    st_size can't be trusted then: Drive gave 1.2 GB for an 8.5 GB raw.)"""
+    return bool(getattr(os.stat(path), "st_flags", 0) & SF_DATALESS)
+
+
 def samples(raw, outdir, at=None):
     import audio_chain
 
@@ -208,8 +220,13 @@ def main(argv):
         except NoDefault as e:
             print(f"ERROR: NO_DEFAULT {e}", file=sys.stderr)
             return 1
-        check_recording(p, audio_chain.probe(argv[1], video=False)[0])
+        cloud = cloud_only(argv[1])
+        if not cloud:
+            check_recording(p, audio_chain.probe(argv[1], video=False)[0])
         print(f"PROFILE {p['name']}")
+        if cloud:
+            # The track count waits for a rerun once it's downloaded.
+            print("CLOUD_ONLY")
     elif len(argv) >= 3 and argv[0] == "samples":
         at = _flag(argv, "--at")
         try:
