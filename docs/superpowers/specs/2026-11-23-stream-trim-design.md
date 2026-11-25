@@ -443,3 +443,8 @@ Follow-ups (2026-11-25, Ryan's picks):
   `shorts/shorts.json` plus the files, and dismissals from the cache's
   `dismissed.json`, so both survive a reload. A rendered card reopens with
   the values it was rendered with.
+- The Rendered section only showed shorts from the current shortlist, so
+  on Sep 3 (shortlist 22-31, rendered 7, 9, 10, 13, 21 from earlier
+  batches) it never appeared. The server now adds every rendered short in
+  `shorts/shorts.json` whose file exists, marked `earlier`, so the section
+  lists them all and they can still be opened and re-rendered.

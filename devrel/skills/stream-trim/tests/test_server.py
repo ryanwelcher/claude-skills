@@ -571,6 +571,25 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(calls, [["open", "-R", os.path.join(self.shorts, "01-one.mp4")]])
         self.assertEqual(self.post("/api/reveal", {"target": "short", "n": 2})[0], 404)
 
+    def test_rendered_from_an_earlier_shortlist(self):
+        """Shorts rendered from an earlier shortlist still show (under Rendered), and can be re-rendered."""
+        self.write_candidates()
+        with open(os.path.join(self.shorts, "shorts.json"), "w") as f:
+            json.dump({"recording": self.raw, "words": "/w.json", "clips": [
+                {"file": "07 - Old one.mp4", "start": "00:01:00.00", "end": "00:01:10.00", "hook": "old", "layout": "center"}]}, f)
+        open(os.path.join(self.shorts, "07 - Old one.mp4"), "wb").close()
+        c = {x["n"]: x for x in self.shorts_state()["candidates"]}
+        self.assertEqual(sorted(c), [1, 2, 3, 7])
+        self.assertTrue(c[7]["earlier"])
+        self.assertNotIn("earlier", c[1])
+        self.assertEqual(c[7]["file"], "07 - Old one.mp4")
+        self.assertEqual(self.post("/api/shorts/preview", {"n": 7, "start": 60, "end": 70})[0], 200)
+        self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 7, "start": 61, "end": 70}]})[0], 202)
+        self.assertTrue(self.wait_shorts("done")["clips"]["7"]["output"].endswith("07 - Old one.mp4"))
+        # With no shortlist at all, the rendered ones still show.
+        os.remove(self.cand_path)
+        self.assertEqual([x["n"] for x in self.shorts_state()["candidates"]], [7])
+
     def test_shorts_render_checks(self):
         self.write_edit()
         self.write_candidates()

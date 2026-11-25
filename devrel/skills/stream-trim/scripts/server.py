@@ -370,14 +370,29 @@ class TrimServer(ThreadingHTTPServer):
         # Shorts don't need the final: before it, judge "inside" against
         # prepare's default In/Out. The page flags, never hides, the rest.
         trim = self.edit() or {"in": self.analysis["in"], "out": self.analysis["out"]}
+        # Shorts rendered from an earlier shortlist (in shorts.json, not in
+        # candidates.json) still show, under Rendered, marked "earlier".
+        try:
+            with open(os.path.join(self.shorts_dir, "shorts.json")) as f:
+                m = json.load(f)
+        except (OSError, ValueError):
+            m = {}
+        done = m.get("clips", []) if isinstance(m, dict) else []
+        done = [c for c in done if isinstance(c, dict) and all(k in c for k in ("file", "start", "end"))
+                and shorts_view.number(c) is not None and os.path.exists(os.path.join(self.shorts_dir, c["file"]))]
         if not os.path.exists(path):
-            return None, None, None
+            if not done:
+                return None, None, None
+            return [{**shorts_view.describe(c, trim, self.shift), "earlier": True} for c in done], m.get("words"), None
         try:
             clips = shorts_view.load_candidates(path, trim, self.shift)
             with open(path) as f:
                 words = json.load(f).get("words")
         except (OSError, ValueError) as e:
             return None, None, str(e)
+        have = {c["n"] for c in clips}
+        clips += [{**shorts_view.describe(c, trim, self.shift), "earlier": True}
+                  for c in done if shorts_view.number(c) not in have]
         return clips, words, None
 
     def layouts(self):

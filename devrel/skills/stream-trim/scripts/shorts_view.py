@@ -56,10 +56,16 @@ def load_candidates(path, edit, shift):
         n = number(c)
         if n is None:
             raise ValueError(f"candidate file needs an NN- prefix: {c['file']}")
-        start, end = to_secs(c["start"]), to_secs(c["end"])
-        out.append({**c, "n": n, "inside": inside(c, edit, shift),
-                    "edit_start": start - shift - edit["in"], "edit_end": end - shift - edit["in"]})
+        out.append(describe(c, edit, shift))
     return out
+
+
+def describe(c, edit, shift):
+    """A clip as the page shows it: its number, whether it's inside the trim,
+    and its times from In."""
+    start, end = to_secs(c["start"]), to_secs(c["end"])
+    return {**c, "n": number(c), "inside": inside(c, edit, shift),
+            "edit_start": start - shift - edit["in"], "edit_end": end - shift - edit["in"]}
 
 
 def profile_fields(profile):
