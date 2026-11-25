@@ -417,3 +417,12 @@ Follow-ups (2026-11-25, Ryan's picks):
   the screen, so "just me" shows some editor UI behind Ryan; a separate
   camera recording in OBS would fix that (not done: Ryan isn't changing
   his OBS setup now).
+- The frontmatter hooks never registered (Ryan's first real run showed no
+  banner; the session ran only settings hooks). The docs don't list which
+  events skill frontmatter accepts, so the hooks moved to where the docs
+  confirm they work: the devrel plugin's `hooks/hooks.json`, and Ryan's
+  `~/.claude/settings.json` (his skills load from the repo, not the
+  plugin). Those run in every session, so each page server now records
+  `CLAUDE_CODE_SESSION_ID` from the session that started it, and
+  `attention.py` only posts to pages whose session matches the hook's
+  `session_id`.

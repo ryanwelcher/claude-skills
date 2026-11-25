@@ -2,29 +2,6 @@
 name: stream-trim
 description: "Trim a live-stream recording and export it without Premiere. Opens a local page on the raw OBS file with In and Out already set to the first and last words, applies the recording setup from a profile (Ryan's: drop Full Mix and Spotify, mic 9 frames earlier) and the Podcast Voice replacement, and renders <name>-final.mp4 in 4K to renders/ next to the recording, then shows a shortlist of shorts from inside the edit and renders the ones Ryan picks with the same audio. Use to trim, edit, export, or render a stream, to make shorts from the finished edit, or to skip Premiere for a stream."
 allowed-tools: Bash(python3 *) Bash(bash *) Bash(ffmpeg *) Bash(ffprobe *) Bash(open *) Bash(curl *) Bash(mv *) Bash(rm *) Read Write Edit Skill
-hooks:
-  PermissionRequest:
-    - hooks:
-        - type: command
-          command: 'd="${CLAUDE_SKILL_DIR:-}"; [ -f "$d/scripts/attention.py" ] || d="${CLAUDE_PLUGIN_ROOT:-/nonexistent}/skills/stream-trim"; [ -f "$d/scripts/attention.py" ] || d="$HOME/.claude/skills/stream-trim"; python3 "$d/scripts/attention.py" set "Claude needs you in the terminal: approve a command"'
-  PreToolUse:
-    - matcher: AskUserQuestion
-      hooks:
-        - type: command
-          command: 'd="${CLAUDE_SKILL_DIR:-}"; [ -f "$d/scripts/attention.py" ] || d="${CLAUDE_PLUGIN_ROOT:-/nonexistent}/skills/stream-trim"; [ -f "$d/scripts/attention.py" ] || d="$HOME/.claude/skills/stream-trim"; python3 "$d/scripts/attention.py" set "Claude asked you a question in the terminal"'
-  Notification:
-    - matcher: permission_prompt|idle_prompt|elicitation_dialog
-      hooks:
-        - type: command
-          command: 'd="${CLAUDE_SKILL_DIR:-}"; [ -f "$d/scripts/attention.py" ] || d="${CLAUDE_PLUGIN_ROOT:-/nonexistent}/skills/stream-trim"; [ -f "$d/scripts/attention.py" ] || d="$HOME/.claude/skills/stream-trim"; python3 "$d/scripts/attention.py" notify'
-  PostToolUse:
-    - hooks:
-        - type: command
-          command: 'd="${CLAUDE_SKILL_DIR:-}"; [ -f "$d/scripts/attention.py" ] || d="${CLAUDE_PLUGIN_ROOT:-/nonexistent}/skills/stream-trim"; [ -f "$d/scripts/attention.py" ] || d="$HOME/.claude/skills/stream-trim"; python3 "$d/scripts/attention.py" clear'
-  UserPromptSubmit:
-    - hooks:
-        - type: command
-          command: 'd="${CLAUDE_SKILL_DIR:-}"; [ -f "$d/scripts/attention.py" ] || d="${CLAUDE_PLUGIN_ROOT:-/nonexistent}/skills/stream-trim"; [ -f "$d/scripts/attention.py" ] || d="$HOME/.claude/skills/stream-trim"; python3 "$d/scripts/attention.py" clear'
 ---
 
 # Stream Trim
@@ -138,7 +115,7 @@ For someone with their own OBS setup, when `profiles.py check` says `NO_DEFAULT`
 
 ## Notes
 
-- The hooks in this file's frontmatter switch on when the skill starts and stay on for the session. They run `scripts/attention.py`, which puts a banner on every open stream-trim page whenever Claude is waiting on Ryan in the terminal (a permission prompt, a question, or a finished turn), and clears it when he answers. Each page server registers itself in `~/Library/Caches/stream-trim/servers/` so the hooks can find it.
+- The "Claude needs you" banner: Claude Code hooks run `scripts/attention.py` whenever Claude waits on Ryan in the terminal (a permission prompt, a question, a finished turn) and again when he answers. The hooks live in the devrel plugin's `hooks/hooks.json` for a plugin install, and in `~/.claude/settings.json` on Ryan's Mac (his skills load from the repo, not the plugin). They are not in this file's frontmatter: hooks there never registered. Each page server registers itself, with the Claude session that started it, in `~/Library/Caches/stream-trim/servers/`, and a hook only reaches pages from its own session.
 - `SETUP.md` is the overview for anyone setting this up: what's required, what's optional (viDIQ), what only runs for Ryan, and what first-run setup asks. Point a new user to it.
 - Titles picked on the page: `:` becomes ` -` and `/` becomes `-` in the file name, since Finder won't take them. Picking again renames from the current name, and a name that's already taken is refused. The cache's `edit.json` and `shorts/shorts.json` follow each rename, so the page, the Streams tab and re-renders all find the renamed files.
 - The page's Streams tab lists every recording with a cache, newest first: whether the raw is local, the final, shorts and description, and the cache size, with Show in Finder buttons and a Copy command button for `/stream-trim` on that recording. It's built from the caches, so deleting a cache folder takes its stream off the list. Show in Finder is also next to Render once the final exists, and in the Shorts tab.

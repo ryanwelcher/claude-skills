@@ -744,7 +744,8 @@ if __name__ == "__main__":
         sys.exit("ERROR: no prepared cache for this recording, run prepare.py first")
     print(f"READY http://127.0.0.1:{srv.server_address[1]}/", flush=True)
     # So Claude Code hooks (attention.py) can find this page.
-    attention.register(srv.server_address[1], os.getpid(), os.path.realpath(args[0]))
+    attention.register(srv.server_address[1], os.getpid(), os.path.realpath(args[0]),
+                       session=os.environ.get("CLAUDE_CODE_SESSION_ID"))
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))  # stopping the task still unregisters
     try:
         srv.serve_forever()

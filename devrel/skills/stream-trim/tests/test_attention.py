@@ -87,6 +87,22 @@ class AttentionTest(unittest.TestCase):
         self.cli("notify", stdin='{"notification_type": "auth_success"}')
         self.assertFalse(self.state()["waiting"])
 
+    def test_only_its_own_session(self):
+        """A server records the Claude session that started it; hooks from other sessions leave it alone."""
+        attention.register(self.port, os.getpid(), self.raw, session="sess-a")
+        self.cli("set", "x", stdin=json.dumps({"session_id": "sess-b"}))
+        self.assertFalse(self.state()["waiting"])
+        self.cli("set", "x", stdin=json.dumps({"session_id": "sess-a"}))
+        self.assertTrue(self.state()["waiting"])
+        self.cli("clear", stdin=json.dumps({"session_id": "sess-b"}))
+        self.assertTrue(self.state()["waiting"])
+        self.cli("clear", stdin=json.dumps({"session_id": "sess-a"}))
+        self.assertFalse(self.state()["waiting"])
+
+    def test_server_records_session(self):
+        attention.register(self.port, os.getpid(), self.raw, session="sess-a")
+        self.assertEqual(attention.live_servers()[0]["session"], "sess-a")
+
     def test_never_fails(self):
         """A hook must never get in Claude's way: no servers, junk input, a dead port."""
         for args, stdin in ((["set", "x"], ""), (["notify"], "not json"), (["clear"], ""), ([], ""), (["bogus"], "")):
