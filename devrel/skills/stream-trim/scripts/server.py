@@ -9,11 +9,14 @@ import math
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+import attention
 import audio_chain
 import prepare
 import profiles
@@ -78,9 +81,23 @@ class TrimServer(ThreadingHTTPServer):
         self.shorts_status = {"state": "idle", "clips": {}}
         # Show in Finder. Tests swap it for a list's append.
         self.open_cmd = lambda args: subprocess.run(args, check=False)
+        # Set by Claude Code hooks (attention.py) while Claude waits on Ryan in the terminal.
+        self.attention = {"waiting": False, "reason": None, "since": None}
         self.stop_event = threading.Event()
         self.status = {"state": "idle", "phase": None, "percent": 0, "output": None, "error": None}
         super().__init__(("127.0.0.1", port), Handler)
+
+    def set_attention(self, body):
+        if not isinstance(body, dict) or not isinstance(body.get("waiting"), bool) \
+                or not isinstance(body.get("reason", ""), (str, type(None))):
+            return 400, {"error": "expected {\"waiting\": true|false, \"reason\": text}"}
+        with self.lock:
+            if body["waiting"]:
+                self.attention = {"waiting": True, "reason": (body.get("reason") or "Claude needs you in the terminal")[:200],
+                                  "since": self.attention["since"] or time.time()}
+            else:
+                self.attention = {"waiting": False, "reason": None, "since": None}
+        return 200, {"ok": True}
 
     def streams(self):
         """Every stream with a cache next to this one's, and this one's id."""
@@ -566,6 +583,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(200, s.streams())
         elif self.path == "/api/titles":
             self.send_json(200, s.titles())
+        elif self.path == "/api/attention":
+            with s.lock:
+                self.send_json(200, dict(s.attention))
         else:
             self.send_json(404, {"error": "not found"})
 
@@ -615,6 +635,13 @@ class Handler(BaseHTTPRequestHandler):
                 n = shorts_view.number(clip)
                 mtime = os.path.getmtime(s.preview_path(n))
                 self.send_json(200, {"url": f"/shorts/preview/{n}.jpg?v={mtime}"})
+        elif self.path == "/api/attention":
+            try:
+                body = json.loads(raw_body)
+            except ValueError:
+                self.send_json(400, {"error": "bad request"})
+                return
+            self.send_json(*s.set_attention(body))
         elif self.path in ("/api/titles", "/api/title"):
             try:
                 body = json.loads(raw_body)
@@ -711,7 +738,12 @@ if __name__ == "__main__":
             sys.exit(f"ERROR: {e}")
         sys.exit("ERROR: no prepared cache for this recording, run prepare.py first")
     print(f"READY http://127.0.0.1:{srv.server_address[1]}/", flush=True)
+    # So Claude Code hooks (attention.py) can find this page.
+    attention.register(srv.server_address[1], os.getpid(), os.path.realpath(args[0]))
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))  # stopping the task still unregisters
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
         pass
+    finally:
+        attention.unregister(srv.server_address[1])

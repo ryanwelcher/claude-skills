@@ -394,3 +394,16 @@ Follow-ups (2026-11-25, Ryan's picks):
   `titles.json` follow the rename, so re-renders and the Streams tab find
   the files. Descriptions are written after, with the picked titles word
   for word.
+- "Claude needs you" banner (Ryan kept watching a page that looked stalled
+  while Claude waited on an approval in the terminal). Hooks in the
+  skill's frontmatter, live for the session once the skill starts, run
+  `scripts/attention.py`: PermissionRequest and PreToolUse on
+  AskUserQuestion set it, the Notification types permission_prompt,
+  idle_prompt and elicitation_dialog set it, PostToolUse and
+  UserPromptSubmit clear it. Page servers register in
+  `~/Library/Caches/stream-trim/servers/` so the hooks find them. The page
+  polls `/api/attention` and shows a sticky banner plus a "●" in the tab
+  title. A denied permission isn't a hook event, so the banner then stays
+  until Claude's next step or Ryan's next message. Ryan's user settings
+  also got allow rules for the skill's own scripts and its local curl
+  calls, so most prompts don't happen at all.

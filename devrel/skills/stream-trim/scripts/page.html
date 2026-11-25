@@ -51,6 +51,9 @@
   .titles input[type=text] { width: 60%; background: var(--bg); color: var(--text); border: 1px solid #34314a; border-radius: 6px; padding: 4px 8px; font: 14px -apple-system, system-ui, sans-serif; }
   .titles button { padding: 6px 14px; font-size: 13px; margin-top: 6px; }
   .card .titles { background: var(--bg); }
+  #attention { position: sticky; top: 0; z-index: 10; margin: -16px -20px 12px; padding: 12px 20px; background: #f0c36c; color: #1b1a12; font-weight: 600; display: flex; gap: 12px; align-items: center; }
+  #attention[hidden] { display: none; }
+  #attention .since { font-weight: 400; }
   #finding { background: var(--panel); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
   #finding progress { width: 360px; }
   .card .outside { color: #f0c36c; }
@@ -65,6 +68,7 @@
 </head>
 <body>
 <main>
+  <div id="attention" role="status" aria-live="polite" hidden></div>
   <header>
     <h1><span id="name">Loading...</span> <span id="profile" class="note"></span></h1>
     <div class="tabs"><button id="tab-trim" class="on">Trim</button><button id="tab-shorts">Shorts</button><button id="tab-streams">Streams</button></div>
@@ -704,6 +708,23 @@ async function statusTick() {
 }
 setInterval(() => { if (view !== 'shorts') statusTick(); }, 4000);
 statusTick();
+
+// ---- Claude is waiting on you in the terminal (Claude Code hooks tell the server) ----
+
+const pageTitle = document.title;
+async function attentionTick() {
+  let a;
+  try { a = await (await fetch('/api/attention')).json(); } catch (e) { return; }
+  const box = $('attention');
+  box.hidden = !a.waiting;
+  document.title = a.waiting ? '\u25CF Claude needs you: ' + pageTitle : pageTitle;
+  if (a.waiting) {
+    const mins = Math.floor((Date.now() / 1000 - a.since) / 60);
+    box.innerHTML = `<span>${escapeHtml(a.reason)}</span><span class="since">${mins ? 'for ' + mins + ' min' : 'just now'}. Switch to the terminal; this clears once you answer.</span>`;
+  }
+}
+setInterval(attentionTick, 1500);
+attentionTick();
 </script>
 </body>
 </html>

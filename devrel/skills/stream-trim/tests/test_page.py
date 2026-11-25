@@ -27,6 +27,9 @@ class PageTest(unittest.TestCase):
                     "Outside your trim", "Transcribing"):
             self.assertIn(ref, page)
         self.assertNotIn('id="tab-shorts" disabled', page)
+        # The "Claude needs you in the terminal" banner.
+        for ref in ("/api/attention", 'id="attention"', "document.title"):
+            self.assertIn(ref, page)
         # The profile name shows next to the recording.
         self.assertIn('id="profile"', page)
         self.assertIn("S.profile", page)
