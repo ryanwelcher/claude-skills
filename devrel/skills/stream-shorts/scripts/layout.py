@@ -13,6 +13,11 @@ scales it to 1080 wide by its height. Heights add up to 1920. One band may have
 a "pan" range: pan_x replaces that band's crop x, so a clip can slide the crop
 toward what's being talked about.
 
+A layout with a "background" fills the frame with that crop instead: scaled to
+cover 1080x1920, blurred ("blur", default 40) and dimmed ("dim", 0 to 1,
+default 0.25). Its bands then don't stack: each one sits at its own "top" over
+the background, and they needn't add up to 1920.
+
 If SHORTS_LAYOUTS names JSON files of the same shape (joined with ":"), their
 layouts are added to (and override) the built-in ones, in order, so a later
 file wins; "default" too. shorts.py points it at a profile's layouts file and
@@ -47,8 +52,13 @@ layout = data["layouts"][name]
 pan_x = int(float(sys.argv[2])) if len(sys.argv) == 3 and sys.argv[2] != "" else None
 
 bands = layout["bands"]
-if sum(b["height"] for b in bands) != 1920:
+bg = layout.get("background")
+if bg is None and sum(b["height"] for b in bands) != 1920:
     fail("layout '%s': band heights add up to %d, not 1920" % (name, sum(b["height"] for b in bands)))
+if bg is not None:
+    for b in bands:
+        if not isinstance(b.get("top"), int) or b["top"] < 0 or b["top"] + b["height"] > 1920:
+            fail("layout '%s': band '%s' needs a \"top\" that keeps it inside the 1920-high frame" % (name, b["name"]))
 
 chains = []
 for i, b in enumerate(bands):
@@ -64,12 +74,26 @@ for i, b in enumerate(bands):
     if abs((w / h) / (1080 / b["height"]) - 1) > 0.02:
         fail("layout '%s': band '%s' crop %dx%d doesn't match its 1080x%d shape"
              % (name, b["name"], w, h, b["height"]))
-    src = "[0:v]" if len(bands) == 1 else "[b%d]" % i
-    dst = "" if len(bands) == 1 else "[o%d]" % i
+    alone = len(bands) == 1 and bg is None
+    src = "[0:v]" if alone else "[b%d]" % i
+    dst = "" if alone else "[o%d]" % i
     chains.append("%scrop=iw*%d/1920:ih*%d/1080:iw*%d/1920:ih*%d/1080,scale=1080:%d%s"
                   % (src, w, h, x, y, b["height"], dst))
 
-if len(bands) == 1:
+if bg is not None:
+    w, h, x, y = bg["crop"]
+    if x < 0 or y < 0 or x + w > 1920 or y + h > 1080:
+        fail("layout '%s': the background crop runs off the 1920x1080 frame" % name)
+    n = len(bands) + 1
+    parts = ["[0:v]split=%d[bg]%s" % (n, "".join("[b%d]" % i for i in range(len(bands)))),
+             "[bg]crop=iw*%d/1920:ih*%d/1080:iw*%d/1920:ih*%d/1080,scale=1080:1920:force_original_aspect_ratio=increase,"
+             "crop=1080:1920,boxblur=%s:2,eq=brightness=%s[c0]" % (w, h, x, y, bg.get("blur", 40), -bg.get("dim", 0.25))]
+    parts += chains
+    for i, b in enumerate(bands):
+        last = i == len(bands) - 1
+        parts.append("[c%d][o%d]overlay=0:%d%s" % (i, i, b["top"], "" if last else "[c%d]" % (i + 1)))
+    print(";".join(parts))
+elif len(bands) == 1:
     print(chains[0])
 else:
     split = "[0:v]split=%d%s" % (len(bands), "".join("[b%d]" % i for i in range(len(bands))))

@@ -1,4 +1,5 @@
 import json
+import shutil
 import os
 import subprocess
 import sys
@@ -283,8 +284,13 @@ class ServerTest(unittest.TestCase):
                 "wide": {"bands": [{"name": "a", "crop": [10, 10, 300, 0], "height": 1920, "pan": [0, 900]}]},
                 "fixed": {"bands": [{"name": "a", "crop": [10, 10, 0, 0], "height": 1920}]}}}, f)
         s = self.shorts_state()
-        self.assertEqual(s["layouts"]["wide"], {"pan": [0, 900], "x": 300})
-        self.assertIsNone(s["layouts"]["fixed"])
+        self.assertEqual(s["layouts"]["wide"], {"label": None, "pan": [0, 900], "x": 300})
+        self.assertEqual(s["layouts"]["fixed"], {"label": None, "pan": None, "x": None})
+        # Ryan's built-in layouts carry the names the card's switch shows.
+        self.builtin_layouts()
+        s = self.shorts_state()
+        self.assertEqual(s["layouts"]["me"]["label"], "Just me")
+        self.assertEqual(s["layouts"]["coding-rebrand"]["label"], "Code + me")
         self.assertEqual(s["default_layout"], "wide")
 
     def test_shorts_preview_and_captions(self):
@@ -502,6 +508,30 @@ class ServerTest(unittest.TestCase):
         code, body = self.post("/api/shorts/render", {"picks": [{"n": 1, "file": "01-stale.mp4", "start": 20, "end": 30}]})
         self.assertEqual(code, 400)
         self.assertIn("changed", body["error"])
+
+    def builtin_layouts(self):
+        """The real shorts.py sits next to stream-shorts' layouts.json; the stub doesn't."""
+        shutil.copyfile(os.path.join(HERE, "..", "..", "stream-shorts", "scripts", "layouts.json"),
+                        os.path.join(os.path.dirname(self.stub), "layouts.json"))
+
+    def test_pick_layout(self):
+        """The card's Code + me / Just me switch sends a layout with the pick."""
+        self.builtin_layouts()
+        self.write_candidates()
+        self.assertEqual(self.post("/api/shorts/preview", {"n": 1, "start": 20, "end": 30, "layout": "me"})[0], 200)
+        with open(os.path.join(self.cache, "shorts-work", "manifest.json")) as f:
+            self.assertEqual(json.load(f)["clips"][0]["layout"], "me")
+        code, body = self.post("/api/shorts/preview", {"n": 1, "start": 20, "end": 30, "layout": "nope"})
+        self.assertEqual(code, 400)
+        self.assertIn("nope", body["error"])
+        # No layout in the pick keeps Claude's (candidate 1 says "center").
+        self.post("/api/shorts/preview", {"n": 1, "start": 20, "end": 30})
+        with open(os.path.join(self.cache, "shorts-work", "manifest.json")) as f:
+            self.assertEqual(json.load(f)["clips"][0]["layout"], "center")
+        self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 2, "start": 40, "end": 50, "layout": "me-square"}]})[0], 202)
+        self.wait_shorts("done")
+        with open(os.path.join(self.shorts, "shorts.json")) as f:
+            self.assertEqual(json.load(f)["clips"][0]["layout"], "me-square")
 
     def test_shorts_render_checks(self):
         self.write_edit()

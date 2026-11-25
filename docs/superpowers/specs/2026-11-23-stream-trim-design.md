@@ -407,3 +407,13 @@ Follow-ups (2026-11-25, Ryan's picks):
   until Claude's next step or Ryan's next message. Ryan's user settings
   also got allow rules for the skill's own scripts and its local curl
   calls, so most prompts don't happen at all.
+- Two looks per short (Ryan: code moments want the screen, talking moments
+  want just him). Layouts gained `label`; the card shows a switch between
+  the labelled ones: Code + me (`coding-rebrand`), Just me (`me`, a 9:16
+  slice of the camera cutout, about 2.3x upscaled from 4K) and Just me
+  square (`me-square`, a square of the camera over a blurred, dimmed copy;
+  `layout.py` learned `background` plus per-band `top`). Claude picks the
+  starting layout per clip. The camera is a background-removed cutout over
+  the screen, so "just me" shows some editor UI behind Ryan; a separate
+  camera recording in OBS would fix that (not done: Ryan isn't changing
+  his OBS setup now).

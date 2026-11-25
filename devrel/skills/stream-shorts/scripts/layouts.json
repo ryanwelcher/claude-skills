@@ -2,17 +2,106 @@
   "default": "coding-rebrand",
   "layouts": {
     "coding-rebrand": {
+      "label": "Code + me",
       "description": "OBS \"Coding - Rebrand\" scene: facecam band on top, screen crop below (stops above the bottom bar).",
       "bands": [
-        { "name": "cam", "crop": [600, 500, 1320, 520], "height": 900 },
-        { "name": "screen", "crop": [1038, 980, 200, 20], "height": 1020, "pan": [0, 882] }
+        {
+          "name": "cam",
+          "crop": [
+            600,
+            500,
+            1320,
+            520
+          ],
+          "height": 900
+        },
+        {
+          "name": "screen",
+          "crop": [
+            1038,
+            980,
+            200,
+            20
+          ],
+          "height": 1020,
+          "pan": [
+            0,
+            882
+          ]
+        }
       ],
       "caption_y": 900
     },
     "center": {
       "description": "One full-frame 9:16 cut. For full-screen cam, a talk, or any single-camera shot. pan_x moves it left or right.",
       "bands": [
-        { "name": "frame", "crop": [608, 1080, 656, 0], "height": 1920, "pan": [0, 1312] }
+        {
+          "name": "frame",
+          "crop": [
+            608,
+            1080,
+            656,
+            0
+          ],
+          "height": 1920,
+          "pan": [
+            0,
+            1312
+          ]
+        }
+      ],
+      "caption_y": 1500
+    },
+    "me": {
+      "label": "Just me",
+      "description": "Just the camera, edge to edge: a 9:16 slice of the \"Coding - Rebrand\" camera cutout. For talking shorts. pan_x slides it if Ryan leans.",
+      "bands": [
+        {
+          "name": "cam",
+          "crop": [
+            243,
+            432,
+            1650,
+            588
+          ],
+          "height": 1920,
+          "pan": [
+            1440,
+            1677
+          ]
+        }
+      ],
+      "caption_y": 1450
+    },
+    "me-square": {
+      "label": "Just me (square)",
+      "description": "A square of the \"Coding - Rebrand\" camera on a blurred, dimmed copy of it. Sharper than me. pan_x slides the square.",
+      "background": {
+        "crop": [
+          420,
+          420,
+          1490,
+          600
+        ],
+        "blur": 40,
+        "dim": 0.25
+      },
+      "bands": [
+        {
+          "name": "cam",
+          "crop": [
+            420,
+            420,
+            1490,
+            600
+          ],
+          "height": 1080,
+          "top": 300,
+          "pan": [
+            1440,
+            1500
+          ]
+        }
       ],
       "caption_y": 1500
     }

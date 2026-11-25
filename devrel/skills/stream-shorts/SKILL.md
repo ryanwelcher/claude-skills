@@ -39,7 +39,7 @@ Everything about a clip lives in `shorts/shorts.json` next to the recording, and
    }
    ```
    Number files in pick order, with a short slug from the hook. Optional clip keys:
-   - `layout`: a name from `scripts/layouts.json`. Leave it out for the default, `coding-rebrand`.
+   - `layout`: a name from `scripts/layouts.json`. Leave it out for the default, `coding-rebrand` ("Code + me": camera on top, screen below), for a moment where the screen matters. For a moment where Ryan is just talking, use `me` ("Just me": a 9:16 slice of his camera, edge to edge) or `me-square` ("Just me (square)": a square of his camera on a blurred copy of it, sharper).
    - `pan_x`: slides the layout's panning band left or right. The range depends on the layout; for `coding-rebrand` it's the screen crop, 0 = left edge, 882 = right edge, default 200. `screen_x` is the old name and still works.
    - `fixes`: caption fixes for this clip, `{"heard": "meant"}`.
    - `skip`: the reason a clip isn't rendered. Clips with `skip` set are left out of `all`.
@@ -106,7 +106,7 @@ To nudge a clip later, edit its entry in `shorts/shorts.json`, check it for dang
 
 ## Adding a layout
 
-A layout is a stack of bands, top to bottom. Each band crops a box from the source, in 1920x1080 pixels, and scales it to 1080 wide. The band heights add up to 1920, and each crop must have its band's shape (`layout.py` rejects a layout that would stretch). One band can have a `pan` range for `pan_x`. `caption_y` is where the captions sit, usually on a seam between bands.
+A layout is a stack of bands, top to bottom, or, with a `"background"` crop (blurred and dimmed to fill the frame), bands placed at their own `"top"` over it (see `me-square`). A `"label"` names the layout on stream-trim's card switch. Each band crops a box from the source, in 1920x1080 pixels, and scales it to 1080 wide. The band heights add up to 1920, and each crop must have its band's shape (`layout.py` rejects a layout that would stretch). One band can have a `pan` range for `pan_x`. `caption_y` is where the captions sit, usually on a seam between bands.
 
 1. Grab a full frame at the clip's midpoint, scaled to the 1920x1080 coordinate space, and look at it with Read:
    ```bash

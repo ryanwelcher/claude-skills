@@ -78,7 +78,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
 7. **Write the shortlist to the page** as soon as `find-stream-shorts` returns. Don't wait for the final: shorts are cut from the raw, so they don't need it. Keep every clip, even ones outside Ryan's trim; the page flags those and he decides. If he asks about the render meanwhile, check `/api/render` as in step 10. Then:
    - Fix dangling-word starts and ends with the rules in `stream-shorts` step 5, using the `Words` file.
    - Write the clips to `shorts/candidates.draft.json` next to the recording, in the `shorts.json` shape from `stream-shorts` step 3, with `"recording"` (the raw path) and `"words"`. If the profile has a `layouts` file, add `"layouts"` with its absolute path (it's relative to the profile file), so the previews use the profile's layouts. Number the files in timestamp order, starting after the highest number already in `shorts/shorts.json` if that file exists. `shorts.py` picks clips by number, so a repeated number would re-render the older clip, and the page refuses it.
-   - Preview the layouts and look at each jpg with Read, as in `stream-shorts` step 4. Set `layout`, `pan_x` or `skip` (with the reason) on each clip:
+   - Pick each clip's layout: `coding-rebrand` (Code + me) when the screen matters to the moment, `me` (Just me) when Ryan is just talking. He can switch it on the card, between every layout that has a label. Then preview the layouts and look at each jpg with Read, as in `stream-shorts` step 4. Set `layout`, `pan_x` or `skip` (with the reason) on each clip:
      ```bash
      python3 ${CLAUDE_SKILL_DIR}/../stream-shorts/scripts/shorts.py --preview "<recording dir>/shorts/candidates.draft.json" all
      ```
@@ -87,7 +87,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
      ```bash
      mv "<recording dir>/shorts/candidates.draft.json" "<recording dir>/shorts/candidates.json"
      ```
-   - Tell Ryan the shortlist is in the Shorts tab, how many clips, and any you skipped with the reasons. On each card he can nudge start and end by 0.5 s, move the screen crop, untick a wrong suggested fix or type more, press Play to watch a quick 540x960 draft (mic audio only, a few seconds to make), and pick. Render selected writes the picks to `shorts/`.
+   - Tell Ryan the shortlist is in the Shorts tab, how many clips, and any you skipped with the reasons. On each card he can nudge start and end by 0.5 s, switch between Code + me and Just me, slide the crop, untick a wrong suggested fix or type more, press Play to watch a quick 540x960 draft (mic audio only, a few seconds to make), and pick. Render selected writes the picks to `shorts/`.
 
 8. **When the shorts are rendered**, put title options on the page, then write the descriptions. Wait with Monitor and an until-loop (check every 30 s) on `/api/shorts` until `render.state` is `done` or `error`. Then:
    - Read the picks from `shorts/shorts.json` and get each one's caption text with `shorts.py --captions` on that file. Report each failed clip's error from `/api/shorts` as-is.

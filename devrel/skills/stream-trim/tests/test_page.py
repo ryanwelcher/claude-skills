@@ -27,6 +27,9 @@ class PageTest(unittest.TestCase):
                     "Outside your trim", "Transcribing"):
             self.assertIn(ref, page)
         self.assertNotIn('id="tab-shorts" disabled', page)
+        # Per-card layout switch (Code + me / Just me).
+        for ref in ('class="layouts"', "k.layout", "layout: k.layout"):
+            self.assertIn(ref, page)
         # The "Claude needs you in the terminal" banner.
         for ref in ("/api/attention", 'id="attention"', "document.title"):
             self.assertIn(ref, page)

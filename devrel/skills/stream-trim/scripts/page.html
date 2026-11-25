@@ -57,6 +57,9 @@
   #finding { background: var(--panel); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
   #finding progress { width: 360px; }
   .card .outside { color: #f0c36c; }
+  .card .layouts { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .card .layouts button { padding: 4px 12px; font-size: 13px; background: #34314a; }
+  .card .layouts button.on { background: var(--accent); }
   #streams-table { width: 100%; border-collapse: collapse; }
   #streams-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: 13px; padding: 6px 10px; }
   #streams-table td { background: var(--panel); padding: 10px; vertical-align: top; border-top: 4px solid var(--bg); }
@@ -350,7 +353,34 @@ async function loadShorts() {
 
 function schedule(ms) { clearTimeout(shortsTimer); shortsTimer = setTimeout(loadShorts, ms); }
 
-function layoutOf(c) { return SH.layouts[c.layout || SH.default_layout] || null; }
+function layoutOf(name) { return SH.layouts[name] || null; }
+
+// The layouts a card can switch between: the labelled ones (Code + me, Just me...),
+// or every layout when none has a label (a teammate's own layouts file).
+function layoutChoices(current) {
+  const all = Object.keys(SH.layouts);
+  const named = all.filter((n) => SH.layouts[n].label);
+  const list = named.length ? named : all;
+  return list.includes(current) || !SH.layouts[current] ? list : [current, ...list];
+}
+
+function drawLayout(k) {
+  const L = layoutOf(k.layout);
+  k.el.querySelector('.layouts').innerHTML = layoutChoices(k.layout).map((n) =>
+    `<button data-l="${escapeHtml(n)}" class="${n === k.layout ? 'on' : ''}" aria-pressed="${n === k.layout}">${escapeHtml(SH.layouts[n].label || n)}</button>`).join('');
+  k.el.querySelectorAll('.layouts button').forEach((b) => b.addEventListener('click', () => {
+    b.blur();
+    if (b.dataset.l === k.layout) return;
+    k.layout = b.dataset.l;
+    const N = layoutOf(k.layout);
+    k.pan_x = N && N.pan ? N.x : null; k.panMoved = false;
+    drawLayout(k); refresh(k.c.n, false);
+  }));
+  const box = k.el.querySelector('.pan-box');
+  box.innerHTML = L && L.pan ? `<label class="note">Slide the crop <input type="range" class="pan" min="${L.pan[0]}" max="${L.pan[1]}" value="${k.pan_x}"></label>` : '';
+  const slider = box.querySelector('.pan');
+  if (slider) slider.addEventListener('change', () => { k.pan_x = parseInt(slider.value, 10); k.panMoved = true; refresh(k.c.n, false); });
+}
 
 function drawCards() {
   const box = $('cards');
@@ -358,11 +388,12 @@ function drawCards() {
     insideEdit({ start: secs(b.start), end: secs(b.end) }) - insideEdit({ start: secs(a.start), end: secs(a.end) }));
   for (const c of order) {
     if (cards[c.n]) continue;
-    const pan = layoutOf(c);
+    const layout = c.layout && SH.layouts[c.layout] ? c.layout : SH.default_layout;
+    const pan = layoutOf(layout);
     const sugg = Object.entries(c.suggested_fixes || {});
     // Suggested fixes start ticked: easier to untick a wrong one than to miss a right one.
-    const k = cards[c.n] = { c, start: secs(c.start), end: secs(c.end),
-      pan_x: c.pan_x ?? (pan ? pan.x : null), panMoved: c.pan_x != null, accepted: Object.fromEntries(sugg) };
+    const k = cards[c.n] = { c, start: secs(c.start), end: secs(c.end), layout,
+      pan_x: c.pan_x ?? (pan && pan.pan ? pan.x : null), panMoved: c.pan_x != null, accepted: Object.fromEntries(sugg) };
     const off = c.skip ? 'Skipped: ' + c.skip : '';
     const el = k.el = document.createElement('div');
     el.className = 'card' + (off ? ' off' : '');
@@ -383,7 +414,8 @@ function drawCards() {
           <button class="play" title="A quick 540x960 draft with the mic audio only">Play</button>
         </div>
         <div>
-          ${pan ? `<label class="note">Screen crop <input type="range" class="pan" min="${pan.pan[0]}" max="${pan.pan[1]}" value="${k.pan_x}"></label>` : ''}
+          <div class="layouts" role="group" aria-label="Layout"></div>
+          <div class="pan-box"></div>
           <div class="note">Captions</div><pre class="cap">Loading...</pre>
           ${sugg.length ? '<div class="note">Suggested fixes (untick any that are wrong)</div>' + sugg.map(([h, m], i) =>
             `<label><input type="checkbox" class="sugg" data-i="${i}" checked> ${escapeHtml(h)} &rarr; ${escapeHtml(m)}</label><br>`).join('') : ''}
@@ -399,8 +431,7 @@ function drawCards() {
       k[b.dataset.k] = Math.round((k[b.dataset.k] + parseFloat(b.dataset.d)) * 100) / 100;
       drawTimes(k); refresh(c.n, true);
     }));
-    const slider = el.querySelector('.pan');
-    if (slider) slider.addEventListener('change', () => { k.pan_x = parseInt(slider.value, 10); k.panMoved = true; refresh(c.n, false); });
+    drawLayout(k);
     el.querySelectorAll('.sugg').forEach((box) => box.addEventListener('change', () => {
       const [h, m] = sugg[box.dataset.i];
       if (box.checked) k.accepted[h] = m; else delete k.accepted[h];
@@ -434,7 +465,7 @@ function fixesOf(k) {
   return out;
 }
 
-function body(k) { return { n: k.c.n, file: k.c.file, start: k.start, end: k.end, pan_x: k.panMoved ? k.pan_x : null, fixes: fixesOf(k) }; }
+function body(k) { return { n: k.c.n, file: k.c.file, start: k.start, end: k.end, layout: k.layout, pan_x: k.panMoved ? k.pan_x : null, fixes: fixesOf(k) }; }
 
 async function post(url, data) {
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });

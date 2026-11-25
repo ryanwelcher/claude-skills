@@ -333,7 +333,7 @@ class TrimServer(ThreadingHTTPServer):
         return clips, words, None
 
     def layouts(self):
-        """({name: {"pan": [lo, hi], "x": default x} or None}, default name),
+        """({name: {"label": text or None, "pan": [lo, hi] or None, "x": default x or None}}, default name),
         from stream-shorts' layouts.json overlaid with the profile's layouts
         file and then shorts/layouts.json."""
         data, default = {}, None
@@ -352,7 +352,7 @@ class TrimServer(ThreadingHTTPServer):
         out = {}
         for name, layout in data.items():
             band = next((b for b in layout.get("bands", []) if "pan" in b), None)
-            out[name] = band and {"pan": band["pan"], "x": band["crop"][2]}
+            out[name] = {"label": layout.get("label"), "pan": band and band["pan"], "x": band and band["crop"][2]}
         return out, default
 
     def shorts_state(self):
@@ -386,6 +386,11 @@ class TrimServer(ThreadingHTTPServer):
         if not start < end:
             raise ValueError(f"clip {cand['n']}: start has to be before end")
         clip = {k: cand[k] for k in ("file", "hook", "layout") if k in cand}
+        # The card's Code + me / Just me switch.
+        if pick.get("layout") is not None:
+            if pick["layout"] not in self.layouts()[0]:
+                raise ValueError(f"no layout named {pick['layout']}")
+            clip["layout"] = pick["layout"]
         clip.update(start=shorts_view.fmt(start), end=shorts_view.fmt(end))
         if pick.get("pan_x") is not None:
             clip["pan_x"] = pick["pan_x"]
