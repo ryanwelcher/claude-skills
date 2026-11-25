@@ -25,7 +25,7 @@
       "name": "devrel",
       "description": "Ryan's developer-advocacy work skills (workshop scaffolding, article drafting, social posts, YouTube scripts and stream descriptions, voice-consistency passes, session logging to Obsidian).",
       "source": "./devrel",
-      "version": "1.46.1",
+      "version": "1.46.2",
       "author": {
         "name": "Ryan Welcher",
         "email": "me@ryanwelcher.com"
@@ -44,7 +44,9 @@
         "./skills/ste-pass",
         "./skills/ste-audit",
         "./skills/stream-prep",
-        "./skills/stream-trim"
+        "./skills/stream-trim",
+        "./skills/stream-shorts",
+        "./skills/find-stream-shorts"
       ]
     }
   ]

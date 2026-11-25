@@ -315,3 +315,33 @@ Real run on the Nov 12 stream, from the 4K final above:
 - Next: profiles (track roles, mic delay, voice chain, loudness, caption
   font) so the skill can be shared. Today those are hardcoded in about six
   places.
+
+## Stage 4 result (2026-11-24)
+
+Profiles, from `2026-11-24-stream-trim-profiles-design.md`:
+
+- A profile file now holds what was hardcoded: track roles, which track
+  is the mic, mic and transcript delays in frames, the voice chain,
+  shorts loudness, caption font, short layouts, and whether the
+  `sounds-like-me` pass runs. Ryan's is the built-in `profiles/ryan-obs.json`.
+  Teammates' profiles live in `~/.config/stream-trim/profiles/`, and
+  `~/.config/stream-trim/default` names the machine's default. With no
+  default the skill asks; it never falls back to Ryan's.
+- Ryan's output is unchanged. `tests/test_golden.py` pins every ffmpeg
+  command built for the Nov 12 setup, recorded before profiles existed,
+  and still matches character for character.
+- On Nov 12 with `ryan-obs`: the profile check passed, prepare reused the
+  existing cache, all 8 short cards loaded, and a draft rendered.
+- Simulated teammate, a 3-minute 2-track cut of Nov 12 taken through
+  first-run setup: the final's audio was exactly Out minus In at -17.2
+  LUFS. The short was 1080x1920 with exact audio length and the
+  teammate's own layout, at -15 LUFS instead of -14, because the plain
+  chain has no compressor and true peak caps the level.
+- The final review found five important problems, all fixed with tests:
+  a profile whose name didn't match its file, re-renders using the
+  machine default instead of the stream's profile, wrong value types
+  passing the check, edited profiles reusing the old cache, and a chain
+  path that broke on plugin updates. The five minors it left were fixed
+  in 1.46.1, including the server refusing a cache made with another
+  profile.
+- Not tested on a real teammate machine yet.
