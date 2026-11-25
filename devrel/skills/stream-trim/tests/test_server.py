@@ -503,12 +503,10 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(code, 400)
         self.assertIn("changed", body["error"])
 
-    def test_shorts_render_rejects_outside(self):
-        self.write_candidates()
-        self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 20, "end": 30}]})[0], 409)
+    def test_shorts_render_checks(self):
         self.write_edit()
-        for picks in ([{"n": 1, "start": 30, "end": 20}], [{"n": 3, "start": 5, "end": 15}],
-                      [{"n": 9, "start": 20, "end": 30}], [], "x"):
+        self.write_candidates()
+        for picks in ([{"n": 1, "start": 30, "end": 20}], [{"n": 9, "start": 20, "end": 30}], [], "x"):
             code, body = self.post("/api/shorts/render", {"picks": picks})
             self.assertEqual(code, 400, picks)
             self.assertIn("error", body)
@@ -516,6 +514,140 @@ class ServerTest(unittest.TestCase):
             self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 20, "end": 30}]})[0], 202)
             self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 2, "start": 40, "end": 50}]})[0], 409)
             self.wait_shorts("done")
+
+    # -- shorts before the final, and while it renders --
+
+    def test_shorts_before_final(self):
+        """Shorts are standalone: no final render needed, and a short outside
+        the trim is flagged, not refused."""
+        self.write_candidates()
+        s = self.shorts_state()
+        self.assertEqual([x["n"] for x in s["candidates"]], [1, 2, 3])
+        # Without an edit, inside is judged against prepare's default In/Out (69.5-91).
+        self.assertEqual([x["inside"] for x in s["candidates"]], [False, False, False])
+        self.assertEqual(self.post("/api/shorts/preview", {"n": 3, "start": 5, "end": 15})[0], 200)
+        self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 3, "start": 5, "end": 15}]})[0], 202)
+        self.assertEqual(self.wait_shorts("done")["clips"]["3"]["state"], "done")
+
+    def test_shorts_render_during_final(self):
+        self.write_candidates()
+        with self.srv.lock:
+            self.srv.status["state"] = "running"
+        try:
+            self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 20, "end": 30}]})[0], 202)
+            self.wait_shorts("done")
+        finally:
+            with self.srv.lock:
+                self.srv.status["state"] = "idle"
+
+    # -- finding shorts: transcription progress --
+
+    def test_finding_progress(self):
+        t = os.path.join(self.tmp.name, "transcript")
+        self.srv.transcript_dir = lambda: t
+        finding = lambda: self.shorts_state()["finding"]
+        self.assertEqual(finding()["stage"], "waiting")
+        os.makedirs(t)
+        log = os.path.join(t, "log")
+        with open(log, "w") as f:
+            f.write("Extracting audio from raw.mp4...\n")
+        self.assertEqual(finding()["stage"], "audio")
+        with open(log, "a") as f:
+            f.write("Transcribing with m...\n[00:50.000 --> 00:55.500]  hi\n[01:10.000 --> 01:15.000]  there\n")
+        f2 = finding()
+        self.assertEqual((f2["stage"], f2["at"], f2["percent"]), ("transcribing", 75.0, 75.0))
+        with open(log, "a") as f:
+            f.write("[01:00:01.000 --> 01:00:02.500]  past the end\n")
+        self.assertEqual(finding()["percent"], 99.9)
+        with open(log, "a") as f:
+            f.write("Re-transcribing looped range 00:01:00-00:02:00...\n")
+        self.assertEqual(finding()["stage"], "checking")
+        open(os.path.join(t, "done"), "w").close()
+        f3 = finding()
+        self.assertEqual(f3["stage"], "picking")
+        self.assertIsInstance(f3["since"], float)
+        self.write_candidates()
+        self.assertEqual(finding()["stage"], "ready")
+        os.remove(self.cand_path)
+        os.remove(os.path.join(t, "done"))
+        with open(os.path.join(t, "failed"), "w") as f:
+            f.write("ffmpeg could not extract audio\n")
+        self.assertEqual(finding(), {"stage": "error", "error": "ffmpeg could not extract audio"})
+
+    def test_transcript_dir_found(self):
+        d = self.srv.transcript_dir()
+        self.assertTrue(d and os.path.isabs(d), d)
+        self.assertFalse(os.path.exists(d))  # finding it never creates it
+
+    # -- titles --
+
+    def post_titles(self, body):
+        return self.post("/api/titles", body)
+
+    def test_titles_options(self):
+        opts = {"final": [{"title": "One", "score": 82}, {"title": "Two", "score": None}],
+                "shorts": {"1": [{"title": "Short one", "score": 70}]}}
+        self.assertEqual(self.post_titles(opts)[0], 200)
+        self.assertEqual(self.post_titles({"shorts": {"2": [{"title": "Short two"}]}})[0], 200)
+        t = json.loads(self.get("/api/titles")[2])
+        self.assertEqual([o["title"] for o in t["options"]["final"]], ["One", "Two"])
+        self.assertEqual(sorted(t["options"]), ["1", "2", "final"])
+        self.assertEqual(t["picked"], {})
+        self.assertIn("titles", self.shorts_state())
+        for bad in ({"final": "x"}, {"final": [{"title": ""}]}, {"final": [{"title": "a", "score": "9"}]},
+                    {"shorts": {"x": []}}, [1]):
+            self.assertEqual(self.post_titles(bad)[0], 400, bad)
+
+    def write_final(self):
+        out = os.path.join(self.tmp.name, "renders", "raw, stream-final.mp4")
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        with open(out, "wb") as f:
+            f.write(b"FINAL")
+        self.write_edit({"in": 10.0, "out": 90.0, "output": out})
+        return out
+
+    def test_title_final_renames(self):
+        self.assertEqual(self.post("/api/title", {"target": "final", "title": "A"})[0], 409)
+        out = self.write_final()
+        code, body = self.post("/api/title", {"target": "final", "title": "Contributor Toolkit: Open / Debug "})
+        self.assertEqual(code, 200, body)
+        new = os.path.join(self.tmp.name, "renders", "Contributor Toolkit - Open - Debug.mp4")
+        self.assertEqual(body["path"], new)
+        self.assertFalse(os.path.exists(out))
+        with open(new, "rb") as f:
+            self.assertEqual(f.read(), b"FINAL")
+        st = self.state()
+        self.assertEqual((st["output"], st["exists"], st["edit"]["output"]), (new, True, new))
+        self.assertEqual(json.loads(self.get("/api/titles")[2])["picked"]["final"], "Contributor Toolkit: Open / Debug")
+        # The renamed final still counts: no second render.
+        self.assertEqual(self.post("/api/render", {"in": 1, "out": 50})[0], 409)
+        # Picking again renames from the current name; a taken name is refused.
+        open(os.path.join(self.tmp.name, "renders", "Taken.mp4"), "wb").close()
+        self.assertEqual(self.post("/api/title", {"target": "final", "title": "Taken"})[0], 409)
+        self.assertEqual(self.post("/api/title", {"target": "final", "title": "Again"})[0], 200)
+        self.assertTrue(os.path.exists(os.path.join(self.tmp.name, "renders", "Again.mp4")))
+        for bad in ({"target": "final", "title": " :/ "}, {"target": "final"}, {"target": "x", "title": "a"}, "x"):
+            self.assertEqual(self.post("/api/title", bad)[0], 400, bad)
+
+    def test_title_short_renames(self):
+        self.write_candidates()
+        self.assertEqual(self.post("/api/title", {"target": 1, "title": "My Title"})[0], 409)  # not rendered
+        self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 1, "start": 20, "end": 30}]})[0], 202)
+        self.wait_shorts("done")
+        code, body = self.post("/api/title", {"target": 1, "title": "My Title?"})
+        self.assertEqual(code, 200, body)
+        new = os.path.join(self.shorts, "01 - My Title?.mp4")
+        self.assertEqual(body["path"], new)
+        self.assertTrue(os.path.exists(new))
+        self.assertFalse(os.path.exists(os.path.join(self.shorts, "01-one.mp4")))
+        with open(os.path.join(self.shorts, "shorts.json")) as f:
+            self.assertEqual([c["file"] for c in json.load(f)["clips"]], ["01 - My Title?.mp4"])
+        # Re-rendering it from the page writes to the new name, not the old one.
+        self.assertEqual(self.post("/api/shorts/render", {"picks": [{"n": 1, "file": "01-one.mp4", "start": 21, "end": 30}]})[0], 202)
+        self.assertTrue(self.wait_shorts("done")["clips"]["1"]["output"].endswith("01 - My Title?.mp4"))
+        self.assertFalse(os.path.exists(os.path.join(self.shorts, "01-one.mp4")))
+        with open(os.path.join(self.shorts, "shorts.json")) as f:
+            self.assertEqual([c["file"] for c in json.load(f)["clips"]], ["01 - My Title?.mp4"])
 
 
 if __name__ == "__main__":

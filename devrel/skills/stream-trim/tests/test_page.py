@@ -22,6 +22,11 @@ class PageTest(unittest.TestCase):
         for ref in ('id="tab-streams"', 'id="streams-view"', "/api/streams", "/api/reveal",
                     "Show in Finder", "navigator.clipboard", 'id="reveal-final"', 'id="reveal-shorts"'):
             self.assertIn(ref, page)
+        # Title picker, early shorts, finding progress.
+        for ref in ("/api/title", "SH.titles", 'id="finding"', 'id="final-title"', "Use this title",
+                    "Outside your trim", "Transcribing"):
+            self.assertIn(ref, page)
+        self.assertNotIn('id="tab-shorts" disabled', page)
         # The profile name shows next to the recording.
         self.assertIn('id="profile"', page)
         self.assertIn("S.profile", page)

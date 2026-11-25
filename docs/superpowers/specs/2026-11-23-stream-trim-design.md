@@ -375,3 +375,22 @@ Follow-ups (2026-11-25, Ryan's picks):
   (raw, final, shorts, description) and resolves the path itself, so the
   page never hands the server a path. Opening another stream still goes
   through Claude, since it may need prepare and a transcript.
+- Shorts before the final (Ryan: shorts are standalone, and waiting for
+  the render wastes time). The Shorts tab opens right away; "inside" and
+  edit times follow the page's current In/Out (prepare's defaults on the
+  server before an edit exists). Shorts outside the trim are shown at the
+  bottom, flagged, and still pickable. Shorts can render while the final
+  encodes; both run slower.
+- Finding-shorts progress: the server finds the transcriber's cache folder
+  (`TRANSCRIBE_PRINT_DIR=1 transcribe-file.sh`) and reads its log: audio,
+  transcribing (last cue time / stream length), checking (repair), Claude
+  picking (time since `done`), ready. The Shorts tab label shows the
+  percent. Rule from Ryan: nothing greyed out without a reason.
+- Title picker: Claude posts options (`POST /api/titles`; final: up to 3
+  viDIQ rounds; shorts: one round of 3 or 4, `type: short`). Ryan picks or
+  types his own; `POST /api/title` renames the final to
+  `renders/<Title>.mp4` or a short to `shorts/NN - <Title>.mp4`, with `:`
+  as ` -` and `/` as `-`. `edit.json`, `shorts.json` and the cache's
+  `titles.json` follow the rename, so re-renders and the Streams tab find
+  the files. Descriptions are written after, with the picked titles word
+  for word.

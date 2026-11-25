@@ -65,5 +65,11 @@ class ShortsViewTest(unittest.TestCase):
         self.assertEqual(sv.merge_picks(None, "/r", "/w", "/s", [clip(1, 1, 2)], RYAN)["clips"], [clip(1, 1, 2)])
 
 
+class NumberTest(unittest.TestCase):
+    def test_titled_file(self):
+        for f, n in (("01-one.mp4", 1), ("07 - Pantera Confession.mp4", 7), ("12 - 3 Things.mp4", 12), ("x.mp4", None)):
+            self.assertEqual(sv.number({"file": f}), n, f)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -5,6 +5,7 @@ Clip start/end are on the transcript clock (the mic clock, `shift` seconds
 late). render-short.sh pads a clip PAD_BEFORE before start and PAD_AFTER
 after end, and cuts the video `shift` earlier."""
 import json
+import re
 
 PAD_BEFORE = 0.2
 PAD_AFTER = 0.4
@@ -26,8 +27,9 @@ def fmt(t):
 
 
 def number(clip):
-    head = str(clip.get("file", "")).split("-", 1)[0]
-    return int(head) if head.isdigit() else None
+    # "01-slug.mp4", or "01 - Title.mp4" after the title picker renamed it.
+    m = re.match(r"(\d+)\s*-", str(clip.get("file", "")))
+    return int(m.group(1)) if m else None
 
 
 def video_span(clip, shift):

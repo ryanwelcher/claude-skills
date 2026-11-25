@@ -45,6 +45,15 @@
   .card .state { margin-top: 8px; }
   .card .state progress { width: 200px; }
   #shorts-bar progress { width: 240px; margin: 0; }
+  .titles { background: var(--panel); border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+  .titles label { display: block; margin: 4px 0; }
+  .titles .score { color: var(--muted); font: 12px ui-monospace, Menlo, monospace; margin-left: 6px; }
+  .titles input[type=text] { width: 60%; background: var(--bg); color: var(--text); border: 1px solid #34314a; border-radius: 6px; padding: 4px 8px; font: 14px -apple-system, system-ui, sans-serif; }
+  .titles button { padding: 6px 14px; font-size: 13px; margin-top: 6px; }
+  .card .titles { background: var(--bg); }
+  #finding { background: var(--panel); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
+  #finding progress { width: 360px; }
+  .card .outside { color: #f0c36c; }
   #streams-table { width: 100%; border-collapse: collapse; }
   #streams-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: 13px; padding: 6px 10px; }
   #streams-table td { background: var(--panel); padding: 10px; vertical-align: top; border-top: 4px solid var(--bg); }
@@ -58,7 +67,7 @@
 <main>
   <header>
     <h1><span id="name">Loading...</span> <span id="profile" class="note"></span></h1>
-    <div class="tabs"><button id="tab-trim" class="on">Trim</button><button id="tab-shorts" disabled>Shorts</button><button id="tab-streams">Streams</button></div>
+    <div class="tabs"><button id="tab-trim" class="on">Trim</button><button id="tab-shorts">Shorts</button><button id="tab-streams">Streams</button></div>
   </header>
   <section id="trim-view">
   <video id="video" src="/proxy.mp4" preload="auto"></video>
@@ -82,8 +91,10 @@
     <kbd>Q</kbd> <kbd>W</kbd> jump to In / Out &nbsp; drag the green and red markers
   </div>
   <div id="status"></div>
+  <div id="final-title" class="titles" hidden></div>
   </section>
   <section id="shorts-view" hidden>
+    <div id="finding" hidden></div>
     <div id="shorts-note" class="note"></div>
     <div id="cards"></div>
     <div id="shorts-bar"><button id="render-shorts" disabled>Render selected</button><progress id="shorts-progress" max="100" hidden></progress><span id="shorts-status" class="note"></span><button id="reveal-shorts" class="secondary">Open shorts folder</button></div>
@@ -220,11 +231,13 @@ function showRender(r) {
     const first = !S.exists || !S.edit;
     S.exists = true;
     $('status').innerHTML = `Done: <b>${escapeHtml(r.output)}</b><br><span class="note">Shorts from this edit are in the Shorts tab.</span>`;
-    if (first) refreshEdit(true);
+    if (first) refreshEdit(false);
+    drawFinalTitle();
   } else if (r.state === 'error') {
     $('status').innerHTML = `<div class="error">${escapeHtml(r.error)}</div>`;
   } else if (S.exists) {
-    $('status').innerHTML = `<span class="note">${escapeHtml(S.output.split('/').pop())} already exists</span>`;
+    finalLine();
+    drawFinalTitle();
   }
   if (busy && !polling) polling = setInterval(poll, 1000);
   if (!busy && polling) { clearInterval(polling); polling = null; }
@@ -300,9 +313,10 @@ function secs(t) {
   if (typeof t === 'number') return t;
   return String(t).split(':').reduce((a, p) => a * 60 + parseFloat(p), 0);
 }
-function editTc(t) { return tc(Math.max(0, t - SH.shift - SH.edit.in)); }
+// Shorts don't need the final: times and "inside" follow the trim on the Trim tab.
+function editTc(t) { return tc(Math.max(0, t - SH.shift - inT)); }
 function insideEdit(c) {
-  return c.start - 0.2 - SH.shift >= SH.edit.in && c.end + 0.4 - SH.shift <= SH.edit.out;
+  return c.start - 0.2 - SH.shift >= inT && c.end + 0.4 - SH.shift <= outT;
 }
 
 async function loadShorts() {
@@ -312,18 +326,21 @@ async function loadShorts() {
     $('shorts-note').textContent = 'Lost the server: ' + err.message;
     return schedule(3000);
   }
-  if (!SH.edit) {
-    $('shorts-note').textContent = 'Render the final edit first. Shorts come from inside it.';
-  } else if (!SH.candidates) {
-    $('shorts-note').textContent = SH.error
-      ? "Claude is still writing the shortlist (" + SH.error + ")."
-      : "Claude is finding shorts in this edit. They'll show up here.";
+  drawFinding(SH.finding);
+  // No shortlist yet: the panel above says why, so no greyed-out button.
+  $('render-shorts').hidden = !SH.candidates;
+  if (!SH.candidates) {
+    $('shorts-note').textContent = SH.error ? "Claude is still writing the shortlist (" + SH.error + ")." : '';
   } else {
-    $('shorts-note').textContent = SH.candidates.length + ' shorts from this edit. Tick the ones to render.';
+    const outside = SH.candidates.filter((c) => !insideEdit({ start: secs(c.start), end: secs(c.end) })).length;
+    $('shorts-note').textContent = SH.candidates.length + ' shorts. Tick the ones to render.'
+      + (outside ? ` ${outside === 1 ? '1 sits' : outside + ' sit'} outside your trim, at the bottom; they're still fine to pick.` : '');
     drawCards();
+    for (const k of Object.values(cards)) drawTimes(k);
   }
+  drawShortTitles();
   showShortsRender(SH.render);
-  const waiting = !SH.candidates || SH.render.state === 'running';
+  const waiting = !SH.candidates || SH.render.state === 'running' || titlesPending();
   if (waiting && view === 'shorts') schedule(SH.render.state === 'running' ? 1000 : 3000);
 }
 
@@ -333,14 +350,16 @@ function layoutOf(c) { return SH.layouts[c.layout || SH.default_layout] || null;
 
 function drawCards() {
   const box = $('cards');
-  for (const c of SH.candidates) {
+  const order = [...SH.candidates].sort((a, b) =>
+    insideEdit({ start: secs(b.start), end: secs(b.end) }) - insideEdit({ start: secs(a.start), end: secs(a.end) }));
+  for (const c of order) {
     if (cards[c.n]) continue;
     const pan = layoutOf(c);
     const sugg = Object.entries(c.suggested_fixes || {});
     // Suggested fixes start ticked: easier to untick a wrong one than to miss a right one.
     const k = cards[c.n] = { c, start: secs(c.start), end: secs(c.end),
       pan_x: c.pan_x ?? (pan ? pan.x : null), panMoved: c.pan_x != null, accepted: Object.fromEntries(sugg) };
-    const off = c.skip ? 'Skipped: ' + c.skip : (!c.inside ? 'Runs outside the edit' : '');
+    const off = c.skip ? 'Skipped: ' + c.skip : '';
     const el = k.el = document.createElement('div');
     el.className = 'card' + (off ? ' off' : '');
     el.innerHTML = `
@@ -368,6 +387,7 @@ function drawCards() {
           <textarea class="fixes"></textarea>
         </div>
       </div>
+      <div class="title-box titles" hidden></div>
       <div class="state note"></div>`;
     box.appendChild(el);
     el.querySelectorAll('.times button').forEach((b) => b.addEventListener('click', () => {
@@ -395,9 +415,10 @@ function drawTimes(k) {
   k.el.querySelector('.st').textContent = editTc(k.start);
   k.el.querySelector('.en').textContent = editTc(k.end);
   k.el.querySelector('.ln').textContent = (k.end - k.start).toFixed(1) + ' s';
-  const warn = k.end <= k.start ? 'Start has to be before end'
-    : (!insideEdit(k) && k.c.inside ? 'Now runs outside the edit' : '');
+  const warn = k.end <= k.start ? 'Start has to be before end' : '';
   k.el.querySelector('.warn').textContent = warn;
+  const out = k.el.querySelector('.times .outside') || k.el.querySelector('.times').appendChild(Object.assign(document.createElement('span'), { className: 'outside' }));
+  out.textContent = !warn && !insideEdit(k) ? 'Outside your trim' : '';
 }
 
 function fixesOf(k) {
@@ -474,6 +495,11 @@ function countPicks() {
   const n = picked().length;
   $('render-shorts').textContent = n ? `Render selected (${n})` : 'Render selected';
   $('render-shorts').disabled = !n || (SH && SH.render.state === 'running');
+  if (!n && SH && SH.candidates && SH.render.state !== 'running' && !$('shorts-status').textContent) {
+    $('shorts-status').textContent = 'Tick the shorts you want to render.';
+  } else if (n && $('shorts-status').textContent === 'Tick the shorts you want to render.') {
+    $('shorts-status').textContent = '';
+  }
 }
 
 function stepLabel(st) {
@@ -495,7 +521,8 @@ function showShortsRender(r) {
       box.innerHTML = '<progress max="100"></progress> ' + escapeHtml(stepLabel(st));
       if (st.percent != null) box.querySelector('progress').value = st.percent;
     } else {
-      box.textContent = st.state === 'done' ? 'Rendered: ' + st.output.split('/').pop()
+      const renamed = SH && SH.titles && SH.titles.files[n];
+      box.textContent = st.state === 'done' ? 'Rendered: ' + (renamed || st.output.split('/').pop())
         : st.state === 'error' ? 'Failed: ' + st.error : 'Queued';
     }
   }
@@ -505,7 +532,7 @@ function showShortsRender(r) {
   if (running) bar.value = (finished + (current && current.percent != null ? current.percent / 100 : 0)) / states.length * 100;
   $('shorts-status').textContent = !states.length ? ''
     : running ? `Rendering ${Math.min(finished + 1, states.length)} of ${states.length}` + (current ? ': ' + stepLabel(current) : '')
-    : r.state === 'done' ? `Rendered ${done} shorts into the shorts folder. Claude writes the titles and descriptions next.`
+    : r.state === 'done' ? `Rendered ${done} short${done === 1 ? '' : 's'} into the shorts folder. Claude puts title options on the cards next.`
     : `${states.length - done} of ${states.length} failed. See the cards above.`;
   countPicks();
 }
@@ -567,6 +594,116 @@ async function loadStreams() {
   }
   if (!list.streams.length) $('streams-note').textContent = 'No streams yet.';
 }
+
+// ---- Finding shorts: what's happening before the shortlist exists ----
+
+function clock(t) {
+  t = Math.floor(t);
+  const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0');
+}
+
+function findingText(f) {
+  if (!f) return null;
+  const next = '<div class="note">Next: Claude picks the moments, then previews and captions each one.</div>';
+  switch (f.stage) {
+    case 'waiting': return '<b>Finding shorts</b><div class="note">Waiting for Claude to start transcribing the stream.</div>';
+    case 'audio': return '<b>Finding shorts</b><div><progress max="100"></progress> Pulling the audio out of the recording</div>' + next;
+    case 'transcribing': return `<b>Finding shorts</b><div><progress max="100" value="${f.percent}"></progress> Transcribing: ${clock(f.at)} of ${clock(f.duration)} (${Math.floor(f.percent)}%)</div>` + next;
+    case 'checking': return '<b>Finding shorts</b><div><progress max="100"></progress> Checking the transcript for spots where Whisper got stuck</div>' + next;
+    case 'picking': {
+      const mins = Math.max(0, Math.floor((Date.now() / 1000 - f.since) / 60));
+      return `<b>Finding shorts</b><div><progress max="100"></progress> Transcribed. Claude is picking the moments (${mins ? mins + ' min so far' : 'just started'}).</div>`;
+    }
+    case 'error': return `<b>Finding shorts stopped</b><div class="error">${escapeHtml(f.error)}</div><div class="note">Tell Claude; it can run the transcription again.</div>`;
+    default: return null;
+  }
+}
+
+function drawFinding(f) {
+  const html = findingText(f);
+  $('finding').hidden = !html;
+  if (html) $('finding').innerHTML = html;
+  const tab = $('tab-shorts');
+  tab.textContent = !f || f.stage === 'ready' ? 'Shorts'
+    : f.stage === 'transcribing' ? `Shorts (${Math.floor(f.percent)}%)`
+    : f.stage === 'error' ? 'Shorts (stopped)' : 'Shorts (finding)';
+}
+
+// ---- Titles: pick one, and the file is renamed to it ----
+
+function titleBox(box, target, options, picked, file) {
+  const key = JSON.stringify([options, picked, file]);
+  if (box.dataset.v === key) return;
+  box.dataset.v = key;
+  const name = 't-' + target;
+  const chosen = picked ? options.findIndex((o) => o.title === picked) : -1;
+  box.innerHTML = `
+    <div class="note">${target === 'final' ? 'Title' : 'Short title'}: pick one and the file is renamed to it.</div>
+    ${options.map((o, i) => `<label><input type="radio" name="${name}" value="${i}" ${i === chosen ? 'checked' : ''}> ${escapeHtml(o.title)}${o.score != null ? `<span class="score">viDIQ ${o.score}</span>` : ''}</label>`).join('')}
+    <label><input type="radio" name="${name}" value="own" ${picked && chosen < 0 ? 'checked' : ''}> Your own <input type="text" class="own" value="${picked && chosen < 0 ? escapeHtml(picked) : ''}"></label>
+    <button class="use">Use this title</button> <span class="msg note">${file ? 'File: ' + escapeHtml(file) : ''}</span>`;
+  box.querySelector('.own').addEventListener('focus', () => { box.querySelector('input[value=own]').checked = true; });
+  box.querySelector('.use').addEventListener('click', async (e) => {
+    e.currentTarget.blur();
+    const sel = box.querySelector(`input[name="${name}"]:checked`);
+    const msg = box.querySelector('.msg');
+    if (!sel) { msg.textContent = 'Pick a title first.'; return; }
+    const title = sel.value === 'own' ? box.querySelector('.own').value.trim() : options[+sel.value].title;
+    if (!title) { msg.textContent = 'Type your title first.'; return; }
+    msg.textContent = 'Renaming...';
+    const [code, r] = await post('/api/title', { target, title });
+    if (code !== 200) { msg.textContent = r.error; return; }
+    if (target === 'final') { S.output = r.path; finalLine(); }
+    msg.textContent = 'File: ' + r.path.split('/').pop();
+    box.dataset.v = '';
+    if (view === 'shorts') loadShorts(); else statusTick();
+  });
+}
+
+function finalLine() {
+  $('status').innerHTML = `<span class="note">Final: <b>${escapeHtml(S.output.split('/').pop())}</b> (already rendered)</span>`;
+}
+
+function titlesPending() {
+  const t = SH && SH.titles;
+  if (!t) return true;
+  return !t.options.final || Object.keys(t.options).some((k) => !(k in t.picked));
+}
+
+function drawFinalTitle() {
+  const box = $('final-title');
+  if (!S || !S.exists) { box.hidden = true; return; }
+  box.hidden = false;
+  const t = SH && SH.titles;
+  if (!t || !t.options.final) {
+    box.dataset.v = '';
+    box.innerHTML = '<div class="note">Title: Claude writes title options once the shorts are rendered, or right after this render if you\'re skipping shorts. Pick one here and the file is renamed to it.</div>';
+    return;
+  }
+  titleBox(box, 'final', t.options.final, t.picked.final, S.output.split('/').pop());
+}
+
+function drawShortTitles() {
+  if (!SH || !SH.titles) return;
+  const files = SH.titles.files || {};
+  for (const [n, k] of Object.entries(cards)) {
+    const box = k.el.querySelector('.title-box');
+    const opts = SH.titles.options[n];
+    const st = SH.render.clips && SH.render.clips[n];
+    if (opts) { box.hidden = false; titleBox(box, +n, opts, SH.titles.picked[n], files[n] || (st && st.output ? st.output.split('/').pop() : k.c.file)); }
+    else if (st && st.state === 'done') { box.hidden = false; box.innerHTML = '<div class="note">Title options for this short come from Claude once the rendered shorts are done.</div>'; }
+  }
+}
+
+// Titles and the Shorts tab's progress update in the background, whichever tab is open.
+async function statusTick() {
+  try { SH = await (await fetch('/api/shorts')).json(); } catch (e) { return; }
+  drawFinding(SH.finding);
+  if (S) drawFinalTitle();
+}
+setInterval(() => { if (view !== 'shorts') statusTick(); }, 4000);
+statusTick();
 </script>
 </body>
 </html>

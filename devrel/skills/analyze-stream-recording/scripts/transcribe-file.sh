@@ -39,6 +39,8 @@
 #   WHISPER_PROMPT             decoder bias terms (see below)
 #   TRANSCRIBE_WAIT            seconds to wait per call (default 540)
 #   STREAM_TRANSCRIPT_CACHE    cache root (default ~/.cache/stream-transcripts)
+#   TRANSCRIBE_PRINT_DIR       set: print "DIR: <cache dir>" and exit (the
+#                              worker's log there shows its progress)
 #   TRANSCRIPT_WINDOW          "<start> <end>" in seconds: condense and check
 #                              only that part, with start as 00:00:00 (for
 #                              stream-trim's edit). The transcription itself
@@ -88,6 +90,11 @@ ABS_FILE="$(cd "$(dirname "$FILE")" && pwd)/$(basename "$FILE")"
 FILE_STAT="$(stat -f '%z %m' "$ABS_FILE" 2>/dev/null || stat -c '%s %Y' "$ABS_FILE")"
 KEY="$(printf '%s\n%s\n%s\n%s\n%s\n' "$ABS_FILE" "$FILE_STAT" "$MODEL" "$PROMPT" "$SETTINGS" | shasum -a 256 | cut -c1-16)"
 DIR="$CACHE_ROOT/$KEY"
+if [ -n "${TRANSCRIBE_PRINT_DIR:-}" ]; then
+  # Where this run's files live, for stream-trim's progress panel. Creates nothing.
+  echo "DIR: $DIR"
+  exit 0
+fi
 mkdir -p "$DIR"
 
 SRT="$DIR/audio.srt"

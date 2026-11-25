@@ -43,7 +43,8 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
 5. **Tell Ryan** what prepare printed, as one short list:
    - In, Out and length, as h:mm:ss
    - the keys: Space, J/K/L, I/O, arrows (1 frame), Shift+arrows (1 s), Q/W to jump to In/Out, drag the markers
-   - that Render writes `renders/<name>-final.mp4` next to the recording and never overwrites one
+   - that Render writes `renders/<name>-final.mp4` next to the recording and never overwrites one, and that picking a title later renames it
+   - that the Shorts tab works right away: it shows the transcription's progress until the shortlist is in, and he can pick and render shorts while the final renders (both run slower side by side)
 
 6. **Find the shorts while he trims.** First delete any `shorts/candidates.json` left next to the recording from an earlier session, so the page doesn't show an old shortlist:
    ```bash
@@ -51,12 +52,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
    ```
    Then, right after telling him about the page, invoke the `find-stream-shorts` skill with the raw path. Transcription doesn't depend on In/Out, so it runs while he trims and renders. If it returns an `ERROR:` line, tell him and skip the shorts. The page still works for the trim.
 
-7. **Wait for the edit**, then write the shortlist to the page. Wait with Monitor and an until-loop (check every 30 s) on:
-   ```bash
-   curl -s http://127.0.0.1:<port>/api/shorts
-   ```
-   until `edit` isn't `null`. If he asks about the render meanwhile, check `/api/render` as in step 10. Then:
-   - Keep only the clips that sit inside the edit, with the render's padding. On the transcript clock (the shortlist's times), a clip is inside when `start - 0.2 - shift >= in` and `end + 0.4 - shift <= out`, using `edit.in`, `edit.out` and `shift` from `/api/shorts`.
+7. **Write the shortlist to the page** as soon as `find-stream-shorts` returns. Don't wait for the final: shorts are cut from the raw, so they don't need it. Keep every clip, even ones outside Ryan's trim; the page flags those and he decides. If he asks about the render meanwhile, check `/api/render` as in step 10. Then:
    - Fix dangling-word starts and ends with the rules in `stream-shorts` step 5, using the `Words` file.
    - Write the clips to `shorts/candidates.draft.json` next to the recording, in the `shorts.json` shape from `stream-shorts` step 3, with `"recording"` (the raw path) and `"words"`. If the profile has a `layouts` file, add `"layouts"` with its absolute path (it's relative to the profile file), so the previews use the profile's layouts. Number the files in timestamp order, starting after the highest number already in `shorts/shorts.json` if that file exists. `shorts.py` picks clips by number, so a repeated number would re-render the older clip, and the page refuses it.
    - Preview the layouts and look at each jpg with Read, as in `stream-shorts` step 4. Set `layout`, `pan_x` or `skip` (with the reason) on each clip:
@@ -70,17 +66,24 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
      ```
    - Tell Ryan the shortlist is in the Shorts tab, how many clips, and any you skipped with the reasons. On each card he can nudge start and end by 0.5 s, move the screen crop, untick a wrong suggested fix or type more, press Play to watch a quick 540x960 draft (mic audio only, a few seconds to make), and pick. Render selected writes the picks to `shorts/`.
 
-8. **When the shorts are rendered**, write the titles and descriptions. Wait with Monitor and an until-loop (check every 30 s) on `/api/shorts` until `render.state` is `done` or `error`. Then:
-   - Read the picks from `shorts/shorts.json` and get each one's caption text with `shorts.py --captions` on that file.
-   - Follow `stream-shorts` steps 7, 8 and 9 for the clips that rendered (descriptions file, voice pass, em-dash and AI-ism scan, report). Report each failed clip's error from `/api/shorts` as-is.
+8. **When the shorts are rendered**, put title options on the page, then write the descriptions. Wait with Monitor and an until-loop (check every 30 s) on `/api/shorts` until `render.state` is `done` or `error`. Then:
+   - Read the picks from `shorts/shorts.json` and get each one's caption text with `shorts.py --captions` on that file. Report each failed clip's error from `/api/shorts` as-is.
+   - For each rendered short, draft 3 or 4 titles under 100 characters from what's said in the clip, and run the em-dash and AI-ism scan on them. Score each once with `mcp__vidiq__vidiq_score_title`, `type: "short"` (5 viDIQ credits a title). If that tool isn't available, leave the scores out and tell Ryan why.
+   - Post them to the page. Write the JSON to a file in the scratchpad first, so no title needs shell quoting:
+     ```bash
+     curl -s -X POST http://127.0.0.1:<port>/api/titles -H 'Content-Type: application/json' --data @<file>
+     ```
+     with `{"shorts": {"<n>": [{"title": "...", "score": 74}, ...]}}` (`score` is `null` without viDIQ). Tell Ryan the options are on each card, with a box for his own, and that **Use this title** renames the short to `NN - <Title>.mp4`.
+   - Wait with Monitor and an until-loop (check every 30 s) on `curl -s http://127.0.0.1:<port>/api/titles` until `picked` has every short you posted.
+   - Then follow `stream-shorts` steps 7, 8 and 9 for those clips (descriptions file, voice pass, em-dash and AI-ism scan, report). The file line is the clip's `file` in `shorts/shorts.json`, and the title is Ryan's pick from `/api/titles`, word for word. The voice pass covers the descriptions only: never change a picked title, because the file is named after it.
    - Run the `sounds-like-me` voice pass only when the profile's `voice_pass` is `sounds-like-me`. Read it from the profile file: `~/.config/stream-trim/profiles/<name>.json` if it exists, otherwise `${CLAUDE_SKILL_DIR}/profiles/<name>.json`. With `null`, write the titles and descriptions plain, in the person's own words from the clip. The separate em-dash and AI-ism scan always runs.
 
 9. **Write the full video's title and description** once the final is rendered: after step 8, or without shorts, once `/api/render` says `done`. Get `edit.in`, `edit.out` and `shift` from `/api/shorts`. The transcript runs `shift` seconds behind the video, so the final's 00:00 is `edit.in + shift` on the transcript clock:
    - With the `ryan-obs` profile, invoke the `youtube-stream-description` skill with:
      ```
-     <raw path> --window <edit.in + shift> <edit.out + shift> --out <recording dir>/renders
+     <raw path> --window <edit.in + shift> <edit.out + shift> --out <recording dir>/renders --titles-url http://127.0.0.1:<port>
      ```
-     (seconds, 3 decimals). It writes `renders/youtube-description.txt` next to the final, with chapters that match the final, a viDIQ-scored title, and the voice pass.
+     (seconds, 3 decimals). Its scored title options go on the page under the finished render, and Ryan's pick renames the final to `renders/<Title>.mp4`. It writes `renders/youtube-description.txt` next to the final, with chapters that match the final, his picked title, and the voice pass.
    - With any other profile, that skill's template and voice cards are Ryan's, so don't use it. Offer the chapter list instead: invoke `analyze-stream-recording` with `<raw path> --window <start> <end>` and give them its Chapters section.
 
 10. **When he asks about the final render,** check it:
@@ -112,6 +115,7 @@ For someone with their own OBS setup, when `profiles.py check` says `NO_DEFAULT`
 
 ## Notes
 
+- Titles picked on the page: `:` becomes ` -` and `/` becomes `-` in the file name, since Finder won't take them. Picking again renames from the current name, and a name that's already taken is refused. The cache's `edit.json` and `shorts/shorts.json` follow each rename, so the page, the Streams tab and re-renders all find the renamed files.
 - The page's Streams tab lists every recording with a cache, newest first: whether the raw is local, the final, shorts and description, and the cache size, with Show in Finder buttons and a Copy command button for `/stream-trim` on that recording. It's built from the caches, so deleting a cache folder takes its stream off the list. Show in Finder is also next to Render once the final exists, and in the Shorts tab.
 - The cache (preview, waveform, analysis) is in `~/Library/Caches/stream-trim/`, never next to the recording. That keeps a 1 GB preview out of Google Drive. Deleting the folder is safe.
 - Default In is 0.5 s before the first word, but only when the mic is silent for at least 60 s from the start (Starting Soon). Otherwise In is 0. Default Out is 1 s after the last word.

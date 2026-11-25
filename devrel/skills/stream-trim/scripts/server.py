@@ -25,6 +25,23 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CHUNK = 1 << 20
 SHORTS_PY = os.path.normpath(os.path.join(HERE, "..", "..", "stream-shorts", "scripts", "shorts.py"))
 SHORT_AUDIO = os.path.join(HERE, "short_audio.py")
+TRANSCRIBE = os.path.normpath(os.path.join(HERE, "..", "..", "analyze-stream-recording", "scripts",
+                                           "transcribe-file.sh"))
+# The end time of a transcribed line in the worker's log: [MM:SS.mmm --> HH:MM:SS.mmm]
+CUE_END = re.compile(r"--> (?:(\d+):)?(\d+):(\d+(?:\.\d+)?)\]")
+
+
+def safe_title(title):
+    """A title as a file name: Finder won't take ":" or "/", so ":" becomes
+    " -" (like Ryan's Premiere exports) and "/" becomes "-"."""
+    if not isinstance(title, str):
+        raise ValueError("title must be text")
+    t = title.replace(":", " -").replace("/", "-")
+    t = re.sub(r"[\x00-\x1f]", "", t)
+    t = re.sub(r"\s+", " ", t).strip().strip(".").strip()
+    if not re.search(r"\w", t):
+        raise ValueError("the title needs some letters or numbers")
+    return t[:180].strip()
 
 
 class TrimServer(ThreadingHTTPServer):
@@ -52,6 +69,8 @@ class TrimServer(ThreadingHTTPServer):
             self.peaks = json.load(f)
         self.work = os.path.join(self.cache, "shorts-work")
         self.edit_path = os.path.join(self.cache, "edit.json")
+        self.titles_path = os.path.join(self.cache, "titles.json")
+        self._transcript_dir = False  # not looked up yet
         # Transcript clock -> video clock (the shortlist's times are transcript times).
         self.shift = profiles.transcript_shift(profile, self.analysis["fps"])
         self.lock = threading.Lock()
@@ -86,6 +105,156 @@ class TrimServer(ThreadingHTTPServer):
         self.open_cmd(cmd)
         return 200, {"path": cmd[-1]}
 
+    def final_output(self):
+        """The final's path: where the edit says it went (it may have been
+        renamed to its title), else where a render would write it."""
+        edit = self.edit()
+        if edit and edit.get("output") and os.path.exists(edit["output"]):
+            return edit["output"]
+        return render.final_path(self.raw)
+
+    # -- finding shorts --
+
+    def transcript_dir(self):
+        """The transcriber's cache folder for this recording (find-stream-shorts'
+        run), or None. Looked up once; looking creates nothing."""
+        if self._transcript_dir is False:
+            self._transcript_dir = None
+            try:
+                r = subprocess.run(["bash", TRANSCRIBE, self.raw, "60"], capture_output=True, text=True, timeout=20,
+                                   env={**os.environ, "TRANSCRIBE_PRINT_DIR": "1"})
+                m = re.match(r"DIR: (.+)", r.stdout)
+                self._transcript_dir = m.group(1).strip() if m else None
+            except (OSError, subprocess.SubprocessError):
+                pass
+        return self._transcript_dir
+
+    def finding(self):
+        """Where finding the shorts is up to, for the page."""
+        if os.path.exists(os.path.join(self.shorts_dir, "candidates.json")):
+            return {"stage": "ready"}
+        d = self.transcript_dir()
+        if not d or not os.path.isdir(d):
+            return {"stage": "waiting"}
+        if os.path.exists(os.path.join(d, "failed")):
+            with open(os.path.join(d, "failed")) as f:
+                return {"stage": "error", "error": f.read().strip()}
+        if os.path.exists(os.path.join(d, "done")):
+            return {"stage": "picking", "since": os.path.getmtime(os.path.join(d, "done"))}
+        try:
+            with open(os.path.join(d, "log"), "rb") as f:
+                f.seek(max(0, os.path.getsize(f.name) - 65536))
+                tail = f.read().decode(errors="replace")
+        except OSError:
+            return {"stage": "waiting"}
+        if "Re-transcribing" in tail:
+            return {"stage": "checking"}
+        cues = CUE_END.findall(tail)
+        if cues or "Transcribing with" in tail:
+            at, duration = 0.0, self.analysis["duration"]
+            if cues:
+                h, m, s = cues[-1]
+                at = int(h or 0) * 3600 + int(m) * 60 + float(s)
+            return {"stage": "transcribing", "at": at, "duration": duration,
+                    "percent": round(min(99.9, at / duration * 100), 1)}
+        return {"stage": "audio"} if "Extracting audio" in tail else {"stage": "waiting"}
+
+    # -- titles --
+
+    def titles(self):
+        try:
+            with open(self.titles_path) as f:
+                t = json.load(f)
+        except (OSError, ValueError):
+            t = {}
+        return {"options": t.get("options", {}), "picked": t.get("picked", {}), "files": t.get("files", {})}
+
+    def post_titles(self, body):
+        """Claude's title options: {"final": [...], "shorts": {"<n>": [...]}},
+        each option {"title": str, "score": number or null}. Merged in."""
+        def options(lst):
+            if not isinstance(lst, list):
+                raise ValueError("options must be a list")
+            out = []
+            for o in lst:
+                if not isinstance(o, dict) or not isinstance(o.get("title"), str) or not o["title"].strip():
+                    raise ValueError("each option needs a \"title\"")
+                score = o.get("score")
+                if score is not None and (isinstance(score, bool) or not isinstance(score, (int, float))):
+                    raise ValueError("score must be a number or null")
+                out.append({"title": o["title"].strip()[:200], "score": score})
+            return out
+
+        if not isinstance(body, dict) or not set(body) <= {"final", "shorts"}:
+            return 400, {"error": "expected {\"final\": [...], \"shorts\": {\"<n>\": [...]}}"}
+        try:
+            new = {}
+            if "final" in body:
+                new["final"] = options(body["final"])
+            shorts = body.get("shorts", {})
+            if not isinstance(shorts, dict) or not all(str(k).isdigit() for k in shorts):
+                raise ValueError("shorts must be {\"<number>\": [...]}")
+            for k, v in shorts.items():
+                new[str(int(k))] = options(v)
+        except ValueError as e:
+            return 400, {"error": str(e)}
+        with self.lock:
+            t = self.titles()
+            t["options"].update(new)
+            write_json(self.titles_path, t)
+        return 200, {"ok": True}
+
+    def pick_title(self, body):
+        """Ryan's pick: rename the final, or short n, to the title."""
+        if not isinstance(body, dict):
+            return 400, {"error": "expected a JSON object"}
+        target, title = body.get("target"), body.get("title")
+        if target != "final" and (isinstance(target, bool) or not isinstance(target, int) or target < 0):
+            return 400, {"error": "target must be \"final\" or a short's number"}
+        try:
+            name = safe_title(title)
+        except ValueError as e:
+            return 400, {"error": str(e)}
+        with self.lock:
+            if target == "final":
+                if self.status["state"] == "running":
+                    return 409, {"error": "the final is still rendering"}
+                edit = self.edit()
+                old = edit and edit.get("output")
+                if not old or not os.path.exists(old):
+                    return 409, {"error": "render the final first"}
+                new = os.path.join(os.path.dirname(old), name + ".mp4")
+            else:
+                if self.shorts_status["state"] == "running":
+                    return 409, {"error": "wait for the shorts to finish rendering"}
+                manifest = os.path.join(self.shorts_dir, "shorts.json")
+                try:
+                    with open(manifest) as f:
+                        m = json.load(f)
+                except (OSError, ValueError):
+                    m = {}
+                clips = m.get("clips", []) if isinstance(m, dict) else []
+                clip = next((c for c in clips if shorts_view.number(c) == target), None)
+                old = clip and os.path.join(self.shorts_dir, clip["file"])
+                if not old or not os.path.exists(old):
+                    return 409, {"error": f"render short {target} first"}
+                new = os.path.join(self.shorts_dir, f"{target:02d} - {name}.mp4")
+            if new != old:
+                if os.path.exists(new):
+                    return 409, {"error": f"{os.path.basename(new)} already exists"}
+                os.rename(old, new)
+            t = self.titles()
+            if target == "final":
+                write_json(self.edit_path, {**edit, "output": new})
+                t["picked"]["final"] = title.strip()
+            else:
+                clip["file"] = os.path.basename(new)
+                write_json(manifest, m)
+                t["picked"][str(target)] = title.strip()
+                t["files"][str(target)] = clip["file"]
+            write_json(self.titles_path, t)
+        return 200, {"path": new}
+
     def render_status(self):
         with self.lock:
             return dict(self.status)
@@ -95,8 +264,8 @@ class TrimServer(ThreadingHTTPServer):
         with self.lock:
             if self.status["state"] == "running":
                 return 409, {"error": "a render is already running"}
-            if os.path.exists(render.final_path(self.raw)):
-                return 409, {"error": f"{os.path.basename(render.final_path(self.raw))} already exists"}
+            if os.path.exists(self.final_output()):
+                return 409, {"error": f"{os.path.basename(self.final_output())} already exists"}
             self.stop_event.clear()
             self.status = {"state": "running", "phase": "measuring", "percent": 0,
                            "output": None, "error": None}
@@ -133,11 +302,13 @@ class TrimServer(ThreadingHTTPServer):
     def candidates(self):
         """(candidate list or None, words path or None, error or None)."""
         path = os.path.join(self.shorts_dir, "candidates.json")
-        edit = self.edit()
-        if edit is None or not os.path.exists(path):
+        # Shorts don't need the final: before it, judge "inside" against
+        # prepare's default In/Out. The page flags, never hides, the rest.
+        trim = self.edit() or {"in": self.analysis["in"], "out": self.analysis["out"]}
+        if not os.path.exists(path):
             return None, None, None
         try:
-            clips = shorts_view.load_candidates(path, edit, self.shift)
+            clips = shorts_view.load_candidates(path, trim, self.shift)
             with open(path) as f:
                 words = json.load(f).get("words")
         except (OSError, ValueError) as e:
@@ -173,10 +344,10 @@ class TrimServer(ThreadingHTTPServer):
             render_state = json.loads(json.dumps(self.shorts_status))
         layouts, default = self.layouts()
         return {"profile": self.profile["name"], "edit": self.edit(), "shift": self.shift,
-                "candidates": clips, "error": error,
+                "candidates": clips, "error": error, "finding": self.finding(), "titles": self.titles(),
                 "layouts": layouts, "default_layout": default, "render": render_state}
 
-    def build_clip(self, pick, require_inside):
+    def build_clip(self, pick):
         """The shorts.json clip for one pick from the page, and the words path.
         Raises ValueError with a reason for the page."""
         clips, words, error = self.candidates()
@@ -205,14 +376,12 @@ class TrimServer(ThreadingHTTPServer):
             if not isinstance(pick["fixes"], dict):
                 raise ValueError("fixes must be {heard: meant}")
             clip["fixes"] = pick["fixes"]
-        if require_inside and not shorts_view.inside(clip, self.edit(), self.shift):
-            raise ValueError(f"clip {cand['n']} runs outside the edit")
         return clip, words
 
     def run_work(self, mode, pick):
         """Run shorts.py --preview, --draft or --captions on a one-clip manifest in
         the cache. Returns (clip, stdout). Raises ValueError on a failure."""
-        clip, words = self.build_clip(pick, require_inside=False)
+        clip, words = self.build_clip(pick)
         with self.work_lock:
             os.makedirs(self.work, exist_ok=True)
             layouts = os.path.join(self.shorts_dir, "layouts.json")
@@ -243,12 +412,10 @@ class TrimServer(ThreadingHTTPServer):
 
     def start_shorts(self, picks):
         """Returns (http code, body)."""
-        if self.edit() is None:
-            return 409, {"error": "render the final edit first"}
         if not isinstance(picks, list) or not picks:
             return 400, {"error": "pick at least one clip"}
         try:
-            built = [self.build_clip(p, require_inside=True) for p in picks]
+            built = [self.build_clip(p) for p in picks]
         except ValueError as e:
             return 400, {"error": str(e)}
         manifest = os.path.join(self.shorts_dir, "shorts.json")
@@ -262,6 +429,12 @@ class TrimServer(ThreadingHTTPServer):
         # shorts.py picks clips by number, so a kept clip with the same
         # number would be rendered (and overwritten) too.
         kept = existing.get("clips", []) if isinstance(existing, dict) else existing or []
+        # A short renamed to its title keeps that name when it's re-rendered.
+        files = self.titles()["files"]
+        for clip, _ in built:
+            renamed = files.get(str(shorts_view.number(clip)))
+            if renamed and any(k.get("file") == renamed for k in kept):
+                clip["file"] = renamed
         for clip, _ in built:
             clash = next((k.get("file") for k in kept if shorts_view.number(k) == shorts_view.number(clip)
                           and k.get("file") != clip["file"]), None)
@@ -269,8 +442,6 @@ class TrimServer(ThreadingHTTPServer):
                 return 400, {"error": f"{clip['file']} has the same number as {clash} in shorts/shorts.json. "
                                       "Ask Claude to renumber the shortlist."}
         with self.lock:
-            if self.status["state"] == "running":
-                return 409, {"error": "the final render is still running"}
             if self.shorts_status["state"] == "running":
                 return 409, {"error": "shorts are already rendering"}
             clips = [c for c, _ in built]
@@ -382,7 +553,7 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/proxy.mp4":
             self.send_ranged(os.path.join(s.cache, "proxy.mp4"))
         elif self.path == "/api/state":
-            out = render.final_path(s.raw)
+            out = s.final_output()
             self.send_json(200, {**s.analysis, "peaks": s.peaks["peaks"], "per_s": s.peaks["per_s"],
                                  "name": os.path.basename(s.raw), "profile": s.profile["name"],
                                  "render": s.render_status(),
@@ -393,6 +564,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(200, s.render_status())
         elif self.path == "/api/streams":
             self.send_json(200, s.streams())
+        elif self.path == "/api/titles":
+            self.send_json(200, s.titles())
         else:
             self.send_json(404, {"error": "not found"})
 
@@ -442,6 +615,13 @@ class Handler(BaseHTTPRequestHandler):
                 n = shorts_view.number(clip)
                 mtime = os.path.getmtime(s.preview_path(n))
                 self.send_json(200, {"url": f"/shorts/preview/{n}.jpg?v={mtime}"})
+        elif self.path in ("/api/titles", "/api/title"):
+            try:
+                body = json.loads(raw_body)
+            except ValueError:
+                self.send_json(400, {"error": "bad request"})
+                return
+            self.send_json(*(s.post_titles(body) if self.path == "/api/titles" else s.pick_title(body)))
         elif self.path == "/api/reveal":
             try:
                 body = json.loads(raw_body)

@@ -32,7 +32,7 @@ stream-trim also writes its profile's setup as top-level fields: "profile"
 before the layouts.json next to shorts.json). Without them render-short.sh
 uses its defaults.
 """
-import json, os, subprocess, sys
+import json, os, re, subprocess, sys
 
 RENDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "render-short.sh")
 
@@ -79,8 +79,9 @@ if manifest.get("caption_font"):
     SETUP += ["--font-name", manifest["caption_font"]["name"], "--font-file", manifest["caption_font"]["file"]]
 
 def number(clip):
-    head = clip["file"].split("-", 1)[0]
-    return int(head) if head.isdigit() else None
+    # "01-slug.mp4", or "01 - Title.mp4" once stream-trim names it after its title.
+    m = re.match(r"(\d+)\s*-", clip["file"])
+    return int(m.group(1)) if m else None
 
 clips = manifest["clips"]
 if picks == ["all"]:

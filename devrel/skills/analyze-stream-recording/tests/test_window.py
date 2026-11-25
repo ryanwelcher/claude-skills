@@ -51,6 +51,21 @@ class WindowTest(unittest.TestCase):
         self.assertEqual(out[1:], ["SUSPECT: 00:00:49-00:02:50 no speech",
                                    'SUSPECT: 00:02:50-00:04:00 repeated "thanks for watching"'])
 
+    def test_print_dir(self):
+        """TRANSCRIBE_PRINT_DIR prints the cache folder a run would use, so
+        stream-trim can show progress, and creates nothing."""
+        with tempfile.TemporaryDirectory() as tmp:
+            media = os.path.join(tmp, "rec.mp4")
+            with open(media, "w") as f:
+                f.write("not media")
+            env = {**os.environ, "STREAM_TRANSCRIPT_CACHE": os.path.join(tmp, "cache"), "TRANSCRIBE_WAIT": "30"}
+            r = run("transcribe-file.sh", media, "60", env={**env, "TRANSCRIBE_PRINT_DIR": "1"})
+            self.assertEqual(r.returncode, 0, r.stderr)
+            printed = re.fullmatch(r"DIR: (.+)\n", r.stdout).group(1)
+            self.assertFalse(os.path.exists(os.path.join(tmp, "cache")))
+            first = run("transcribe-file.sh", media, env=env)
+            self.assertEqual(re.search(r"\(cache: (.+?)\)", first.stderr).group(1), printed)
+
     def test_transcribe_file_window(self):
         """transcribe-file.sh passes TRANSCRIPT_WINDOW on, and keeps the
         windowed files apart from the whole-recording ones."""

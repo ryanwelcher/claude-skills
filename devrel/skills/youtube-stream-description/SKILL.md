@@ -16,7 +16,7 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
 
 ## Called from stream-trim
 
-`stream-trim` passes `<raw path> --window <start> <end> --out <folder>`. That's the local-recording scenario, post-stream: pass `<raw path> --window <start> <end>` to `analyze-stream-recording` in step 5 so the chapters match the trimmed final, and write the file to `<folder>` in step 9 instead of the recording's folder. Still ask step 1's questions it doesn't answer (title, links, Stream Together).
+`stream-trim` passes `<raw path> --window <start> <end> --out <folder> --titles-url <url>`. That's the local-recording scenario, post-stream: pass `<raw path> --window <start> <end>` to `analyze-stream-recording` in step 5 so the chapters match the trimmed final, and write the file to `<folder>` in step 9 instead of the recording's folder. Ryan picks the title on stream-trim's page (step 8), so don't ask him for one in step 1. Still ask about links and Stream Together.
 
 ## Workflow
 
@@ -64,6 +64,7 @@ Draft YouTube descriptions for the @ryanwelchercodes channel that match Ryan's e
    - Hashtag line per the rules in TEMPLATE.md
 
 8. **Score the title with viDIQ.** Skip this step, and say so, if the `mcp__vidiq__vidiq_score_title` tool isn't available. Otherwise draft 4 or 5 titles from the recap and the recent titles from step 3 (include Ryan's own title if he gave one) and score each with `type: "long"`. Each call costs 5 viDIQ credits, so run at most 3 rounds: after each round, rework the weakest ones using what scored well. Stop once one reaches 80. Show Ryan every title with its score and let him pick, and tell him when none reached 80. If the voice pass in step 10 changes the picked title, score it once more.
+   With `--titles-url`, he picks on the page instead: write `{"final": [{"title": "...", "score": 82}, ...]}` (every title from every round, best first; `score` is `null` without viDIQ) to a file in the scratchpad and post it with `curl -s -X POST <url>/api/titles -H 'Content-Type: application/json' --data @<file>`. Tell him the options are under the finished render, with a box for his own, and that picking one renames the final to it. Wait with Monitor and an until-loop (check every 30 s) on `curl -s <url>/api/titles` until `picked.final` is set, and use that title word for word. The voice pass in step 10 must not change it, because the final is named after it.
 
 9. **Save the title and description to a file.** For a local recording, write `youtube-description.txt` in the recording's folder. Don't ask first, and overwrite the file if it already exists. For the other scenarios, write it to the session scratchpad. Use this format:
    ```

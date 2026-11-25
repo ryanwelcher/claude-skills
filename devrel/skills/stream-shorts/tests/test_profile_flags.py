@@ -142,6 +142,18 @@ class ProfileFlagsTest(unittest.TestCase):
         with open(seen) as f:
             self.assertEqual(f.read(), "laptop")
 
+    def test_titled_file_picked_by_number(self):
+        """A short renamed to its title (stream-trim's title picker) is still clip 1."""
+        d = os.path.join(self.tmp.name, "rec3")
+        os.makedirs(d, exist_ok=True)
+        manifest = os.path.join(d, "shorts.json")
+        with open(manifest, "w") as f:
+            json.dump({"recording": self.six, "words": self.words,
+                       "clips": [{"file": "01 - My Title.mp4", "start": 1, "end": 3}]}, f)
+        r = subprocess.run([sys.executable, SHORTS, "--dry-run", manifest, "1"], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("01 - My Title.mp4", r.stdout.replace("\\", ""))
+
     def test_mix_audio_with_profile_flags(self):
         r = self.dry(self.two, "--mic-track", "1", "--mic-lag-frames", "0", "--transcript-lag-frames", "0",
                      "--mix-audio", "/x/short_audio.py")
