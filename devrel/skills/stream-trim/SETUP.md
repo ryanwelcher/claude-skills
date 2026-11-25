@@ -47,7 +47,7 @@ With your own profile you get the chapter list for the full video, and plain tit
 
 ## When Claude needs you
 
-While stream-trim runs, the page shows a yellow banner whenever Claude is waiting on you in the terminal: a command to approve, a question, or a finished turn. The browser tab's title starts with "●" too. It clears as soon as you answer. With the devrel plugin installed, nothing to set up: the plugin's hooks do it, and they only light up a page started by the same Claude session.
+While stream-trim runs, the page shows a yellow banner whenever Claude is waiting on you in the terminal: a command to approve, a question, or a reply that ends by asking you something. The browser tab's title starts with "●" too. It clears as soon as you answer. With the devrel plugin installed, nothing to set up: the plugin's hooks do it, and they only light up a page started by the same Claude session.
 
 To get fewer approval prompts in the first place, add allow rules for the skill's own commands to `~/.claude/settings.json`, under `permissions.allow` (change the path if your skills live somewhere else):
 

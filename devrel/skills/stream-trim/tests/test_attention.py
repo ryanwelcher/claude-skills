@@ -114,9 +114,34 @@ class AttentionTest(unittest.TestCase):
         self.assertIn("PreToolUse set sess-a sent=1", lines[0])
         self.assertIn("PostToolUse clear sess-b sent=0", lines[1])
 
+    def transcript(self, last_text):
+        path = os.path.join(self.tmp.name, "t.jsonl")
+        with open(path, "w") as f:
+            for text in ("Earlier question?", last_text):
+                f.write(json.dumps({"type": "assistant", "message": {"content": [
+                    {"type": "tool_use", "name": "Bash", "input": {}}, {"type": "text", "text": text}]}}) + "\n")
+                f.write(json.dumps({"type": "system", "subtype": "turn_duration"}) + "\n")
+        return path
+
+    def test_stop_with_a_question(self):
+        """A turn that ends by asking Ryan something sets the banner; one that doesn't, doesn't."""
+        attention.register(self.port, os.getpid(), self.raw, session="s")
+        t = self.transcript("Rendering now. I'll tell you when it's done.")
+        self.cli("stop", stdin=json.dumps({"session_id": "s", "hook_event_name": "Stop", "transcript_path": t}))
+        self.assertFalse(self.state()["waiting"])
+        t = self.transcript("Which fixes should I apply: both, 1, 2, or neither?")
+        self.cli("stop", stdin=json.dumps({"session_id": "s", "hook_event_name": "Stop", "transcript_path": t}))
+        s = self.state()
+        self.assertEqual((s["waiting"], s["reason"]), (True, "Claude asked you something in the terminal"))
+        # last_assistant_message, when Claude Code sends it, wins over the transcript.
+        self.cli("clear", stdin='{"session_id": "s"}')
+        self.cli("stop", stdin=json.dumps({"session_id": "s", "last_assistant_message": "Done.", "transcript_path": t}))
+        self.assertFalse(self.state()["waiting"])
+
     def test_never_fails(self):
         """A hook must never get in Claude's way: no servers, junk input, a dead port."""
-        for args, stdin in ((["set", "x"], ""), (["notify"], "not json"), (["clear"], ""), ([], ""), (["bogus"], "")):
+        for args, stdin in ((["set", "x"], ""), (["notify"], "not json"), (["clear"], ""), ([], ""), (["bogus"], ""),
+                            (["stop"], '{"transcript_path": "/nowhere.jsonl"}')):
             r = self.cli(*args, stdin=stdin)
             self.assertEqual((r.returncode, r.stdout), (0, ""), args)
         attention.register(9, os.getpid(), "/x.mp4")  # alive pid, nothing listening

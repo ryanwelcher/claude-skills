@@ -426,3 +426,10 @@ Follow-ups (2026-11-25, Ryan's picks):
   `CLAUDE_CODE_SESSION_ID` from the session that started it, and
   `attention.py` only posts to pages whose session matches the hook's
   `session_id`.
+- A turn that ends with a question in plain text (the voice-pass "which
+  fixes?") set no banner: the idle notification never fires while a
+  background task (the page server) runs. A Stop hook now runs
+  `attention.py stop`, which sets "Claude asked you something" when
+  Claude's last message ends with a question mark (from
+  `last_assistant_message`, else the transcript's tail). A turn that ends
+  without a question, like waiting on a render, sets nothing.

@@ -9,6 +9,10 @@ only reaches pages from its own session (its "session_id" on stdin):
   attention.py set "<reason>"   Claude is waiting: show a banner with the reason
   attention.py notify           a Notification hook: the reason comes from its
                                 notification_type on stdin
+  attention.py stop             a Stop hook: Claude finished its turn. If its last
+                                message ends with a question, show a banner (the
+                                idle notification never fires while stream-trim's
+                                page server runs in the background)
   attention.py clear            Ryan answered (a tool ran, or he typed)
 
 Every running page server registers itself in the servers folder, so this
@@ -80,6 +84,31 @@ def live_servers():
     return out
 
 
+def last_text(event):
+    """The text Claude ended its turn with: last_assistant_message when Claude
+    Code sends it, else the last assistant text in the transcript's tail."""
+    if isinstance(event.get("last_assistant_message"), str):
+        return event["last_assistant_message"]
+    path = event.get("transcript_path")
+    try:
+        with open(path, "rb") as f:
+            f.seek(max(0, os.path.getsize(path) - 262144))
+            tail = f.read().decode(errors="replace").splitlines()
+    except (OSError, TypeError):
+        return ""
+    for line in reversed(tail):
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        content = (entry.get("message") or {}).get("content") if entry.get("type") == "assistant" else None
+        if isinstance(content, list):
+            texts = [b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text"]
+            if texts:
+                return texts[-1]
+    return ""
+
+
 def log(line):
     """hooks.log in the servers folder: one line per call, trimmed to the last 500."""
     path = os.path.join(servers_dir(), "hooks.log")
@@ -134,6 +163,9 @@ def main(argv):
         reason = NOTIFY.get(event.get("notification_type"))
         if reason:
             sent = send({"waiting": True, "reason": reason}, session)
+    elif cmd == "stop":
+        if last_text(event).rstrip().rstrip("*_`").rstrip().endswith("?"):
+            sent = send({"waiting": True, "reason": "Claude asked you something in the terminal"}, session)
     if sent is not None:
         import time
         log("%s %s %s %s sent=%d" % (time.strftime("%H:%M:%S"), event.get("hook_event_name") or "-", cmd,
