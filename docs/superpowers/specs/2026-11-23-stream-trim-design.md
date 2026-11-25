@@ -368,3 +368,10 @@ Follow-ups (2026-11-25, Ryan's picks):
   with viDIQ (at most 3 rounds of 4 or 5 titles, 5 credits a call, stop
   at 80). Other profiles get only the chapter list, since the template
   and voice cards are Ryan's.
+- Streams tab and Show in Finder (Ryan asked whether to keep a record of
+  past streams, and whether that meant an app; he kept it a skill). The
+  list is built from the caches (`streams.py`), so there is no separate
+  record to keep in step. `/api/reveal` takes a stream id and an item
+  (raw, final, shorts, description) and resolves the path itself, so the
+  page never hands the server a path. Opening another stream still goes
+  through Claude, since it may need prepare and a transcript.

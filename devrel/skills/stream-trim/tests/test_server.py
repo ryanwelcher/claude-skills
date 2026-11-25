@@ -389,6 +389,25 @@ class ServerTest(unittest.TestCase):
             json.dump({"layouts": {"cam": band2}}, f)
         self.assertEqual(srv.layouts()[0]["cam"]["x"], 500)
 
+    def test_streams_list(self):
+        s = json.loads(self.get("/api/streams")[2])
+        self.assertEqual(s["current"], "cache")
+        self.assertIn("cache", [x["id"] for x in s["streams"]])
+
+    def test_reveal(self):
+        calls = []
+        self.srv.open_cmd = calls.append
+        # The current stream's raw (the cache's analysis names "x", which doesn't exist).
+        with open(os.path.join(self.cache, "analysis.json"), "w") as f:
+            json.dump({**ANALYSIS, "raw": self.raw}, f)
+        self.assertEqual(self.post("/api/reveal", {"target": "raw"})[0], 200)
+        self.assertEqual(calls, [["open", "-R", self.raw]])
+        self.assertEqual(self.post("/api/reveal", {"stream": "cache", "target": "final"})[0], 404)
+        self.assertEqual(self.post("/api/reveal", {"stream": "nope", "target": "raw"})[0], 404)
+        self.assertEqual(self.post("/api/reveal", {"target": "/etc/passwd"})[0], 400)
+        self.assertEqual(self.post("/api/reveal", ["raw"])[0], 400)
+        self.assertEqual(len(calls), 1)
+
     def test_cache_from_other_profile(self):
         p = profiles.load("ryan-obs")
         for over in ({"profile": "laptop"}, {"profile": "ryan-obs", "profile_key": "0" * 16}):

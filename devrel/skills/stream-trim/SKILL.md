@@ -112,6 +112,7 @@ For someone with their own OBS setup, when `profiles.py check` says `NO_DEFAULT`
 
 ## Notes
 
+- The page's Streams tab lists every recording with a cache, newest first: whether the raw is local, the final, shorts and description, and the cache size, with Show in Finder buttons and a Copy command button for `/stream-trim` on that recording. It's built from the caches, so deleting a cache folder takes its stream off the list. Show in Finder is also next to Render once the final exists, and in the Shorts tab.
 - The cache (preview, waveform, analysis) is in `~/Library/Caches/stream-trim/`, never next to the recording. That keeps a 1 GB preview out of Google Drive. Deleting the folder is safe.
 - Default In is 0.5 s before the first word, but only when the mic is silent for at least 60 s from the start (Starting Soon). Otherwise In is 0. Default Out is 1 s after the last word.
 - File ownership for shorts: Claude writes `shorts/candidates.json`, and only that. The page writes `shorts/shorts.json` with Ryan's picks, which keeps `shorts.py ... all` meaning "what Ryan picked". To change a clip after a render, edit `shorts.json` and re-render as in `stream-shorts`.

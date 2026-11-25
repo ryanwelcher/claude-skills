@@ -45,6 +45,12 @@
   .card .state { margin-top: 8px; }
   .card .state progress { width: 200px; }
   #shorts-bar progress { width: 240px; margin: 0; }
+  #streams-table { width: 100%; border-collapse: collapse; }
+  #streams-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: 13px; padding: 6px 10px; }
+  #streams-table td { background: var(--panel); padding: 10px; vertical-align: top; border-top: 4px solid var(--bg); }
+  #streams-table tr.current td { box-shadow: inset 0 2px 0 var(--accent); }
+  #streams-table td button { padding: 4px 10px; font-size: 12px; background: #34314a; margin: 0 4px 4px 0; }
+  #streams-table .file { color: var(--muted); font-size: 12px; }
   #shorts-bar { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; display: flex; gap: 16px; align-items: center; }
 </style>
 </head>
@@ -52,7 +58,7 @@
 <main>
   <header>
     <h1><span id="name">Loading...</span> <span id="profile" class="note"></span></h1>
-    <div class="tabs"><button id="tab-trim" class="on">Trim</button><button id="tab-shorts" disabled>Shorts</button></div>
+    <div class="tabs"><button id="tab-trim" class="on">Trim</button><button id="tab-shorts" disabled>Shorts</button><button id="tab-streams">Streams</button></div>
   </header>
   <section id="trim-view">
   <video id="video" src="/proxy.mp4" preload="auto"></video>
@@ -65,6 +71,7 @@
       <span><small>Playhead</small><b id="now-t">-</b></span>
     </div>
     <div>
+      <button id="reveal-final" class="secondary" hidden>Show in Finder</button>
       <button id="stop" class="secondary" hidden>Stop</button>
       <button id="render">Render</button>
     </div>
@@ -79,7 +86,11 @@
   <section id="shorts-view" hidden>
     <div id="shorts-note" class="note"></div>
     <div id="cards"></div>
-    <div id="shorts-bar"><button id="render-shorts" disabled>Render selected</button><progress id="shorts-progress" max="100" hidden></progress><span id="shorts-status" class="note"></span></div>
+    <div id="shorts-bar"><button id="render-shorts" disabled>Render selected</button><progress id="shorts-progress" max="100" hidden></progress><span id="shorts-status" class="note"></span><button id="reveal-shorts" class="secondary">Open shorts folder</button></div>
+  </section>
+  <section id="streams-view" hidden>
+    <div id="streams-note" class="note">Every recording stream-trim has worked on, newest first. To work on another one, copy its command into Claude.</div>
+    <table id="streams-table"><thead><tr><th>Stream</th><th>Recording</th><th>Final</th><th>Shorts</th><th>Description</th><th>Cache</th><th>Last used</th><th>Show in Finder</th></tr></thead><tbody></tbody></table>
   </section>
 </main>
 <script>
@@ -200,6 +211,7 @@ function flash(text) { $('status').innerHTML = `<span class="note">${text}</span
 function showRender(r) {
   const busy = r.state === 'running';
   $('render').disabled = busy || S.exists || r.state === 'done';
+  $('reveal-final').hidden = !(S.exists || r.state === 'done');
   $('stop').hidden = !busy;
   if (busy) {
     const label = r.phase === 'measuring' ? 'Measuring loudness' : 'Encoding 4K';
@@ -257,10 +269,15 @@ function showView(name) {
   view = name;
   $('trim-view').hidden = name !== 'trim';
   $('shorts-view').hidden = name !== 'shorts';
+  $('streams-view').hidden = name !== 'streams';
   $('tab-trim').classList.toggle('on', name === 'trim');
   $('tab-shorts').classList.toggle('on', name === 'shorts');
-  if (name === 'shorts') { video.pause(); loadShorts(); }
+  $('tab-streams').classList.toggle('on', name === 'streams');
+  if (name !== 'trim') video.pause();
+  if (name === 'shorts') loadShorts();
+  if (name === 'streams') loadStreams();
 }
+$('tab-streams').addEventListener('click', (e) => { e.target.blur(); showView('streams'); });
 $('tab-trim').addEventListener('click', (e) => { e.target.blur(); showView('trim'); });
 $('tab-shorts').addEventListener('click', (e) => { e.target.blur(); showView('shorts'); });
 
@@ -500,6 +517,56 @@ $('render-shorts').addEventListener('click', async () => {
   if (code !== 202) { $('shorts-status').textContent = r.error; countPicks(); return; }
   loadShorts();
 });
+
+// ---- Streams and Show in Finder ----
+
+// The server finds the path from the stream and the item; the page never sends one.
+async function reveal(stream, target, where) {
+  const [code, r] = await post('/api/reveal', stream ? { stream, target } : { target });
+  if (code !== 200 && where) where.textContent = r.error;
+}
+$('reveal-final').addEventListener('click', (e) => { e.currentTarget.blur(); reveal(null, 'final', $('status')); });
+$('reveal-shorts').addEventListener('click', (e) => { e.currentTarget.blur(); reveal(null, 'shorts', $('shorts-status')); });
+
+function size(bytes) { return bytes >= 1e9 ? (bytes / 1e9).toFixed(1) + ' GB' : Math.round(bytes / 1e6) + ' MB'; }
+const RAW_STATE = { local: 'On this Mac', 'cloud-only': 'Cloud only (download before working on it)', missing: 'Not found' };
+
+async function loadStreams() {
+  let list;
+  try { list = await (await fetch('/api/streams')).json(); }
+  catch (err) { $('streams-note').textContent = 'Lost the server: ' + err.message; return; }
+  const body = $('streams-table').querySelector('tbody');
+  body.innerHTML = '';
+  for (const st of list.streams) {
+    const tr = document.createElement('tr');
+    if (st.id === list.current) tr.className = 'current';
+    const folder = st.folder.split('/').pop();
+    const sh = st.shorts ? `${st.shorts.rendered} of ${st.shorts.picked} rendered` : '-';
+    const when = new Date(st.last_used * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    tr.innerHTML = `
+      <td><b>${escapeHtml(folder)}</b>${st.id === list.current ? ' <span class="note">(open now)</span>' : ''}<div class="file">${escapeHtml(st.name)}</div><div class="file">${escapeHtml(st.profile)} profile</div></td>
+      <td>${escapeHtml(RAW_STATE[st.state] || st.state)}</td>
+      <td>${st.final ? 'Done' : '-'}</td>
+      <td>${sh}</td>
+      <td>${st.description ? 'Done' : '-'}</td>
+      <td>${size(st.cache_bytes)}</td>
+      <td>${escapeHtml(when)}</td>
+      <td>
+        <button data-t="raw" ${st.state === 'missing' ? 'disabled' : ''}>Recording</button><button data-t="final" ${st.final ? '' : 'disabled'}>Final</button><button data-t="shorts" ${st.shorts ? '' : 'disabled'}>Shorts</button><button data-t="description" ${st.description ? '' : 'disabled'}>Description</button><br>
+        <button class="copy" ${st.state === 'missing' ? 'disabled' : ''}>Copy command</button>
+        <div class="note err"></div>
+      </td>`;
+    const err = tr.querySelector('.err');
+    tr.querySelectorAll('button[data-t]').forEach((b) => b.addEventListener('click', () => { b.blur(); reveal(st.id, b.dataset.t, err); }));
+    tr.querySelector('.copy').addEventListener('click', async (e) => {
+      e.currentTarget.blur();
+      try { await navigator.clipboard.writeText(`/stream-trim "${st.raw}"`); err.textContent = 'Copied. Paste it into Claude.'; }
+      catch (x) { err.textContent = st.raw; }
+    });
+    body.appendChild(tr);
+  }
+  if (!list.streams.length) $('streams-note').textContent = 'No streams yet.';
+}
 </script>
 </body>
 </html>

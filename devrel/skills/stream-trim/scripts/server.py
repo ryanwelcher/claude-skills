@@ -17,6 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import audio_chain
 import prepare
 import profiles
+import streams
 import render
 import shorts_view
 
@@ -56,9 +57,34 @@ class TrimServer(ThreadingHTTPServer):
         self.lock = threading.Lock()
         self.work_lock = threading.Lock()  # one preview/captions run at a time
         self.shorts_status = {"state": "idle", "clips": {}}
+        # Show in Finder. Tests swap it for a list's append.
+        self.open_cmd = lambda args: subprocess.run(args, check=False)
         self.stop_event = threading.Event()
         self.status = {"state": "idle", "phase": None, "percent": 0, "output": None, "error": None}
         super().__init__(("127.0.0.1", port), Handler)
+
+    def streams(self):
+        """Every stream with a cache next to this one's, and this one's id."""
+        return {"current": os.path.basename(self.cache),
+                "streams": streams.list_streams(os.path.dirname(self.cache))}
+
+    def reveal(self, body):
+        """Show a stream's raw, final, shorts folder or description in Finder.
+        The page names the stream and the item, never a path."""
+        if not isinstance(body, dict):
+            return 400, {"error": "expected a JSON object"}
+        want = body.get("stream") or os.path.basename(self.cache)
+        target = body.get("target")
+        if target not in streams.TARGETS:
+            return 400, {"error": f"target must be one of {', '.join(streams.TARGETS)}"}
+        stream = next((x for x in self.streams()["streams"] if x["id"] == want), None)
+        if stream is None:
+            return 404, {"error": "no such stream"}
+        cmd = streams.reveal_target(stream, target)
+        if cmd is None:
+            return 404, {"error": f"this stream has no {target} yet"}
+        self.open_cmd(cmd)
+        return 200, {"path": cmd[-1]}
 
     def render_status(self):
         with self.lock:
@@ -365,6 +391,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(200, s.shorts_state())
         elif self.path == "/api/render":
             self.send_json(200, s.render_status())
+        elif self.path == "/api/streams":
+            self.send_json(200, s.streams())
         else:
             self.send_json(404, {"error": "not found"})
 
@@ -414,6 +442,13 @@ class Handler(BaseHTTPRequestHandler):
                 n = shorts_view.number(clip)
                 mtime = os.path.getmtime(s.preview_path(n))
                 self.send_json(200, {"url": f"/shorts/preview/{n}.jpg?v={mtime}"})
+        elif self.path == "/api/reveal":
+            try:
+                body = json.loads(raw_body)
+            except ValueError:
+                self.send_json(400, {"error": "bad request"})
+                return
+            self.send_json(*s.reveal(body))
         elif self.path == "/api/stop":
             if s.render_status()["state"] != "running":
                 self.send_json(409, {"error": "no render is running"})
