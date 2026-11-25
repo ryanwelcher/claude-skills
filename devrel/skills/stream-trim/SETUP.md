@@ -1,5 +1,7 @@
 # stream-trim: what you need
 
+![What stream-trim needs at each step: required, optional, and Ryan-only tools](setup.png)
+
 stream-trim turns a raw OBS recording into a finished stream without Premiere. You run `/stream-trim <recording>` in Claude Code, and it does this:
 
 1. Checks your tools and your recording setup (a **profile**).
