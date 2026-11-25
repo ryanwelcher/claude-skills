@@ -189,11 +189,20 @@ def samples(raw, outdir, at=None):
     return paths
 
 
+def _flag(argv, flag):
+    if flag not in argv:
+        return None
+    i = argv.index(flag)
+    if i + 1 >= len(argv):
+        raise ProfileError(f"{flag} needs a value")
+    return argv[i + 1]
+
+
 def main(argv):
     import audio_chain
 
     if len(argv) >= 2 and argv[0] == "check":
-        name = argv[argv.index("--profile") + 1] if "--profile" in argv else None
+        name = _flag(argv, "--profile")
         try:
             p = load(name)
         except NoDefault as e:
@@ -202,7 +211,11 @@ def main(argv):
         check_recording(p, audio_chain.probe(argv[1], video=False)[0])
         print(f"PROFILE {p['name']}")
     elif len(argv) >= 3 and argv[0] == "samples":
-        at = float(argv[argv.index("--at") + 1]) if "--at" in argv else None
+        at = _flag(argv, "--at")
+        try:
+            at = None if at is None else float(at)
+        except ValueError:
+            raise ProfileError(f"--at needs a number of seconds, not {at!r}")
         for path in samples(argv[1], argv[2], at):
             print(path)
     elif len(argv) == 2 and argv[0] == "set-default":

@@ -39,6 +39,14 @@ class TrimServer(ThreadingHTTPServer):
         self.cache = prepare.cache_dir(raw)
         with open(os.path.join(self.cache, "analysis.json")) as f:
             self.analysis = json.load(f)
+        # Same rule as prepare.py's cache reuse: a cache from before profiles is ryan-obs.
+        cached = self.analysis.get("profile", "ryan-obs")
+        key = self.analysis.get("profile_key", profiles.cache_key(profile))
+        if cached != profile["name"] or key != profiles.cache_key(profile):
+            raise profiles.ProfileError(
+                f"the prepared cache was made with profile {cached}"
+                f"{'' if cached != profile['name'] else ' before it was edited'}; "
+                f"run prepare.py --profile {profile['name']} first")
         with open(os.path.join(self.cache, "peaks.json")) as f:
             self.peaks = json.load(f)
         self.work = os.path.join(self.cache, "shorts-work")
@@ -481,6 +489,8 @@ if __name__ == "__main__":
         sys.exit(f"ERROR: {e}")
     try:
         srv = make_server(args[0], profile)
+    except profiles.ProfileError as e:
+        sys.exit(f"ERROR: {e}")
     except FileNotFoundError as e:
         if "stream-shorts" in str(e):
             sys.exit(f"ERROR: {e}")

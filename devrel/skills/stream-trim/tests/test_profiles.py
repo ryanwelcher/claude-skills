@@ -203,6 +203,16 @@ class ProfilesTest(unittest.TestCase):
         r = subprocess.run([sys.executable, CLI, "set-default", "nope"], capture_output=True, text=True)
         self.assertEqual(r.returncode, 1)
 
+    def test_cli_bad_args(self):
+        raw = os.path.join(self.tmp.name, "two.mp4")
+        make_mp4(raw, 2, 2)
+        for args in (["check", raw, "--profile"], ["samples", raw, self.tmp.name, "--at"],
+                     ["samples", raw, self.tmp.name, "--at", "abc"]):
+            r = subprocess.run([sys.executable, CLI, *args], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 1, args)
+            self.assertNotIn("Traceback", r.stderr, args)
+            self.assertIn("ERROR:", r.stderr, args)
+
     def test_cli_samples(self):
         raw = os.path.join(self.tmp.name, "two.mp4")
         make_mp4(raw, 2, 12)

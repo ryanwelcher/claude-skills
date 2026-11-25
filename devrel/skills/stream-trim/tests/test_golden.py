@@ -132,7 +132,10 @@ def capture():
 
 class GoldenTest(unittest.TestCase):
     def test_ryan_obs_commands_unchanged(self):
-        got = capture()
+        # Only the built-in ryan-obs: a personal one in ~/.config would win otherwise.
+        with tempfile.TemporaryDirectory() as config, \
+                mock.patch.dict(os.environ, {"STREAM_TRIM_CONFIG": config}):
+            got = capture()
         if os.environ.get("GOLDEN_WRITE"):
             os.makedirs(os.path.dirname(GOLDEN), exist_ok=True)
             with open(GOLDEN, "w") as f:

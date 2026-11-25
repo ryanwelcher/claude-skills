@@ -26,7 +26,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
    ```bash
    python3 ${CLAUDE_SKILL_DIR}/scripts/profiles.py check "<raw>"
    ```
-   Add `--profile <name>` if one was named. `PROFILE <name>` means go on, and pass `--profile <name>` to `prepare.py` and `server.py` below. On `ERROR: NO_DEFAULT` there's no profile on this machine: ask whether to set one up (see **First-run setup**) or which existing one to use. On a track-count mismatch, report it as-is and ask which profile fits this recording, or offer first-run setup. Don't guess a profile.
+   Add `--profile <name>` if one was named. `PROFILE <name>` means go on, and pass `--profile <name>` to `prepare.py` and `server.py` below. On `ERROR: NO_DEFAULT` there's no profile on this machine: ask whether to set one up (see **First-run setup**) or which existing one to use. On a track-count mismatch, report it as-is and ask which profile fits this recording, or offer first-run setup. On any other `ERROR:` line (a profile file that isn't valid JSON, a missing field, a default that names a deleted profile), report it as-is and stop. Don't guess a profile.
 
 3. **Prepare** with `run_in_background`, quoting the path:
    ```bash
@@ -38,7 +38,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
    ```bash
    python3 -u ${CLAUDE_SKILL_DIR}/scripts/server.py "<raw>" --profile <name>
    ```
-   Read its output file for the `READY http://127.0.0.1:<port>/` line, then `open` that URL.
+   Read its output file for the `READY http://127.0.0.1:<port>/` line, then `open` that URL. If it prints an `ERROR:` line instead, report it as-is. When it says the cache was made with another profile, rerun step 3 with this profile, then this step.
 
 5. **Tell Ryan** what prepare printed, as one short list:
    - In, Out and length, as h:mm:ss
@@ -73,7 +73,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
 8. **When the shorts are rendered**, write the titles and descriptions. Wait with Monitor and an until-loop (check every 30 s) on `/api/shorts` until `render.state` is `done` or `error`. Then:
    - Read the picks from `shorts/shorts.json` and get each one's caption text with `shorts.py --captions` on that file.
    - Follow `stream-shorts` steps 7, 8 and 9 for the clips that rendered (descriptions file, voice pass, em-dash and AI-ism scan, report). Report each failed clip's error from `/api/shorts` as-is.
-   - Run the `sounds-like-me` voice pass only when the profile's `voice_pass` is `sounds-like-me`. With `null`, write the titles and descriptions plain, in the person's own words from the clip. The separate em-dash and AI-ism scan always runs.
+   - Run the `sounds-like-me` voice pass only when the profile's `voice_pass` is `sounds-like-me`. Read it from the profile file: `~/.config/stream-trim/profiles/<name>.json` if it exists, otherwise `${CLAUDE_SKILL_DIR}/profiles/<name>.json`. With `null`, write the titles and descriptions plain, in the person's own words from the clip. The separate em-dash and AI-ism scan always runs.
 
 9. **When he asks about the final render,** check it:
    ```bash
