@@ -73,6 +73,7 @@ class TrimServer(ThreadingHTTPServer):
         self.work = os.path.join(self.cache, "shorts-work")
         self.edit_path = os.path.join(self.cache, "edit.json")
         self.titles_path = os.path.join(self.cache, "titles.json")
+        self.thumbs_path = os.path.join(self.cache, "thumbs.json")
         self.dismissed_path = os.path.join(self.cache, "dismissed.json")
         self._transcript_dir = False  # not looked up yet
         # Transcript clock -> video clock (the shortlist's times are transcript times).
@@ -308,6 +309,7 @@ class TrimServer(ThreadingHTTPServer):
                 if os.path.exists(new):
                     return 409, {"error": f"{os.path.basename(new)} already exists"}
                 os.rename(old, new)
+                self.rename_thumbs("final" if target == "final" else str(target), old, new)
             t = self.titles()
             if target == "final":
                 write_json(self.edit_path, {**edit, "output": new})
@@ -319,6 +321,149 @@ class TrimServer(ThreadingHTTPServer):
                 t["files"][str(target)] = clip["file"]
             write_json(self.titles_path, t)
         return 200, {"path": new}
+
+    # -- thumbnails --
+
+    def thumbs(self):
+        try:
+            with open(self.thumbs_path) as f:
+                t = json.load(f)
+        except (OSError, ValueError):
+            t = {}
+        return {"options": t.get("options", {}), "picked": t.get("picked", {}),
+                "requests": t.get("requests", []), "next_id": t.get("next_id", 1)}
+
+    def thumbs_public(self):
+        t = self.thumbs()
+        return {"options": t["options"], "picked": t["picked"], "requests": t["requests"]}
+
+    def post_thumbs(self, body):
+        """Claude's thumbnail options: {"final": [...], "shorts": {"<n>": [...]}},
+        each {"file": abs path to a .jpg, "kind": "plain"|"vidiq"}. Appended."""
+        def options(lst):
+            if not isinstance(lst, list):
+                raise ValueError("options must be a list")
+            out = []
+            for o in lst:
+                if not isinstance(o, dict) or not isinstance(o.get("file"), str):
+                    raise ValueError("each option needs a \"file\"")
+                if o.get("kind") not in ("plain", "vidiq"):
+                    raise ValueError("kind must be plain or vidiq")
+                f = o["file"]
+                if not os.path.isabs(f) or not f.lower().endswith(".jpg") or not os.path.isfile(f):
+                    raise ValueError(f"no such .jpg: {f}")
+                out.append({"file": f, "kind": o["kind"]})
+            return out
+
+        if not isinstance(body, dict) or not set(body) <= {"final", "shorts"}:
+            return 400, {"error": "expected {\"final\": [...], \"shorts\": {\"<n>\": [...]}}"}
+        try:
+            new = {}
+            if "final" in body:
+                new["final"] = options(body["final"])
+            shorts = body.get("shorts", {})
+            if not isinstance(shorts, dict) or not all(str(k).isdigit() for k in shorts):
+                raise ValueError("shorts must be {\"<number>\": [...]}")
+            for k, v in shorts.items():
+                new[str(int(k))] = options(v)
+        except ValueError as e:
+            return 400, {"error": str(e)}
+        with self.lock:
+            t = self.thumbs()
+            for k, opts in new.items():
+                have = t["options"].setdefault(k, [])
+                for o in opts:
+                    if all(h["file"] != o["file"] for h in have):
+                        have.append(o)
+            write_json(self.thumbs_path, t)
+        return 200, {"ok": True}
+
+    def video_for(self, target):
+        """The rendered video for "final" or a short's number, or None."""
+        if target == "final":
+            edit = self.edit()
+            out = edit and edit.get("output")
+        else:
+            out = None
+            clip = self.rendered().get(str(target))
+            if clip and clip.get("exists"):
+                out = os.path.join(self.shorts_dir, clip["file"])
+        return out if out and os.path.exists(out) else None
+
+    def thumb_action(self, body):
+        """Ryan on the page: pick an option, or queue a change or a polish for Claude."""
+        if not isinstance(body, dict):
+            return 400, {"error": "expected a JSON object"}
+        target, f = body.get("target"), body.get("file")
+        if target != "final" and (isinstance(target, bool) or not isinstance(target, int) or target < 0):
+            return 400, {"error": "target must be \"final\" or a short's number"}
+        change, polish = body.get("change"), body.get("polish", False)
+        if change is not None and (not isinstance(change, str) or not 1 <= len(change.strip()) <= 500):
+            return 400, {"error": "say what to change (up to 500 characters)"}
+        if polish not in (True, False) or (polish and change is not None):
+            return 400, {"error": "polish is true or left out, without a change"}
+        key = "final" if target == "final" else str(target)
+        with self.lock:
+            video = self.video_for(target)
+            if not video:
+                return 409, {"error": "render it first"}
+            t = self.thumbs()
+            opt = next((o for o in t["options"].get(key, []) if o["file"] == f), None)
+            if not opt or not os.path.isfile(f):
+                return 409, {"error": "that thumbnail isn't there any more"}
+            if polish and opt["kind"] != "plain":
+                return 400, {"error": "only a plain thumbnail can be polished"}
+            if change is None and not polish:
+                dest = os.path.splitext(video)[0] + ".jpg"
+                shutil.copyfile(f, dest)
+                t["picked"][key] = dest
+                write_json(self.thumbs_path, t)
+                return 200, {"path": dest}
+            rid = t["next_id"]
+            t["next_id"] = rid + 1
+            t["requests"].append({"id": rid, "target": target, "file": f,
+                                  "change": change.strip() if change else None, "polish": bool(polish)})
+            write_json(self.thumbs_path, t)
+        return 200, {"id": rid}
+
+    def thumbs_done(self, body):
+        rid = body.get("id") if isinstance(body, dict) else None
+        with self.lock:
+            t = self.thumbs()
+            left = [r for r in t["requests"] if r["id"] != rid]
+            if len(left) == len(t["requests"]):
+                return 404, {"error": "no such request"}
+            t["requests"] = left
+            write_json(self.thumbs_path, t)
+        return 200, {"ok": True}
+
+    def rename_thumbs(self, key, old_video, new_video):
+        """A title pick renamed a video: its picked .jpg and its options
+        (thumbnails/<stem>-*.jpg) follow. Call with the lock held."""
+        old_stem, new_stem = (os.path.splitext(os.path.basename(v))[0] for v in (old_video, new_video))
+        moved = {}
+        old_jpg = os.path.splitext(old_video)[0] + ".jpg"
+        if os.path.exists(old_jpg):
+            moved[old_jpg] = os.path.splitext(new_video)[0] + ".jpg"
+        t = self.thumbs()
+        # Only this video's listed options move, never another file that
+        # happens to share the prefix.
+        for o in t["options"].get(key, []):
+            d, name = os.path.split(o["file"])
+            if name.startswith(old_stem + "-") and os.path.exists(o["file"]):
+                moved[o["file"]] = os.path.join(d, new_stem + name[len(old_stem):])
+        for a, b in list(moved.items()):
+            if os.path.exists(b):
+                del moved[a]
+            else:
+                os.rename(a, b)
+        for o in t["options"].get(key, []):
+            o["file"] = moved.get(o["file"], o["file"])
+        if key in t["picked"]:
+            t["picked"][key] = moved.get(t["picked"][key], t["picked"][key])
+        for r in t["requests"]:
+            r["file"] = moved.get(r["file"], r["file"])
+        write_json(self.thumbs_path, t)
 
     def render_status(self):
         with self.lock:
@@ -424,7 +569,7 @@ class TrimServer(ThreadingHTTPServer):
             render_state = json.loads(json.dumps(self.shorts_status))
         layouts, default = self.layouts()
         return {"profile": self.profile["name"], "edit": self.edit(), "shift": self.shift,
-                "candidates": clips, "error": error, "finding": self.finding(), "titles": self.titles(),
+                "candidates": clips, "error": error, "finding": self.finding(), "titles": self.titles(), "thumbs": self.thumbs_public(),
                 "rendered": self.rendered(), "dismissed": self.dismissed(),
                 "layouts": layouts, "default_layout": default, "render": render_state}
 
@@ -659,6 +804,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(200, s.streams())
         elif self.path == "/api/titles":
             self.send_json(200, s.titles())
+        elif self.path == "/api/thumbs":
+            self.send_json(200, s.thumbs_public())
         elif self.path == "/api/attention":
             with s.lock:
                 self.send_json(200, dict(s.attention))
@@ -732,6 +879,14 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(400, {"error": "bad request"})
                 return
             self.send_json(*(s.post_titles(body) if self.path == "/api/titles" else s.pick_title(body)))
+        elif self.path in ("/api/thumbs", "/api/thumb", "/api/thumbs/done"):
+            try:
+                body = json.loads(raw_body)
+            except ValueError:
+                self.send_json(400, {"error": "bad request"})
+                return
+            fn = {"/api/thumbs": s.post_thumbs, "/api/thumb": s.thumb_action, "/api/thumbs/done": s.thumbs_done}
+            self.send_json(*fn[self.path](body))
         elif self.path == "/api/reveal":
             try:
                 body = json.loads(raw_body)

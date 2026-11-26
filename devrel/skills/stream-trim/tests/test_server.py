@@ -736,6 +736,91 @@ class ServerTest(unittest.TestCase):
         with open(os.path.join(self.shorts, "shorts.json")) as f:
             self.assertEqual([c["file"] for c in json.load(f)["clips"]], ["01 - My Title?.mp4"])
 
+    # -- thumbnails --
+
+    def write_option(self, name, data=b"JPEG"):
+        d = os.path.join(self.tmp.name, "renders", "thumbnails")
+        os.makedirs(d, exist_ok=True)
+        path = os.path.join(d, name)
+        with open(path, "wb") as f:
+            f.write(data)
+        return path
+
+    def thumbs(self):
+        return json.loads(self.get("/api/thumbs")[2])
+
+    def test_post_thumbs_validates(self):
+        self.write_final()
+        opt = self.write_option("raw, stream-final-1-plain.jpg")
+        self.assertEqual(self.post("/api/thumbs", {"final": [{"file": opt + "x", "kind": "plain"}]})[0], 400)
+        self.assertEqual(self.post("/api/thumbs", {"final": [{"file": opt, "kind": "x"}]})[0], 400)
+        for bad in ({"final": "x"}, {"shorts": {"x": []}}, [1], {"other": []}):
+            self.assertEqual(self.post("/api/thumbs", bad)[0], 400, bad)
+        self.assertEqual(self.post("/api/thumbs", {"final": [{"file": opt, "kind": "plain"}]})[0], 200)
+        self.assertEqual(self.post("/api/thumbs", {"final": [{"file": opt, "kind": "plain"}]})[0], 200)
+        t = self.thumbs()
+        self.assertEqual(t["options"]["final"], [{"file": opt, "kind": "plain"}])
+        self.assertEqual((t["picked"], t["requests"]), ({}, []))
+        self.assertIn("thumbs", self.shorts_state())
+
+    def test_pick_thumb_copies(self):
+        self.assertEqual(self.post("/api/thumb", {"target": "final", "file": "/x.jpg"})[0], 409)
+        final = self.write_final()
+        opt = self.write_option("raw, stream-final-1-plain.jpg", b"PICKED")
+        self.post("/api/thumbs", {"final": [{"file": opt, "kind": "plain"}]})
+        code, body = self.post("/api/thumb", {"target": "final", "file": opt})
+        self.assertEqual(code, 200, body)
+        want = final[:-4] + ".jpg"
+        self.assertEqual(body["path"], want)
+        with open(want, "rb") as f:
+            self.assertEqual(f.read(), b"PICKED")
+        self.assertEqual(self.thumbs()["picked"]["final"], want)
+
+    def test_change_and_polish_queue(self):
+        self.write_final()
+        plain = self.write_option("raw, stream-final-1-plain.jpg")
+        vidiq = self.write_option("raw, stream-final-1-vidiq.jpg")
+        self.post("/api/thumbs", {"final": [{"file": plain, "kind": "plain"}, {"file": vidiq, "kind": "vidiq"}]})
+        code, a = self.post("/api/thumb", {"target": "final", "file": vidiq, "change": "bigger text"})
+        self.assertEqual(code, 200, a)
+        code, b = self.post("/api/thumb", {"target": "final", "file": plain, "polish": True})
+        self.assertEqual(code, 200, b)
+        self.assertEqual(self.post("/api/thumb", {"target": "final", "file": vidiq, "polish": True})[0], 400)
+        self.assertEqual(self.post("/api/thumb", {"target": "final", "file": vidiq, "change": ""})[0], 400)
+        reqs = self.thumbs()["requests"]
+        self.assertEqual([(r["id"], r["change"], r["polish"]) for r in reqs],
+                         [(a["id"], "bigger text", False), (b["id"], None, True)])
+        self.assertEqual(self.post("/api/thumbs/done", {"id": a["id"]})[0], 200)
+        self.assertEqual(self.post("/api/thumbs/done", {"id": a["id"]})[0], 404)
+        self.post("/api/thumbs/done", {"id": b["id"]})
+        self.assertEqual(self.thumbs()["requests"], [])
+
+    def test_change_missing_file(self):
+        self.write_final()
+        other = self.write_option("not-an-option.jpg")
+        self.assertEqual(self.post("/api/thumb", {"target": "final", "file": other, "change": "x"})[0], 409)
+        opt = self.write_option("raw, stream-final-1-plain.jpg")
+        self.post("/api/thumbs", {"final": [{"file": opt, "kind": "plain"}]})
+        os.remove(opt)
+        self.assertEqual(self.post("/api/thumb", {"target": "final", "file": opt, "change": "x"})[0], 409)
+
+    def test_title_pick_renames_thumbs(self):
+        final = self.write_final()
+        opt = self.write_option("raw, stream-final-1-plain.jpg")
+        other = self.write_option("raw, stream-final-other.jpg")
+        self.post("/api/thumbs", {"final": [{"file": opt, "kind": "plain"}]})
+        self.post("/api/thumb", {"target": "final", "file": opt})
+        self.assertEqual(self.post("/api/title", {"target": "final", "title": "New Name"})[0], 200)
+        renders = os.path.join(self.tmp.name, "renders")
+        new_opt = os.path.join(renders, "thumbnails", "New Name-1-plain.jpg")
+        self.assertTrue(os.path.exists(os.path.join(renders, "New Name.jpg")))
+        self.assertFalse(os.path.exists(final[:-4] + ".jpg"))
+        self.assertTrue(os.path.exists(new_opt))
+        self.assertTrue(os.path.exists(other))  # not this video's option pattern
+        t = self.thumbs()
+        self.assertEqual(t["options"]["final"], [{"file": new_opt, "kind": "plain"}])
+        self.assertEqual(t["picked"]["final"], os.path.join(renders, "New Name.jpg"))
+
 
 if __name__ == "__main__":
     unittest.main()
