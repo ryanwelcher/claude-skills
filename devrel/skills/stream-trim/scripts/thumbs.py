@@ -256,7 +256,7 @@ def compose(frame, face_box, lines, orientation, out, font=None, side=None, back
         else:
             _stack(canvas, font, specs, m, m * 5, W - 2 * m, round(H * 0.34), "center")
         _place_person(canvas, person, face_box, (cx, cy), H * (0.17 if style == "card" else 0.23),
-                      W * 0.5, H * (0.52 if style == "card" else 0.42))
+                      W * 0.5, H * (0.52 if style == "card" else 0.47 if len(lines) == 3 else 0.42))
 
     rgb = canvas.convert("RGB")
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
