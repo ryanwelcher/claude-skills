@@ -448,3 +448,11 @@ Follow-ups (2026-11-25, Ryan's picks):
   batches) it never appeared. The server now adds every rendered short in
   `shorts/shorts.json` whose file exists, marked `earlier`, so the section
   lists them all and they can still be opened and re-rendered.
+- The Shorts tab is now a list and an editor (picked from three mockups
+  on a Claude Design canvas). On the left is a compact row per short,
+  grouped into To render, Shortlist, Rendered and Dismissed: tick to
+  render, click to edit. On the right is one editor for the selected
+  short: preview, trim, layout, captions and fixes, title picks once it's
+  rendered, and Add to render or Remove from render. Shortlist entries
+  marked as copies of shorts already rendered are hidden behind one line.
+  The Render bar sits above the list.

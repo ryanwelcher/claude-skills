@@ -34,9 +34,13 @@ class PageTest(unittest.TestCase):
         for ref in ('id="sec-pick"', 'id="sec-list"', 'id="sec-done"', 'id="sec-gone"', "/api/shorts/dismiss",
                     "Not this one", "Re-render", "Changed since render", "/shorts/file/"):
             self.assertIn(ref, page)
-        # Rendered cards fold to one line with a thumbnail; Open shows the rest.
-        for ref in ('class="thumb"', 'class="summary', ".card.collapsed", "k.open"):
+        # List + editor: a compact row per short on the left, one editor for the selected short on the right.
+        for ref in ('id="short-list"', 'id="editor"', 'class="row', "selected", "Add to render", "Remove from render",
+                    "k.pickBox", "already rendered as"):
             self.assertIn(ref, page)
+        # The old folded cards are gone: every short edits in the one editor.
+        for ref in (".card.collapsed", "k.open"):
+            self.assertNotIn(ref, page)
         # The "Claude needs you in the terminal" banner.
         for ref in ("/api/attention", 'id="attention"', "document.title"):
             self.assertIn(ref, page)
