@@ -1,6 +1,7 @@
 """Thumbnails from real frames of the streamer.
 
-  thumbs.py frames <raw> <start> <end> <outdir>
+  thumbs.py frames <raw> <start> <end> <outdir> [--shift <s>]
+      start and end are seconds or HH:MM:SS.xx; --shift is subtracted from both.
       Grabs ~30 frames over the range, keeps the 8 with the clearest face,
       best first, and prints them as JSON: [{"path", "t", "box", "quality"}].
   thumbs.py compose <frame> <x> <y> <w> <h> <landscape|portrait> <out.jpg>
@@ -28,6 +29,14 @@ SIZES = {"landscape": (1280, 720), "portrait": (1080, 1920)}
 YELLOW, WHITE, OUTLINE, TINT = (255, 212, 0), (255, 255, 255), (17, 17, 17), (11, 30, 63)
 DEFAULT_FONT = "/System/Library/Fonts/Supplemental/Arial Black.ttf"
 MAX_BYTES = 2 * 1024 * 1024
+
+
+def parse_time(t):
+    """Seconds from "71.5" or a clip's "HH:MM:SS.xx"."""
+    secs = 0.0
+    for part in str(t).split(":"):
+        secs = secs * 60 + float(part)
+    return round(secs, 3)
 
 
 def frame_times(start, end, count=30):
@@ -177,9 +186,11 @@ def main(argv):
     sub = ap.add_subparsers(dest="cmd", required=True)
     f = sub.add_parser("frames")
     f.add_argument("raw")
-    f.add_argument("start", type=float)
-    f.add_argument("end", type=float)
+    f.add_argument("start", type=parse_time)
+    f.add_argument("end", type=parse_time)
     f.add_argument("outdir")
+    f.add_argument("--shift", type=float, default=0.0,
+                   help="subtract this from start and end (a short's transcript times: pass /api/shorts' shift)")
     c = sub.add_parser("compose")
     c.add_argument("frame")
     for k in "xywh":
@@ -192,7 +203,7 @@ def main(argv):
     c.add_argument("--profile")
     a = ap.parse_args(argv)
     if a.cmd == "frames":
-        print(json.dumps(frames(a.raw, a.start, a.end, a.outdir), indent=1))
+        print(json.dumps(frames(a.raw, round(a.start - a.shift, 3), round(a.end - a.shift, 3), a.outdir), indent=1))
     else:
         p = profiles.load(a.profile or None)
         print(compose(a.frame, [a.x, a.y, a.w, a.h], a.line, a.orientation, a.out,

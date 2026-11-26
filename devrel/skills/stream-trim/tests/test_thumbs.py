@@ -27,6 +27,16 @@ class FrameTimesTest(unittest.TestCase):
     def test_frame_times(self):
         self.assertEqual(thumbs.frame_times(10, 40, 3), [15.0, 25.0, 35.0])
 
+    def test_parse_time(self):
+        self.assertEqual(thumbs.parse_time("71.5"), 71.5)
+        self.assertEqual(thumbs.parse_time("00:01:10.50"), 70.5)
+        self.assertEqual(thumbs.parse_time("1:02:03"), 3723.0)
+
+    def test_frames_cli_shift(self):
+        with mock.patch.object(thumbs, "frames", return_value=[]) as f:
+            thumbs.main(["frames", "/x/raw.mp4", "00:01:10.00", "00:01:20.00", "/tmp/o", "--shift", "0.5"])
+        f.assert_called_once_with("/x/raw.mp4", 69.5, 79.5, "/tmp/o")
+
     def test_frames_refuses_cloud_only(self):
         with mock.patch.object(thumbs.profiles, "cloud_only", return_value=True), \
                 mock.patch.object(thumbs.subprocess, "run") as run:
