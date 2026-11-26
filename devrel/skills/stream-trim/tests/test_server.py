@@ -775,6 +775,7 @@ class ServerTest(unittest.TestCase):
         with open(want, "rb") as f:
             self.assertEqual(f.read(), b"PICKED")
         self.assertEqual(self.thumbs()["picked"]["final"], want)
+        self.assertEqual(self.thumbs()["picked_from"]["final"], opt)
 
     def test_change_and_polish_queue(self):
         self.write_final()
@@ -820,6 +821,24 @@ class ServerTest(unittest.TestCase):
         t = self.thumbs()
         self.assertEqual(t["options"]["final"], [{"file": new_opt, "kind": "plain"}])
         self.assertEqual(t["picked"]["final"], os.path.join(renders, "New Name.jpg"))
+        self.assertEqual(t["picked_from"]["final"], new_opt)
+
+    def test_thumb_route_only_serves_options(self):
+        self.write_final()
+        opt = self.write_option("raw, stream-final-1-plain.jpg", b"OPT")
+        other = self.write_option("secret.jpg", b"NO")
+        self.post("/api/thumbs", {"final": [{"file": opt, "kind": "plain"}]})
+        from urllib.parse import quote
+        code, headers, body = self.get("/thumb?path=" + quote(opt))
+        self.assertEqual((code, headers["Content-Type"], body), (200, "image/jpeg", b"OPT"))
+        self.assertEqual(self.get("/thumb?path=" + quote(other))[0], 404)
+        self.assertEqual(self.get("/thumb")[0], 404)
+        # Show in Finder takes an option or a pick, nothing else.
+        opened = []
+        self.srv.open_cmd = opened.append
+        self.assertEqual(self.post("/api/reveal", {"target": "thumb", "path": opt})[0], 200)
+        self.assertEqual(opened, [["open", "-R", opt]])
+        self.assertEqual(self.post("/api/reveal", {"target": "thumb", "path": other})[0], 404)
 
 
 if __name__ == "__main__":

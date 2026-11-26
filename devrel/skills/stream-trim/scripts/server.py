@@ -151,6 +151,11 @@ class TrimServer(ThreadingHTTPServer):
         The page names the stream and the item, never a path."""
         if not isinstance(body, dict):
             return 400, {"error": "expected a JSON object"}
+        if body.get("target") == "thumb":
+            if not self.thumb_known(body.get("path")):
+                return 404, {"error": "no such thumbnail"}
+            self.open_cmd(["open", "-R", body["path"]])
+            return 200, {"path": body["path"]}
         if body.get("target") == "short":
             r = self.rendered().get(str(body.get("n")))
             if not r or not r["exists"]:
@@ -331,11 +336,13 @@ class TrimServer(ThreadingHTTPServer):
         except (OSError, ValueError):
             t = {}
         return {"options": t.get("options", {}), "picked": t.get("picked", {}),
+                "picked_from": t.get("picked_from", {}),
                 "requests": t.get("requests", []), "next_id": t.get("next_id", 1)}
 
     def thumbs_public(self):
         t = self.thumbs()
-        return {"options": t["options"], "picked": t["picked"], "requests": t["requests"]}
+        return {"options": t["options"], "picked": t["picked"], "picked_from": t["picked_from"],
+                "requests": t["requests"]}
 
     def post_thumbs(self, body):
         """Claude's thumbnail options: {"final": [...], "shorts": {"<n>": [...]}},
@@ -417,6 +424,7 @@ class TrimServer(ThreadingHTTPServer):
                 dest = os.path.splitext(video)[0] + ".jpg"
                 shutil.copyfile(f, dest)
                 t["picked"][key] = dest
+                t["picked_from"][key] = f
                 write_json(self.thumbs_path, t)
                 return 200, {"path": dest}
             rid = t["next_id"]
@@ -425,6 +433,13 @@ class TrimServer(ThreadingHTTPServer):
                                   "change": change.strip() if change else None, "polish": bool(polish)})
             write_json(self.thumbs_path, t)
         return 200, {"id": rid}
+
+    def thumb_known(self, path):
+        """True if path is a current thumbnail option or pick (the page may
+        only see or reveal those)."""
+        t = self.thumbs()
+        known = {o["file"] for opts in t["options"].values() for o in opts} | set(t["picked"].values())
+        return isinstance(path, str) and path in known and os.path.isfile(path)
 
     def thumbs_done(self, body):
         rid = body.get("id") if isinstance(body, dict) else None
@@ -461,6 +476,8 @@ class TrimServer(ThreadingHTTPServer):
             o["file"] = moved.get(o["file"], o["file"])
         if key in t["picked"]:
             t["picked"][key] = moved.get(t["picked"][key], t["picked"][key])
+        if key in t["picked_from"]:
+            t["picked_from"][key] = moved.get(t["picked_from"][key], t["picked_from"][key])
         for r in t["requests"]:
             r["file"] = moved.get(r["file"], r["file"])
         write_json(self.thumbs_path, t)
@@ -768,7 +785,14 @@ class Handler(BaseHTTPRequestHandler):
         m = re.fullmatch(r"/shorts/preview/(\d+)\.jpg", path)
         d = re.fullmatch(r"/shorts/draft/(\d+)\.mp4", path)
         rf = re.fullmatch(r"/shorts/file/(\d+)\.mp4", path)
-        if rf:
+        if path == "/thumb":
+            from urllib.parse import parse_qs, urlsplit
+            want = parse_qs(urlsplit(self.path).query).get("path", [None])[0]
+            if s.thumb_known(want):
+                self.send_file(want, "image/jpeg")
+            else:
+                self.send_json(404, {"error": "no such thumbnail"})
+        elif rf:
             r = s.rendered().get(str(int(rf.group(1))))
             if r and r["exists"]:
                 self.send_ranged(os.path.join(s.shorts_dir, r["file"]))

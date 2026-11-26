@@ -50,6 +50,16 @@
   .titles input[type=text] { width: 60%; background: var(--bg); color: var(--text); border: 1px solid #34314a; border-radius: 6px; padding: 4px 8px; font: 14px -apple-system, system-ui, sans-serif; }
   .titles button { padding: 6px 14px; font-size: 13px; margin-top: 6px; }
   .card .titles { background: var(--bg); }
+  .thumbs-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+  .thumb-opt { margin: 0; width: 320px; background: var(--bg); border-radius: 8px; padding: 8px; outline: 2px solid transparent; }
+  .card .thumb-opt { background: var(--panel); }
+  .thumb-opt.portrait { width: 200px; }
+  .thumb-opt.picked { outline-color: var(--accent); }
+  .thumb-opt img { width: 100%; border-radius: 4px; display: block; }
+  .thumb-opt .tag { font: 12px ui-monospace, Menlo, monospace; color: var(--muted); }
+  .thumb-opt .picked-label { color: var(--accent); font-weight: 600; margin-left: 6px; }
+  .thumb-opt button { padding: 4px 10px; font-size: 12px; margin: 6px 4px 0 0; }
+  .thumb-opt input[type=text] { width: 100%; margin-top: 6px; box-sizing: border-box; }
   #attention { position: sticky; top: 0; z-index: 10; margin: -16px -20px 12px; padding: 12px 20px; background: #f0c36c; color: #1b1a12; font-weight: 600; display: flex; gap: 12px; align-items: center; }
   #attention[hidden] { display: none; }
   #attention .since { font-weight: 400; }
@@ -135,6 +145,7 @@
   </div>
   <div id="status"></div>
   <div id="final-title" class="titles" hidden></div>
+  <div id="final-thumbs" class="titles" hidden></div>
   </section>
   <section id="shorts-view" hidden>
     <div id="finding" hidden></div>
@@ -490,6 +501,7 @@ function drawCards() {
         </div>
       </div>
       <div class="title-box titles" hidden></div>
+      <div class="thumb-box titles" hidden></div>
       <div class="state note"></div>`;
     $('editor').appendChild(el);
     el.querySelectorAll('.times button').forEach((b) => b.addEventListener('click', () => {
@@ -920,6 +932,7 @@ function titlesPending() {
 }
 
 function drawFinalTitle() {
+  drawFinalThumbs();
   const box = $('final-title');
   if (!S || !S.exists) { box.hidden = true; return; }
   box.hidden = false;
@@ -933,6 +946,7 @@ function drawFinalTitle() {
 }
 
 function drawShortTitles() {
+  drawShortThumbs();
   if (!SH || !SH.titles) return;
   const files = SH.titles.files || {};
   for (const [n, k] of Object.entries(cards)) {
@@ -941,6 +955,79 @@ function drawShortTitles() {
     const st = SH.render.clips && SH.render.clips[n];
     if (opts) { box.hidden = false; titleBox(box, +n, opts, SH.titles.picked[n], files[n] || (st && st.output ? st.output.split('/').pop() : k.c.file)); }
     else if (st && st.state === 'done') { box.hidden = false; box.innerHTML = '<div class="note">Title options for this short come from Claude once the rendered shorts are done.</div>'; }
+  }
+}
+
+// ---- Thumbnails: pick one and it's saved next to the video ----
+
+function thumbBox(box, target, options, pickedFrom, requests) {
+  const key = JSON.stringify([options, pickedFrom, requests]);
+  if (box.dataset.v === key) return;
+  box.dataset.v = key;
+  const portrait = target !== 'final';
+  box.innerHTML = `
+    <div class="note">${portrait ? 'Short thumbnail' : 'Thumbnail'}: pick one and it's saved next to the video, with the same name. Polish with vidIQ costs 22 credits.</div>
+    <div class="thumbs-grid">${options.map((o, i) => {
+      const waiting = requests.filter((r) => r.file === o.file);
+      return `<figure class="thumb-opt${portrait ? ' portrait' : ''}${o.file === pickedFrom ? ' picked' : ''}" data-i="${i}">
+        <img src="/thumb?path=${encodeURIComponent(o.file)}" alt="">
+        <figcaption><span class="tag">${o.kind === 'vidiq' ? 'vidIQ' : 'Plain'}</span>${o.file === pickedFrom ? '<span class="picked-label">Picked</span>' : ''}</figcaption>
+        <button class="use">Use this thumbnail</button><button class="reveal secondary">Show in Finder</button>${o.kind === 'plain' ? '<button class="polish secondary">Polish with vidIQ</button>' : ''}
+        <input type="text" class="change" placeholder="Ask for a change"><button class="send secondary">Send</button>
+        <div class="msg note">${waiting.length ? 'Waiting for Claude: ' + waiting.map((r) => r.polish ? 'polish with vidIQ' : '"' + escapeHtml(r.change) + '"').join(', ') : ''}</div>
+      </figure>`;
+    }).join('')}</div>`;
+  box.querySelectorAll('.thumb-opt').forEach((fig) => {
+    const o = options[+fig.dataset.i];
+    const msg = fig.querySelector('.msg');
+    const send = async (data, busy) => {
+      msg.textContent = busy;
+      const [code, r] = await post('/api/thumb', { target, file: o.file, ...data });
+      if (code !== 200) { msg.textContent = r.error; return; }
+      box.dataset.v = '';
+      refreshThumbs();
+    };
+    fig.querySelector('.use').addEventListener('click', () => send({}, 'Saving...'));
+    fig.querySelector('.reveal').addEventListener('click', () => post('/api/reveal', { target: 'thumb', path: o.file }));
+    const polish = fig.querySelector('.polish');
+    if (polish) polish.addEventListener('click', () => send({ polish: true }, 'Asking Claude...'));
+    const input = fig.querySelector('.change');
+    const ask = () => { const text = input.value.trim(); if (text) send({ change: text }, 'Asking Claude...'); else msg.textContent = 'Type the change first.'; };
+    fig.querySelector('.send').addEventListener('click', ask);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') ask(); });
+  });
+}
+
+async function refreshThumbs() {
+  try { SH = await (await fetch('/api/shorts')).json(); } catch (e) { return; }
+  drawFinalThumbs();
+  drawShortThumbs();
+}
+
+function drawFinalThumbs() {
+  const box = $('final-thumbs');
+  if (!S || !S.exists) { box.hidden = true; return; }
+  box.hidden = false;
+  const t = SH && SH.thumbs;
+  if (!t || !(t.options.final || []).length) {
+    box.dataset.v = '';
+    box.innerHTML = '<div class="note">Thumbnails: Claude makes these after you pick the title.</div>';
+    return;
+  }
+  thumbBox(box, 'final', t.options.final, t.picked_from.final, t.requests.filter((r) => r.target === 'final'));
+}
+
+function drawShortThumbs() {
+  if (!SH || !SH.thumbs) return;
+  const t = SH.thumbs;
+  for (const [n, k] of Object.entries(cards)) {
+    const box = k.el.querySelector('.thumb-box');
+    const opts = t.options[n] || [];
+    const st = SH.render.clips && SH.render.clips[n];
+    const done = (st && st.state === 'done') || (SH.rendered && SH.rendered[n] && SH.rendered[n].exists);
+    if (opts.length) { box.hidden = false; thumbBox(box, +n, opts, t.picked_from[n], t.requests.filter((r) => r.target === +n)); }
+    else if (done) { box.hidden = false; box.dataset.v = ''; box.innerHTML = '<div class="note">Thumbnails for this short come from Claude after you pick its title.</div>'; }
+    else box.hidden = true;
   }
 }
 

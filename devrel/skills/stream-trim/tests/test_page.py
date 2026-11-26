@@ -27,6 +27,10 @@ class PageTest(unittest.TestCase):
                     "Outside your trim", "Transcribing"):
             self.assertIn(ref, page)
         self.assertNotIn('id="tab-shorts" disabled', page)
+        # Thumbnail picker for the final and each short.
+        for ref in ('id="final-thumbs"', "thumb-box", "Use this thumbnail", "Polish with vidIQ",
+                    "Ask for a change", "Waiting for Claude", "/api/thumb", "/thumb?path="):
+            self.assertIn(ref, page)
         # Per-card layout switch (Code + me / Just me).
         for ref in ('class="layouts"', "k.layout", "layout: k.layout"):
             self.assertIn(ref, page)
