@@ -77,6 +77,7 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
    - Wait with Monitor and an until-loop (check every 30 s) on `curl -s http://127.0.0.1:<port>/api/titles` until `picked` has every short you posted.
    - Then follow `stream-shorts` steps 7, 8 and 9 for those clips (descriptions file, voice pass, em-dash and AI-ism scan, report). The file line is the clip's `file` in `shorts/shorts.json`, and the title is Ryan's pick from `/api/titles`, word for word. The voice pass covers the descriptions only: never change a picked title, because the file is named after it.
    - Run the `sounds-like-me` voice pass only when the profile's `voice_pass` is `sounds-like-me`. Read it from the profile file: `~/.config/stream-trim/profiles/<name>.json` if it exists, otherwise `${CLAUDE_SKILL_DIR}/profiles/<name>.json`. With `null`, write the titles and descriptions plain, in the person's own words from the clip. The separate em-dash and AI-ism scan always runs.
+   - Then make each short's thumbnails, as in **Thumbnails** below: portrait, 2 per short, plain only. He can press **Polish with vidIQ** on a card for the ones he wants polished.
 
 9. **Write the full video's title and description** once the final is rendered: after step 8, or without shorts, once `/api/render` says `done`. Get `edit.in`, `edit.out` and `shift` from `/api/shorts`. The transcript runs `shift` seconds behind the video, so the final's 00:00 is `edit.in + shift` on the transcript clock:
    - With the `ryan-obs` profile, invoke the `youtube-stream-description` skill with:
@@ -85,12 +86,44 @@ A **profile** describes a recording setup: which OBS tracks to keep and what eac
      ```
      (seconds, 3 decimals). Its scored title options go on the page under the finished render, and Ryan's pick renames the final to `renders/<Title>.mp4`. It writes `renders/youtube-description.txt` next to the final, with chapters that match the final, his picked title, and the voice pass.
    - With any other profile, that skill's template and voice cards are Ryan's, so don't use it. Offer the chapter list instead: invoke `analyze-stream-recording` with `<raw path> --window <start> <end>` and give them its Chapters section.
+   - Then make the final's thumbnails, as in **Thumbnails** below: landscape, 3 options, each polished once with vidIQ.
 
 10. **When he asks about the final render,** check it:
    ```bash
    curl -s http://127.0.0.1:<port>/api/render
    ```
    On `done`, give him the `output` path. On `error`, report `error` as-is. Leave the server running while he's still using the page. When he's done with the page and the shorts, stop the background server task.
+
+## Thumbnails
+
+For the final and each rendered short, after its title is picked. They're built from real frames of the person, so the face is always theirs; vidIQ only polishes a finished composite. Without `swiftc` (`thumbs.py` says so), skip thumbnails and tell them to run `xcode-select --install`. Without the vidIQ tools, make the plain ones only and say why.
+
+1. **Frames.** Get `shift`, `edit.in` and `edit.out` from `/api/shorts`. The range is on the raw's video clock: `edit.in` to `edit.out` for the final, the clip's `start - shift` to `end - shift` for a short. Then:
+   ```bash
+   python3 ${CLAUDE_SKILL_DIR}/scripts/thumbs.py frames "<raw path>" <start> <end> <scratchpad>/frames-<target>
+   ```
+   It prints the 8 frames with the clearest face, best first, each with its face `box`. It refuses a cloud-only raw; tell them to download it. Look at the frames with Read and pick the ones with the strongest expression that fits the title (surprised, thinking, excited): 3 for the final, 2 per short.
+2. **Text.** Write 2 or 3 words for each thumbnail in the style of their thumbnails ("FINDING CORE BUGS!", "NO DOCKER!"), not the title itself, and run the em-dash and AI-ism scan on them. Use different words on each option.
+3. **Compose** each one into the `thumbnails/` folder next to the video, named after the video's current file name without `.mp4` (`<stem>`), numbered from 1:
+   ```bash
+   python3 ${CLAUDE_SKILL_DIR}/scripts/thumbs.py compose "<frame>" <x> <y> <w> <h> landscape "<video dir>/thumbnails/<stem>-<k>-plain.jpg" --line "Core bugs!" --profile <name>
+   ```
+   Use `portrait` for a short. A second `--line` adds a line (3 at most; the first is yellow). `--side left|right` puts the person on that side; by default they go left when a line is long. `--background <frame>` uses another frame behind them. Look at each result with Read before posting it.
+4. **Post** them, from a JSON file in the scratchpad:
+   ```bash
+   curl -s -X POST http://127.0.0.1:<port>/api/thumbs -H 'Content-Type: application/json' --data @<file>
+   ```
+   with `{"final": [{"file": "<abs path>", "kind": "plain"}]}` or `{"shorts": {"<n>": [...]}}`. Tell them the options are under the final's title and in each short's editor, and that **Use this thumbnail** saves it as `<video name>.jpg` next to the video.
+5. **Polish the final's options** (with vidIQ). Check `mcp__vidiq__vidiq_balance` and say what it will spend: "Polishing 3 thumbnails, 66 credits." Don't wait for an OK. For each plain option:
+   - Upload it: call `mcp__vidiq__vidiq_upload_image` with no `image` to get an `uploadUrl` and `transferId`, run `curl -sS -X PUT --data-binary @"<file>" "<uploadUrl>"`, then call it again with the `transferId` for the `imageId`.
+   - Call `mcp__vidiq__vidiq_refine_thumbnail` with `sourceThumbnail` set to the `imageId`, `orientation: "landscape"`, `title` set to the picked title, `referenceImages` set to the profile's `thumbnail_refs` as `https://i.ytimg.com/vi/<id>/maxresdefault.jpg` (leave it out if the profile has none), and these instructions: "Keep the person's face, expression and the text exactly as they are. Make the background richer and the lighting punchier, in the style of the reference thumbnails."
+   - Poll `mcp__vidiq__vidiq_job_poll` until it's `completed`, download its `imageUrl` with curl to `<stem>-<k>-vidiq.jpg` in the same folder, and post it with `"kind": "vidiq"`.
+6. **Answer requests** until every video has a thumbnail picked. Wait with Monitor and an until-loop (check every 30 s) on `curl -s http://127.0.0.1:<port>/api/thumbs`, stopping when `requests` isn't empty or every target you posted is in `picked`. For each request:
+   - `"polish": true`: polish that option as in 5 (`portrait` for a short), 22 credits.
+   - A `change` on a vidIQ option: `mcp__vidiq__vidiq_refine_thumbnail` on that file (upload it first) with their words as the instructions, plus "Keep the person's face exactly as it is."
+   - A `change` on a plain option: if it's about the words, the side or the frame, rebuild it with `thumbs.py compose` (free). If it asks for a look only vidIQ gives ("add a glow"), polish it with their words added to the instructions.
+   - Save the result as the next number (`<stem>-<k>-plain.jpg` or `-vidiq.jpg`), post it, then mark the request done: `curl -s -X POST http://127.0.0.1:<port>/api/thumbs/done -H 'Content-Type: application/json' -d '{"id": <id>}'`.
+   - A title picked later renames the video, its `.jpg` and its options; read the paths from `/api/thumbs`, not from memory.
 
 ## First-run setup
 

@@ -65,6 +65,17 @@ class ProfilesTest(unittest.TestCase):
         self.assertEqual(os.path.realpath(p["chain_path"]), os.path.realpath(CHAIN_JSON))
         self.assertIsNone(p["layouts_path"])
 
+    def test_thumbnail_keys(self):
+        p = profiles.load("ryan-obs")
+        self.assertEqual(p["thumbnail_font"], {"name": "Inter Black", "file": "Inter_18pt-Black.ttf"})
+        self.assertEqual(p["thumbnail_refs"], ["BBI7WONLdOc", "ISTvqYVvi4Y", "M6SnB2m3-DM"])
+        self.write(two_track())
+        self.assertNotIn("thumbnail_refs", profiles.load("test-two"))
+        for bad in ({"thumbnail_refs": "x"}, {"thumbnail_refs": [1]}, {"thumbnail_font": {"name": "x"}}):
+            self.write(two_track(**bad))
+            with self.assertRaises(profiles.ProfileError, msg=bad):
+                profiles.load("test-two")
+
     def test_no_default(self):
         with self.assertRaises(profiles.NoDefault):
             profiles.load()

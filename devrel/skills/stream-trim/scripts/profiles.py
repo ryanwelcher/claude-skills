@@ -93,6 +93,12 @@ def load(name=None):
     cf = p["caption_font"]
     if not isinstance(cf, dict) or not all(isinstance(cf.get(k), str) and cf[k] for k in ("name", "file")):
         raise bad('"caption_font" must be {"name": <font name>, "file": <font file name>}')
+    tf = p.get("thumbnail_font")
+    if tf is not None and (not isinstance(tf, dict) or not all(isinstance(tf.get(k), str) and tf[k] for k in ("name", "file"))):
+        raise bad('"thumbnail_font" must be {"name": <font name>, "file": <font file name>}')
+    refs = p.get("thumbnail_refs")
+    if refs is not None and (not isinstance(refs, list) or not all(isinstance(r, str) and r for r in refs)):
+        raise bad('"thumbnail_refs" must be a list of YouTube video IDs')
     if p["voice_pass"] is not None and not isinstance(p["voice_pass"], str):
         raise bad('"voice_pass" must be "sounds-like-me" or null')
     n = p["audio_tracks"]

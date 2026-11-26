@@ -33,6 +33,8 @@ Claude checks these at the start of every run. If ffmpeg (or its libass) or mlx-
 | What | What it adds | Without it |
 |---|---|---|
 | The viDIQ connector in Claude | Scores each title option (0 to 100) so you can see which is likely to get clicks. Each score uses 5 viDIQ credits. | You still get title options to pick from, just without scores. Claude tells you it skipped the scoring. |
+| The Xcode command-line tools (`xcode-select --install`) | Thumbnails for the final and each short, built from real frames of you: your face, cut out with Apple's Vision, on a dimmed background with big text. | No thumbnails. Claude tells you what to install. |
+| viDIQ, for thumbnails | Polishes the final's 3 thumbnails automatically (22 credits each, 66 a stream), and any short's when you press **Polish with vidIQ**. Typed changes to a polished one also go through viDIQ (22 credits each). | You still get the plain thumbnails, and changes to their words, side or frame. |
 | Keeping recordings on your Mac | Prepare reads the whole recording once. From a local file that takes about 6 minutes for a 1.5-hour stream. | If the recording is only in Google Drive or iCloud, Claude stops and asks you to make it available offline first. Streaming it from the cloud took 84 minutes. |
 
 ## Only for Ryan's setup
@@ -80,5 +82,6 @@ Next to your recording:
 - `renders/youtube-description.txt`: the description (Ryan's setup only)
 - `shorts/01 - <Title>.mp4` and so on: the shorts
 - `shorts/shorts-descriptions.txt`: their titles and descriptions
+- `renders/<Title>.jpg` and `shorts/01 - <Title>.jpg`: the thumbnail you pick for each, with the options in a `thumbnails/` folder beside them
 
 The preview and waveform go in `~/Library/Caches/stream-trim/`, never in your recording's folder. The page's Streams tab lists every stream you've worked on, with how much cache space each one uses. Deleting a cache folder is safe.

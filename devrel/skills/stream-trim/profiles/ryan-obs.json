@@ -14,5 +14,7 @@
   "shorts_loudness": {"I": -14, "TP": -1.5},
   "caption_font": {"name": "Jost SemiBold", "file": "Jost-SemiBold.ttf"},
   "layouts": null,
-  "voice_pass": "sounds-like-me"
+  "voice_pass": "sounds-like-me",
+  "thumbnail_font": {"name": "Inter Black", "file": "Inter_18pt-Black.ttf"},
+  "thumbnail_refs": ["BBI7WONLdOc", "ISTvqYVvi4Y", "M6SnB2m3-DM"]
 }
