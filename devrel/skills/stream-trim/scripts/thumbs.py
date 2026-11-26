@@ -11,6 +11,10 @@
       thumbnail: a blurred, dimmed, blue-tinted background, the person on
       one side, and big upper-case text on the other. Prints the path.
 
+  thumbs.py fit <downloaded image> <out.jpg> <landscape|portrait>
+      Converts a downloaded thumbnail (vidIQ's PNG) to a JPEG at the exact
+      size, under 2 MB, and prints the path.
+
 Sizes: landscape 1280x720 (YouTube), portrait 1080x1920 (Shorts); JPEG
 under 2 MB."""
 import argparse
@@ -258,13 +262,27 @@ def compose(frame, face_box, lines, orientation, out, font=None, side=None, back
         _place_person(canvas, person, face_box, (cx, cy), H * (0.17 if style == "card" else 0.23),
                       W * 0.5, H * (0.52 if style == "card" else 0.47 if len(lines) == 3 else 0.42))
 
-    rgb = canvas.convert("RGB")
+    return _save_jpeg(canvas.convert("RGB"), out)
+
+
+def _save_jpeg(rgb, out):
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     for q in (90, 82, 74, 66):
         rgb.save(out, "JPEG", quality=q, optimize=True)
         if os.path.getsize(out) < MAX_BYTES:
             break
     return out
+
+
+def fit(src, out, orientation):
+    """A downloaded thumbnail (vidIQ sends PNGs, not always at YouTube's
+    size) as a JPEG at exactly 1280x720 or 1080x1920, under 2 MB. Crops to
+    the shape rather than stretching."""
+    if orientation not in SIZES:
+        raise ValueError("orientation must be landscape or portrait")
+    if not out.lower().endswith(".jpg"):
+        raise ValueError("out must end in .jpg")
+    return _save_jpeg(ImageOps.fit(Image.open(src).convert("RGB"), SIZES[orientation], Image.LANCZOS), out)
 
 
 def main(argv):
@@ -288,7 +306,14 @@ def main(argv):
     c.add_argument("--background")
     c.add_argument("--style", choices=STYLES, default="label")
     c.add_argument("--profile")
+    t = sub.add_parser("fit")
+    t.add_argument("src")
+    t.add_argument("out")
+    t.add_argument("orientation", choices=sorted(SIZES))
     a = ap.parse_args(argv)
+    if a.cmd == "fit":
+        print(fit(a.src, a.out, a.orientation))
+        return
     if a.cmd == "frames":
         print(json.dumps(frames(a.raw, round(a.start - a.shift, 3), round(a.end - a.shift, 3), a.outdir), indent=1))
     else:

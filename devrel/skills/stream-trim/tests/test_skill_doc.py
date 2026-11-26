@@ -23,3 +23,15 @@ class SkillDocTest(unittest.TestCase):
         s9 = self.step(9)
         self.assertIn("step 6", s9)
         self.assertIn("once more", self.doc)
+
+
+    def test_thumbnails_only_entry(self):
+        self.assertIn("Thumbnails only", self.doc)
+        self.assertIn("/api/titles", self.doc[self.doc.index("Thumbnails only"):])
+
+    def test_vidiq_results_go_through_fit(self):
+        self.assertIn("thumbs.py fit", self.doc)
+        self.assertNotIn("download its `imageUrl` with curl to `<stem>-<k>-vidiq.jpg`", self.doc)
+
+    def test_other_brands_flagged(self):
+        self.assertIn("no other company's characters or packaging", self.doc)

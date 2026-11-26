@@ -48,6 +48,24 @@ class FrameTimesTest(unittest.TestCase):
         x, y, w, h = thumbs._place_person(canvas, person, [25, 10, 50, 50], (0, 0), 300, 540, 1500)
         self.assertEqual(y, 1500 - 60)
 
+    def test_fit_png_to_jpeg(self):
+        with tempfile.TemporaryDirectory() as d:
+            src = os.path.join(d, "in.png")
+            Image.new("RGBA", (1536, 1024), (10, 200, 30, 255)).save(src)
+            out = thumbs.fit(src, os.path.join(d, "out.jpg"), "landscape")
+            im = Image.open(out)
+            self.assertEqual((im.format, im.size), ("JPEG", (1280, 720)))
+            self.assertLess(os.path.getsize(out), 2 * 1024 * 1024)
+            out = thumbs.fit(src, os.path.join(d, "p.jpg"), "portrait")
+            self.assertEqual(Image.open(out).size, (1080, 1920))
+            with self.assertRaisesRegex(ValueError, ".jpg"):
+                thumbs.fit(src, os.path.join(d, "out.png"), "landscape")
+
+    def test_fit_cli(self):
+        with mock.patch.object(thumbs, "fit", return_value="/o.jpg") as f, mock.patch("builtins.print"):
+            thumbs.main(["fit", "/i.png", "/o.jpg", "portrait"])
+        f.assert_called_once_with("/i.png", "/o.jpg", "portrait")
+
     def test_frames_refuses_cloud_only(self):
         with mock.patch.object(thumbs.profiles, "cloud_only", return_value=True), \
                 mock.patch.object(thumbs.subprocess, "run") as run:
