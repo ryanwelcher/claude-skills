@@ -96,6 +96,9 @@ END="$(to_secs "$4")"
 S="$(awk -v s="$START" 'BEGIN { s -= 0.2; print (s < 0 ? 0 : s) }')"
 E="$(awk -v e="$END" 'BEGIN { print e + 0.4 }')"
 DUR="$(awk -v s="$S" -v e="$E" 'BEGIN { print e - s }')"
+# A very quick fade in and out, so a cut close to a word doesn't click.
+FADE=0.05
+FADES="afade=t=in:d=$FADE,afade=t=out:st=$(awk -v d="$DUR" -v f="$FADE" 'BEGIN { print d - f }'):d=$FADE"
 
 # Layout first: a bad name or pan value should fail before any slow work.
 LAYOUT_OUT="$(python3 "$SCRIPT_DIR/layout.py" "$LAYOUT_NAME" "$PAN_X")"
@@ -192,8 +195,8 @@ if [ -n "$MIX_AUDIO" ]; then
   run ffmpeg -nostdin -loglevel error -stats -y \
     -ss "$VS" -t "$DUR" -i "$IN" \
     -i "$TMP/audio.wav" \
-    -filter_complex "${LAYOUT},ass=$TMP/captions.ass[v]" \
-    -map "[v]" -map 1:a \
+    -filter_complex "${LAYOUT},ass=$TMP/captions.ass[v];[1:a]${FADES}[a]" \
+    -map "[v]" -map "[a]" \
     -c:v h264_videotoolbox -b:v 12M -profile:v high \
     -c:a aac -b:a 192k -ar 48000 \
     -movflags +faststart "$OUT"
@@ -203,7 +206,7 @@ fi
 run ffmpeg -nostdin -loglevel error -stats -y \
   -ss "$VS" -t "$DUR" -i "$IN" \
   -ss "$AS" -t "$DUR" -i "$IN" \
-  -filter_complex "${LAYOUT},ass=$TMP/captions.ass${VSCALE}[v];[1:a:${MIC}]loudnorm=I=-14:TP=-1.5:LRA=11[a]" \
+  -filter_complex "${LAYOUT},ass=$TMP/captions.ass${VSCALE}[v];[1:a:${MIC}]loudnorm=I=-14:TP=-1.5:LRA=11,${FADES}[a]" \
   -map "[v]" -map "[a]" \
   -c:v h264_videotoolbox -b:v "$VRATE" -profile:v high \
   -c:a aac -b:a 192k -ar 48000 \

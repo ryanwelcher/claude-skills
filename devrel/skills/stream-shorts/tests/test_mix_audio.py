@@ -63,8 +63,19 @@ class MixAudioTest(unittest.TestCase):
         self.assertTrue(parts[5].endswith("audio.wav"))
         ff = next(l for l in lines if l.startswith("ffmpeg"))
         self.assertIn("-i " + parts[5], ff)
-        self.assertIn("-map 1:a", ff)
         self.assertNotIn("loudnorm", ff)
+
+    def test_default_fades_audio(self):
+        r = self.run_render()
+        ff = next(l for l in r.stdout.splitlines() if l.startswith("ffmpeg"))
+        # 1 to 3 s plus 0.2 s before and 0.4 s after: 2.6 s, so the fade out starts at 2.55.
+        self.assertIn("loudnorm=I=-14:TP=-1.5:LRA=11,afade=t=in:d=0.05,afade=t=out:st=2.55:d=0.05[a]", ff)
+
+    def test_mix_audio_fades_audio(self):
+        r = self.run_render("--mix-audio", "/x/short_audio.py")
+        ff = next(l for l in r.stdout.splitlines() if l.startswith("ffmpeg"))
+        self.assertIn("[1:a]afade=t=in:d=0.05,afade=t=out:st=2.55:d=0.05[a]", ff)
+        self.assertIn("-map [a]", ff)
 
     def test_mix_audio_needs_raw(self):
         r = self.run_render("--mix-audio", "/x/short_audio.py", raw=self.edit)

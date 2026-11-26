@@ -75,6 +75,7 @@ Everything about a clip lives in `shorts/shorts.json` next to the recording, and
    - If the captions open on the end of the previous sentence (for example "UP. THERE WAS ONE"), set `start` to the start of the first word of the next sentence.
    - If the clip starts partway through a sentence, set `start` to the start of that sentence's first word.
    - The render starts 0.2 seconds before `start` (`render-short.sh`). If the word before the new `start` ends less than 0.2 seconds before it, tell Ryan the cut is tight so he can listen to it.
+   - The audio fades in over the first 0.05 seconds and out over the last 0.05 seconds, so a tight cut doesn't click. It's too short to swallow a word.
    - Run `--captions` for that clip again to make sure it starts cleanly, and tell Ryan which clips you moved.
 
 6. **Render** one clip per Bash call, in the **foreground** with the Bash `timeout` at `600000`:
