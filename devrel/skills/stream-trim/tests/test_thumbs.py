@@ -37,6 +37,17 @@ class FrameTimesTest(unittest.TestCase):
             thumbs.main(["frames", "/x/raw.mp4", "00:01:10.00", "00:01:20.00", "/tmp/o", "--shift", "0.5"])
         f.assert_called_once_with("/x/raw.mp4", 69.5, 79.5, "/tmp/o")
 
+    def test_person_sits_on_bottom_edge(self):
+        # The cutout ends at the shoulders (the camera is a box mid-frame):
+        # it must be moved down to the bottom edge, not float above it.
+        canvas = Image.new("RGBA", (1080, 1920))
+        person = Image.new("RGBA", (100, 100), (200, 150, 120, 255))
+        x, y, w, h = thumbs._place_person(canvas, person, [25, 10, 50, 50], (0, 0), 300, 540, 998)
+        self.assertEqual(y + h, 1920)
+        # One already past the bottom stays where the face put it.
+        x, y, w, h = thumbs._place_person(canvas, person, [25, 10, 50, 50], (0, 0), 300, 540, 1500)
+        self.assertEqual(y, 1500 - 60)
+
     def test_frames_refuses_cloud_only(self):
         with mock.patch.object(thumbs.profiles, "cloud_only", return_value=True), \
                 mock.patch.object(thumbs.subprocess, "run") as run:
@@ -95,6 +106,30 @@ class ThumbsTest(unittest.TestCase):
         bg = Image.open(out).convert("RGB").crop((0, 900, 60, 960)).resize((1, 1)).getpixel((0, 0))
         far = [p for p in bottom.get_flattened_data() if sum(abs(a - b) for a, b in zip(p, bg)) > 120]
         self.assertGreater(len(far), 1080 * 576 * 0.1)
+
+    def test_compose_styles_differ(self):
+        outs = {st: Image.open(thumbs.compose(FACE, self.box, ["Bye bye", "Premiere!"], "landscape",
+                                              self.path(f"{st}.jpg"), style=st)).convert("RGB")
+                for st in thumbs.STYLES}
+        self.assertEqual(sorted(outs), ["card", "label", "stack"])
+        small = {k: list(v.resize((32, 18)).get_flattened_data()) for k, v in outs.items()}
+        self.assertNotEqual(small["label"], small["card"])
+        self.assertNotEqual(small["label"], small["stack"])
+        with self.assertRaisesRegex(ValueError, "style"):
+            thumbs.compose(FACE, self.box, ["x"], "landscape", self.path("bad.jpg"), style="wobbly")
+
+    def test_compose_label_box(self):
+        # label: the first line sits in a solid yellow box.
+        im = Image.open(thumbs.compose(FACE, self.box, ["Bye bye", "Premiere!"], "landscape",
+                                       self.path("lab.jpg"), style="label")).convert("RGB")
+        ys = sum(1 for p in im.crop((0, 0, 700, 360)).get_flattened_data() if yellow(p))
+        self.assertGreater(ys, 700 * 360 * 0.05)
+
+    def test_compose_person_big(self):
+        # The face is drawn at about 40% of the height, not a small cutout.
+        out = thumbs.compose(FACE, self.box, ["Core bugs!"], "landscape", self.path("big.jpg"), style="label")
+        [r] = vision.faces([out])
+        self.assertGreater(max(f["box"][3] for f in r["faces"]), 720 * 0.3)
 
     def test_compose_long_text_fits(self):
         out = thumbs.compose(FACE, self.box, ["CONTRIBUTORTOOLKIT", "IS", "HERE"], "landscape",

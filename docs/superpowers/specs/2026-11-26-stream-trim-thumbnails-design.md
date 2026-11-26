@@ -115,3 +115,7 @@ New optional keys:
 - The exact Vision calls and the Swift helper's command-line shape.
 - Text sizing and the outline and shadow values, tuned by eye against the reference thumbnails.
 - Card styling within the page's existing look.
+
+## Follow-up (2026-11-26, after the first real run)
+
+Ryan found the plain composite boring: a small cutout and one block of text. The composite now has three styles (`label`, `card`, `stack`) with the person drawn big (face about 40% of the height) on a warm glow, a vignetted background, tilted yellow and red label boxes, and in `card` a sharp tilted card of the screen from that frame. The final gets one of each. The vidIQ polish brief now asks for dynamic 3D text (same words) and one icon or logo Claude picks from the topic, such as a crossed-out Premiere icon; vidIQ draws it. A folder of exact logo PNGs is the fallback if a drawn one comes out wrong.
